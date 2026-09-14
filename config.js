@@ -76,8 +76,8 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["B03", "B01", "B07"],   these three, in this order
    */
-  itemSubset: null,
-  itemLimit: null,
+  itemSubset: ["B03", "B01", "B07"],
+  itemLimit: 3,
   /**
    * How an option becomes an answer.
    *
