@@ -1,0 +1,21 @@
+{
+  "_note": "Deliberately malformed fixture for testing the validation gate (§4.3, §13). Point config.content.items at this file, reload, and the error screen must appear instead of a session. Not loaded in normal operation.",
+  "version": "broken-fixture",
+  "items": [
+    {
+      "id": "X01",
+      "framing": "   ",
+      "options": [
+        { "id": "X01a", "caption": "jen jedna možnost", "image": "" }
+      ]
+    },
+    {
+      "id": "X01",
+      "framing": "Duplicitní id položky.",
+      "options": [
+        { "id": "X02a", "caption": "a", "image": "" },
+        { "id": "X02a", "caption": "duplicitní id možnosti", "image": "" }
+      ]
+    }
+  ]
+}

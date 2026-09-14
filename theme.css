@@ -1,0 +1,489 @@
+/* ==========================================================================
+   theme.css — every visual decision in the instrument (§10)
+   --------------------------------------------------------------------------
+   The token block below is the only place a colour, size, spacing value or
+   layout constant is written as a literal. Every rule beneath it consumes
+   tokens only. Restyling the instrument is an edit to :root plus, at most,
+   the rules in this file. app.js contains no styling.
+   ========================================================================== */
+
+:root {
+  /* --- colour ----------------------------------------------------------- */
+  --color-bg:            #f6f5f2;
+  --color-surface:       #ffffff;
+  --color-ink:           #1b1b1b;
+  --color-ink-muted:     #6b6b6b;
+  --color-border:        #d6d3cd;
+  --color-border-strong: #1b1b1b;
+  --color-accent:        #1f4fd8;
+  --color-accent-soft:   #e8eeff;
+  --color-focus:         #1f4fd8;
+  --color-danger:        #a02020;
+  --color-placeholder:   #ffffff;
+
+  /* --- type ------------------------------------------------------------- */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --type-xs:   0.8125rem;   /* 13px — progress, meta                        */
+  --type-sm:   0.9375rem;   /* 15px — captions                              */
+  --type-md:   1.0625rem;   /* 17px — body, form fields                     */
+  --type-lg:   1.375rem;    /* 22px — headings                              */
+  --type-xl:   1.75rem;     /* 28px — item framing                          */
+
+  --line-tight: 1.25;
+  --line-body:  1.5;
+
+  --weight-normal: 400;
+  --weight-medium: 550;
+  --weight-bold:   700;
+
+  /* --- spacing ---------------------------------------------------------- */
+  --space:    8px;
+  --space-05: calc(var(--space) * 0.5);
+  --space-1:  var(--space);
+  --space-2:  calc(var(--space) * 2);
+  --space-3:  calc(var(--space) * 3);
+  --space-4:  calc(var(--space) * 4);
+  --space-6:  calc(var(--space) * 6);
+  --space-8:  calc(var(--space) * 8);
+
+  /* --- shape ------------------------------------------------------------ */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --border-width:        1px;
+  --border-width-strong: 2px;
+
+  /* --- layout constants (§9) -------------------------------------------- *
+   * Target device is a school laptop at 1280x720. These are the numbers the
+   * layout is built against; the asset spec is provisional and will be
+   * revised when the graphics team states its format.                      */
+  /* The design width is the target device: 1280px, less a 32px page margin
+     on each side, leaves a 1216px content column. Wider screens keep the
+     1216px column and gain whitespace. */
+  --layout-max-width:      1280px;
+  --layout-page-padding:   32px;
+  --layout-gutter:         20px;  /* four gutters between five cards        */
+  --card-aspect:      3 / 2;   /* image area; ~225x150 at target width      */
+  --card-min-width:   150px;   /* below this the strip stacks vertically    */
+  --card-padding:     0px;     /* image sits flush to the card edge         */
+  --caption-lines:    2;       /* caption clamps to this many lines         */
+  --frame-width:      3px;     /* the frame drawn on the selected picture   */
+
+  /* The band under the strip that holds the hint and the "Další" button.
+     Fixed, so that revealing the button does not move the cards. */
+  --advance-height:    calc(var(--space) * 8);  /* >= the button's own height */
+  --advance-min-width: calc(var(--space) * 18);
+
+  --framing-height-fraction: 0.22;  /* ~20–25% of viewport height           */
+  --strip-height-fraction:   0.30;  /* ~30% of viewport height              */
+  --framing-measure:         70ch;  /* max line length of the framing text  */
+
+  /* Breakpoint below which the option strip becomes a vertical stack.
+     NOTE: custom properties cannot be used inside a media query condition;
+     the literal in the @media rule at the bottom of this file must be kept
+     in step with this value. */
+  --stack-breakpoint: 900px;
+
+  /* --- motion ----------------------------------------------------------- */
+  --transition-fast: 120ms ease-out;
+  --transition-slow: 220ms ease-out;
+}
+
+/* ==========================================================================
+   base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* An explicit `display` on a rule below would otherwise beat the user agent's
+   own [hidden] rule, so elements toggled with el.hidden are hidden here. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--type-md);
+  line-height: var(--line-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:focus-visible {
+  outline: var(--border-width-strong) solid var(--color-focus);
+  outline-offset: var(--space-05);
+}
+
+.screen {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--layout-page-padding) var(--space-3);
+}
+
+/* a centred, narrow column — login, intro, error */
+.screen--centred {
+  justify-content: center;
+  align-items: center;
+  text-align: left;
+}
+
+.panel {
+  width: 100%;
+  max-width: 46rem;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.panel--narrow { max-width: 26rem; }
+
+.heading {
+  margin: 0 0 var(--space-3);
+  font-size: var(--type-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--line-tight);
+}
+
+.body-text {
+  margin: 0 0 var(--space-2);
+  max-width: var(--framing-measure);
+}
+
+.body-text:last-child { margin-bottom: 0; }
+
+.muted {
+  color: var(--color-ink-muted);
+  font-size: var(--type-sm);
+}
+
+/* ==========================================================================
+   form controls
+   ========================================================================== */
+
+.field {
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+}
+
+.field__input {
+  display: block;
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  font: inherit;
+  font-size: var(--type-md);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.field__input:focus-visible { border-color: var(--color-focus); }
+
+.button {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-size: var(--type-md);
+  font-weight: var(--weight-medium);
+  color: var(--color-surface);
+  background: var(--color-accent);
+  border: var(--border-width-strong) solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+
+.button:disabled { cursor: default; }
+
+.form-error {
+  margin: 0 0 var(--space-2);
+  color: var(--color-danger);
+  font-size: var(--type-sm);
+  font-weight: var(--weight-medium);
+}
+
+.form-error[hidden] { display: none; }
+
+/* ==========================================================================
+   item screen (§9)
+   --------------------------------------------------------------------------
+   Vertical budget at 720px height:
+     framing block  ~22% of viewport height
+     option strip   ~30% of viewport height
+     the rest       whitespace and the progress indicator
+   ========================================================================== */
+
+.item {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.item__framing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--framing-height-fraction) * 100vh);
+  margin: 0 auto;
+  max-width: var(--framing-measure);
+  font-size: var(--type-xl);
+  line-height: var(--line-tight);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* The hint and the advance button occupy the same reserved band, one at a
+   time: the button appearing must not move the option strip (§8). */
+.item__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--advance-height);
+}
+
+.item__hint {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ink-muted);
+  font-size: var(--type-sm);
+}
+
+.item__next { min-width: var(--advance-min-width); }
+
+/* --- the option strip ----------------------------------------------------
+   Cards are flex items with a zero basis, so they are always equal width
+   whatever the option count (3–6 degrade sanely, §4.1). At 1280px:
+   (1216 - 4 * 20) / 5 = 227.2px per card.                                  */
+
+.options {
+  display: flex;
+  flex-wrap: nowrap;
+  /* Cards take their content height and hang from a common top edge, so the
+     five image areas line up whatever the captions do. The min-height below
+     reserves the strip's share of the vertical budget without stretching the
+     cards into it. */
+  align-items: flex-start;
+  gap: var(--layout-gutter);
+  min-height: calc(var(--strip-height-fraction) * 100vh);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+}
+
+.option__button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: var(--card-padding);
+  overflow: hidden;
+  font: inherit;
+  text-align: center;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+              background var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.option__button:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  transform: translateY(calc(var(--space-05) * -1));
+}
+
+/* Every option is disabled the instant one is chosen (§8), so the disabled
+   state must not read as "unavailable" — it is simply frozen. */
+.option__button:disabled { cursor: default; }
+
+/* The selected option: a frame drawn on the picture itself, plus an accent
+   card edge and a tinted caption area. None of it changes a box size, so
+   moving the frame between cards never shifts the strip under the cursor. */
+.option__button--selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.option__button--selected .option__media {
+  box-shadow: inset 0 0 0 var(--frame-width) var(--color-accent);
+}
+
+.option__media {
+  display: block;   /* it is a <span>, and outside the card it is not a flex item */
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--card-aspect);
+  overflow: hidden;
+  background: var(--color-placeholder);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.option__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* §4.2 — no image, or an image that fails to load: a plain white box at the
+   correct dimensions with a thin border. Never a broken-image icon. */
+.option__media--placeholder .option__image { display: none; }
+
+.option__caption {
+  padding: var(--space-1) var(--space-1) 0;
+  font-size: var(--type-sm);
+  line-height: var(--line-tight);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--caption-lines);
+  line-clamp: var(--caption-lines);
+  overflow: hidden;
+}
+
+.option__key {
+  padding: var(--space-05) 0 var(--space-1);
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+}
+
+/* The summary reuses the option media block, where the card border that
+   normally closes it off is absent. */
+.summary__media .option__media {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* --- progress ------------------------------------------------------------ */
+
+.progress {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ink-muted);
+  font-size: var(--type-xs);
+  letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   summary (§7)
+   ========================================================================== */
+
+.summary { padding-bottom: var(--space-8); }
+
+.summary__list {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.summary__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.summary__media {
+  flex: 0 0 auto;
+  width: calc(var(--card-min-width) * 0.8);
+}
+
+.summary__text { flex: 1 1 auto; min-width: 0; }
+
+.summary__item-text {
+  margin: 0 0 var(--space-05);
+  font-size: var(--type-sm);
+  color: var(--color-ink-muted);
+}
+
+.summary__choice {
+  margin: 0;
+  font-size: var(--type-md);
+  font-weight: var(--weight-medium);
+}
+
+.summary__closing { margin-top: var(--space-4); }
+
+/* ==========================================================================
+   error screen (§4.3) — developer-facing, English
+   ========================================================================== */
+
+.error__list {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  color: var(--color-danger);
+}
+
+.error__list li { margin-bottom: var(--space-05); }
+
+/* ==========================================================================
+   narrow viewports — not a supported target, just a sane degradation (§9).
+   Keep the literal in step with --stack-breakpoint.
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .options {
+    flex-wrap: wrap;
+    min-height: 0;
+  }
+
+  .option { flex: 1 1 100%; }
+
+  .item__framing {
+    min-height: 0;
+    font-size: var(--type-lg);
+  }
+
+  .summary__row { flex-direction: column; align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

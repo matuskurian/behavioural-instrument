@@ -1,0 +1,5 @@
+# Web files are served as-is; keep them LF everywhere regardless of platform.
+* text=auto eol=lf
+
+# PowerShell is the exception — conventionally CRLF on Windows.
+*.ps1 text eol=crlf

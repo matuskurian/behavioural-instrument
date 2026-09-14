@@ -1,0 +1,150 @@
+{
+  "_note": "ZÁSTUPNÝ OBSAH (12 položek). Finální počet (10–15), znění zadání a popisky jsou otevřené položky (§14). Pořadí zobrazení = pořadí v poli. Cesty k obrázkům jsou zatím prázdné, takže se vykreslí bílý zástupný rámeček (§4.2). Pole \"label\" je krátký štítek pro souhrnnou obrazovku; použije se jen když config.summaryItemText = \"label\".",
+  "version": "2026-09-11-placeholder",
+  "items": [
+    {
+      "id": "B01",
+      "label": "Výlet",
+      "framing": "Třída se domlouvá, kam pojede na výlet. Každý může navrhnout jedno místo. Co navrhneš ty?",
+      "options": [
+        { "id": "B01a", "caption": "Hrad nad městem", "image": "", "alt": "" },
+        { "id": "B01b", "caption": "Rozhledna v lese", "image": "", "alt": "" },
+        { "id": "B01c", "caption": "Muzeum techniky", "image": "", "alt": "" },
+        { "id": "B01d", "caption": "Jeskyně", "image": "", "alt": "" },
+        { "id": "B01e", "caption": "Přehrada", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B02",
+      "label": "Ztracený klíč",
+      "framing": "Cestou ze školy najdeš na chodníku svazek klíčů. Nikdo široko daleko není. Co uděláš?",
+      "options": [
+        { "id": "B02a", "caption": "Necháš je ležet", "image": "", "alt": "" },
+        { "id": "B02b", "caption": "Pověsíš je na plot", "image": "", "alt": "" },
+        { "id": "B02c", "caption": "Odneseš je do školy", "image": "", "alt": "" },
+        { "id": "B02d", "caption": "Zeptáš se v obchodě", "image": "", "alt": "" },
+        { "id": "B02e", "caption": "Vezmeš je domů", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B03",
+      "label": "Volný večer",
+      "framing": "Máš celý večer pro sebe a nikdo ti neříká, co dělat. Čím ho vyplníš?",
+      "options": [
+        { "id": "B03a", "caption": "Kniha", "image": "", "alt": "" },
+        { "id": "B03b", "caption": "Ven s kamarády", "image": "", "alt": "" },
+        { "id": "B03c", "caption": "Něco vyrobit", "image": "", "alt": "" },
+        { "id": "B03d", "caption": "Hra na počítači", "image": "", "alt": "" },
+        { "id": "B03e", "caption": "Nic, jen odpočinek", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B04",
+      "label": "Nový spolužák",
+      "framing": "Do třídy přijde někdo nový a o přestávce sedí sám. Co uděláš ty?",
+      "options": [
+        { "id": "B04a", "caption": "Přisedneš si", "image": "", "alt": "" },
+        { "id": "B04b", "caption": "Pozveš ho ke stolu", "image": "", "alt": "" },
+        { "id": "B04c", "caption": "Zamáváš z dálky", "image": "", "alt": "" },
+        { "id": "B04d", "caption": "Počkáš, až přijde sám", "image": "", "alt": "" },
+        { "id": "B04e", "caption": "Řekneš to ostatním", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B05",
+      "label": "Rozbitá věc",
+      "framing": "Omylem rozbiješ něco, co patří někomu jinému. Nikdo to neviděl. Jak to řešíš?",
+      "options": [
+        { "id": "B05a", "caption": "Hned to přiznáš", "image": "", "alt": "" },
+        { "id": "B05b", "caption": "Zkusíš to spravit", "image": "", "alt": "" },
+        { "id": "B05c", "caption": "Napíšeš vzkaz", "image": "", "alt": "" },
+        { "id": "B05d", "caption": "Počkáš, jestli si toho někdo všimne", "image": "", "alt": "" },
+        { "id": "B05e", "caption": "Uklidíš to a mlčíš", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B06",
+      "label": "Skupinová práce",
+      "framing": "Ve skupině má každý něco udělat, ale jeden člen nic neodevzdal. Zítra se to odevzdává. Co uděláš?",
+      "options": [
+        { "id": "B06a", "caption": "Uděláš to za něj", "image": "", "alt": "" },
+        { "id": "B06b", "caption": "Napíšeš mu", "image": "", "alt": "" },
+        { "id": "B06c", "caption": "Řekneš to učiteli", "image": "", "alt": "" },
+        { "id": "B06d", "caption": "Odevzdáš to bez jeho části", "image": "", "alt": "" },
+        { "id": "B06e", "caption": "Svoláš skupinu", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B07",
+      "label": "Kapesné",
+      "framing": "Dostaneš peníze, které můžeš utratit, jak chceš. Nikdo ti do toho nemluví. Za co je dáš?",
+      "options": [
+        { "id": "B07a", "caption": "Něco na sebe", "image": "", "alt": "" },
+        { "id": "B07b", "caption": "Materiál na svůj projekt", "image": "", "alt": "" },
+        { "id": "B07c", "caption": "Dárek někomu jinému", "image": "", "alt": "" },
+        { "id": "B07d", "caption": "Necháš si je stranou", "image": "", "alt": "" },
+        { "id": "B07e", "caption": "Výlet s kamarády", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B08",
+      "label": "Cesta domů",
+      "framing": "Cesta, kterou chodíš každý den, je zavřená. Jak půjdeš dnes?",
+      "options": [
+        { "id": "B08a", "caption": "Delší cestou po silnici", "image": "", "alt": "" },
+        { "id": "B08b", "caption": "Zkratkou přes park", "image": "", "alt": "" },
+        { "id": "B08c", "caption": "Autobusem", "image": "", "alt": "" },
+        { "id": "B08d", "caption": "S někým, kdo tudy chodí", "image": "", "alt": "" },
+        { "id": "B08e", "caption": "Cestou, kterou neznáš", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B09",
+      "label": "Soutěž",
+      "framing": "Ve škole se hlásí lidé do soutěže. Nevíš, jestli jsi dost dobrý nebo dobrá. Jak se rozhodneš?",
+      "options": [
+        { "id": "B09a", "caption": "Přihlásíš se hned", "image": "", "alt": "" },
+        { "id": "B09b", "caption": "Přihlásíš se, když půjde i kamarád", "image": "", "alt": "" },
+        { "id": "B09c", "caption": "Zeptáš se učitele", "image": "", "alt": "" },
+        { "id": "B09d", "caption": "Počkáš do příštího roku", "image": "", "alt": "" },
+        { "id": "B09e", "caption": "Nepřihlásíš se", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B10",
+      "label": "Hádka",
+      "framing": "Dva kamarádi se pohádali a oba chtějí, abys jim dal za pravdu. Co uděláš?",
+      "options": [
+        { "id": "B10a", "caption": "Vyslechneš oba", "image": "", "alt": "" },
+        { "id": "B10b", "caption": "Řekneš, co si myslíš", "image": "", "alt": "" },
+        { "id": "B10c", "caption": "Necháš to být", "image": "", "alt": "" },
+        { "id": "B10d", "caption": "Převedeš řeč jinam", "image": "", "alt": "" },
+        { "id": "B10e", "caption": "Přivedeš někoho dospělého", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B11",
+      "label": "Nesplněný slib",
+      "framing": "Slíbil jsi dvě věci na stejný čas a nejde stihnout obojí. Jak to vyřešíš?",
+      "options": [
+        { "id": "B11a", "caption": "Splníš ten dřívější slib", "image": "", "alt": "" },
+        { "id": "B11b", "caption": "Splníš ten důležitější", "image": "", "alt": "" },
+        { "id": "B11c", "caption": "Oběma se ozveš předem", "image": "", "alt": "" },
+        { "id": "B11d", "caption": "Poprosíš někoho, ať tě zastoupí", "image": "", "alt": "" },
+        { "id": "B11e", "caption": "Rozhodneš se na poslední chvíli", "image": "", "alt": "" }
+      ]
+    },
+    {
+      "id": "B12",
+      "label": "Konec dne",
+      "framing": "Den se chýlí ke konci a zbývá ti poslední volná půlhodina. Co s ní uděláš?",
+      "options": [
+        { "id": "B12a", "caption": "Dokončíš rozdělanou věc", "image": "", "alt": "" },
+        { "id": "B12b", "caption": "Připravíš se na zítřek", "image": "", "alt": "" },
+        { "id": "B12c", "caption": "Zavoláš někomu", "image": "", "alt": "" },
+        { "id": "B12d", "caption": "Půjdeš ven", "image": "", "alt": "" },
+        { "id": "B12e", "caption": "Uděláš si pohodlí", "image": "", "alt": "" }
+      ]
+    }
+  ]
+}

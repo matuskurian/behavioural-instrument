@@ -1,0 +1,19 @@
+# Google Drive litter — this working copy lives on a synced drive
+desktop.ini
+.tmp.drivedownload/
+.tmp.driveupload/
+
+# Google Docs/Sheets shortcut stubs: 184-byte pointers, meaningless in git
+*.gdoc
+*.gsheet
+*.gslides
+
+# Superseded local backup of the Apps Script, kept on disk but out of the repo.
+# The current version is apps-script/Code.gs; delete this when you're done with it.
+apps-script/Code_old_v01.gs
+
+# Editor and OS
+.vscode/
+.idea/
+Thumbs.db
+*.swp

@@ -1,0 +1,59 @@
+{
+  "_note": "Veškerý text viditelný pro účastníka. Pouze čeština. Nic z toho nesmí být napsáno v app.js (§4.4). Zástupné hodnoty ve složených závorkách, např. {current}, doplňuje aplikace.",
+  "_version": "2026-09-11",
+
+  "app": {
+    "title": "Úloha"
+  },
+
+  "login": {
+    "heading": "Přihlášení",
+    "intro": [
+      "Zadej kód a heslo z kartičky, kterou jsi dostal nebo dostala."
+    ],
+    "idLabel": "Kód",
+    "passwordLabel": "Heslo",
+    "submit": "Pokračovat",
+    "empty": "Vyplň prosím obě políčka.",
+    "invalid": "Kód nebo heslo nesouhlasí. Zkus to prosím znovu."
+  },
+
+  "intro": {
+    "heading": "Než svět zahyne",
+    "body": [
+      "ZÁSTUPNÝ TEXT — tato část čeká na finální znění příběhového rámce (§14).",
+      "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
+      "Obrázek vybereš kliknutím — kolem vybraného obrázku se objeví rámeček. Dokud nepokračuješ dál, můžeš si to rozmyslet a kliknout na jiný obrázek; rámeček se přesune.",
+      "Když jsi s výběrem spokojený nebo spokojená, klikni dole na tlačítko „Další“. Tím se přejde na další obrazovku. Zpátky se vrátit nedá a volbu už pak nejde změnit.",
+      "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
+      "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
+      "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
+    ],
+    "_body__immediate_note": "Použije se místo \"body\", když je config.selectionMode = \"immediate\" (jedno kliknutí = odpověď). Liší se jen odstavec o ovládání; zbytek držte v souladu s \"body\".",
+    "body__immediate": [
+      "ZÁSTUPNÝ TEXT — tato část čeká na finální znění příběhového rámce (§14).",
+      "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
+      "Obrázek vybereš kliknutím. Jakmile klikneš, aplikace rovnou přejde na další obrazovku — zpátky se vrátit nedá a volbu už nejde změnit. Vyber tedy to, co tě napadne jako první.",
+      "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
+      "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
+      "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
+    ],
+    "start": "Začít"
+  },
+
+  "item": {
+    "progress": "{current} / {total}",
+    "hint": "Vyber jednu možnost.",
+    "next": "Další"
+  },
+
+  "summary": {
+    "heading": "Tvoje volby",
+    "intro": [
+      "Tady je přehled toho, co jsi vybral nebo vybrala. Můžeš si ho v klidu projít.",
+      "Tím je úloha hotová. Děkujeme."
+    ],
+    "closing": "Obrazovku teď můžeš zavřít.",
+    "noCaption": "Volba u otázky {n}"
+  }
+}
