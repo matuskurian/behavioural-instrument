@@ -139,6 +139,33 @@ rows still carry the real item ids, so subset runs stay identifiable in the
 sheet. Set both back to `null` for run (b): the completion threshold is
 pre-registered against a fixed item set.
 
+## Editing via GitHub, and the gate that protects it
+
+Content edits do not need a terminal: open the repo on github.com and press
+`.` for github.dev — VS Code in the browser, which underlines a bad comma in
+JSON or JavaScript *before* you commit. The pencil icon works too but checks
+nothing.
+
+Every push to `main` runs `tools/validate.mjs` before anything is published
+(`.github/workflows/deploy.yml`). If it fails, the deploy is skipped and the
+live instrument keeps serving the last good build. Pages is served from the
+workflow, not straight from the branch, precisely so that validation is a gate
+rather than an after-the-fact notification.
+
+The validator checks JSON syntax with line and column numbers, the item and
+roster rules `app.js` enforces at startup, the presence of every string key
+the app asks for by name, that `config.js` imports and its flags hold legal
+values, and that every id in `itemSubset` exists in `items.json`. It also
+prints notes — a dry-run endpoint or a short run is legal, but worth seeing in
+the build log before it surprises somebody.
+
+Run it yourself before pushing, if you have Node:
+
+    node tools/validate.mjs
+
+A pull request runs the validation but does not deploy, so it is a safe way to
+check a risky edit.
+
 ## Things worth knowing before a session
 
 **Writes are fire-and-forget and gaps are tolerated (§6.2).** A failed

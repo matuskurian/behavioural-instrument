@@ -1,0 +1,55 @@
+name: Validate and deploy
+
+# Pages is served from this workflow rather than straight from the branch, so
+# that validation is a gate and not just a notification: a commit that breaks
+# a content file fails here and the live instrument keeps serving the last
+# good build. Deploying from a branch would publish the breakage first and
+# tell you afterwards.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; let a running one finish rather than cancelling
+# it, so the live site is never left half-updated.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate content and config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: node tools/validate.mjs
+        run: node tools/validate.mjs
+
+  deploy:
+    name: Deploy to Pages
+    needs: validate
+    # Pull requests are checked but not published.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

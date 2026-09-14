@@ -12,7 +12,27 @@
  * repointing the endpoint must never require an edit here (§3, §13).
  * ========================================================================== */
 
-import { CONFIG } from "./config.js";
+/*
+ * config.js is imported dynamically rather than with a static `import`.
+ *
+ * A static import failure is fatal to the importing module: if config.js has
+ * so much as a stray comma, app.js never executes, nothing renders, and the
+ * participant gets a blank white page — the error screen being itself part of
+ * the code that failed to run. Loading it inside a try/catch means a broken
+ * config produces the same loud, diagnostic error screen as broken content.
+ *
+ * CONFIG is null until boot() sets it; the two functions reachable before
+ * that (forMode and the keydown listener) guard for it.
+ */
+let CONFIG = null;
+
+async function loadConfig() {
+  const module = await import("./config.js");
+  if (!module || typeof module.CONFIG !== "object" || module.CONFIG === null) {
+    throw new Error("config.js loaded but did not export a CONFIG object");
+  }
+  return module.CONFIG;
+}
 
 /* ==========================================================================
  * Session state
@@ -84,6 +104,7 @@ function lookup(path) {
 }
 
 function forMode(path) {
+  if (!CONFIG) return path;
   const variant = `${path}__${CONFIG.selectionMode}`;
   return lookup(variant) === undefined ? path : variant;
 }
@@ -654,7 +675,7 @@ function showError(problems) {
  * ========================================================================== */
 
 window.addEventListener("keydown", (event) => {
-  if (!CONFIG.numericShortcuts) return;
+  if (!CONFIG || !CONFIG.numericShortcuts) return;
   if (session.screen !== "item" || session.locked) return;
   if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
   // A held key or a stray keystroke into a field must never count as a choice.
@@ -736,6 +757,19 @@ function selectItems(all) {
 }
 
 async function boot() {
+  try {
+    CONFIG = await loadConfig();
+  } catch (error) {
+    showError([
+      `config.js could not be loaded: ${error.message}`,
+      "This is almost always a syntax error in config.js — a stray comma, a " +
+        "missing quote, or an unclosed brace. The browser console names the line.",
+      "No other file is at fault: the app stops here because nothing else can " +
+        "be read without the paths config.js holds."
+    ]);
+    return;
+  }
+
   let items;
   try {
     const needsRoster = CONFIG.authMode === "roster";
