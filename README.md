@@ -152,7 +152,8 @@ live instrument keeps serving the last good build. Pages is served from the
 workflow, not straight from the branch, precisely so that validation is a gate
 rather than an after-the-fact notification.
 
-The validator checks JSON syntax with line and column numbers, the item and
+The validator checks JSON syntax (with line and column numbers when Node
+reports a character offset — not every parse error carries one), the item and
 roster rules `app.js` enforces at startup, the presence of every string key
 the app asks for by name, that `config.js` imports and its flags hold legal
 values, and that every id in `itemSubset` exists in `items.json`. It also
