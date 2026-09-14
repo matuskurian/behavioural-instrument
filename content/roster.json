@@ -6,6 +6,8 @@
     { "id": "CZ-003", "password": "reka-klic-9" },
     { "id": "CZ-004", "password": "vlak-hora-4" },
     { "id": "CZ-005", "password": "pero-plot-6" },
-    { "id": "TEST", "password": "test" }
+    { "id": "TEST", "password": "test" },
+    { "id": "Lucka", "password": "MoreMatcha" },
+    { "id": "Katka", "password": "StillHateGIT" },
   ]
 }
