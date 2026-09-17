@@ -49,7 +49,7 @@ const session = {
 
 let strings = {};
 let roster = { participants: [] };
-const transmission = { attempted: 0, failed: 0, failures: [] };
+const transmission = { attempted: 0, failed: 0, duplicates: 0, failures: [] };
 
 /* ==========================================================================
  * Tiny DOM helpers — no styling, class names only
@@ -241,6 +241,141 @@ function isoWithOffset(date) {
   );
 }
 
+/* --------------------------------------------------------------------------
+ * The outside world (§12.6)
+ * --------------------------------------------------------------------------
+ * Supabase — its URL, its key, its headers, its tokens and its Postgres error
+ * codes — exists between here and the end of transmit(), and nowhere else.
+ * Everything below this block knows only that it hands a code and a password
+ * to checkCredential() and gets back a participant id or null, and that it
+ * hands a row to transmit() and carries on. If a Supabase detail turns up in
+ * screen logic, content loading or theming, that is the defect §12 warns of.
+ * ----------------------------------------------------------------------- */
+
+/** Participant codes are turned into addresses for Supabase Auth. The domain
+ *  is an implementation detail and is never shown to anyone (§12.3). */
+const PARTICIPANT_EMAIL_DOMAIN = "@instrument.local";
+
+/** Postgres, via PostgREST. 23505 is the unique (participant_id, item_id)
+ *  constraint: the participant answered an item they had already answered,
+ *  which resume makes possible. It is not data loss (§12.4). */
+const DUPLICATE_ROW = "23505";
+
+/** The signed-in session. Null under authMode "roster", and until sign-in. */
+let auth = null;
+
+function supabaseUrl(path) {
+  return `${CONFIG.supabaseUrl.replace(/\/+$/, "")}${path}`;
+}
+
+/* --- sign-in and keeping the session alive (§12.3) ---------------------- */
+
+/**
+ * Returns the token payload, or null when the code or password is simply
+ * wrong. Throws only when something is broken rather than mistyped — an
+ * unreachable project, a bad key — because those two cases need different
+ * answers: a Czech retry message, or the developer error screen.
+ */
+async function signIn(code, password) {
+  const response = await fetch(supabaseUrl("/auth/v1/token?grant_type=password"), {
+    method: "POST",
+    cache: "no-store",
+    headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: `${code}${PARTICIPANT_EMAIL_DOMAIN}`, password })
+  });
+
+  if (response.ok) return response.json();
+
+  // 400 is what Supabase Auth returns for invalid credentials, and also for an
+  // account that exists but was never confirmed — the mistake the README warns
+  // about, which is why the reason is logged rather than swallowed.
+  if (response.status === 400) {
+    const detail = await response.json().catch(() => ({}));
+    console.warn(`[auth] sign-in refused: ${detail.error_code || detail.error || "invalid credentials"}`);
+    return null;
+  }
+
+  throw new Error(`sign-in failed with HTTP ${response.status}`);
+}
+
+function holdSession(token) {
+  const timer = auth && auth.timer;
+  if (timer) window.clearTimeout(timer);
+  auth = {
+    accessToken: token.access_token,
+    refreshToken: token.refresh_token,
+    expiresIn: Number(token.expires_in) || 0,
+    timer: null
+  };
+  scheduleRefresh(auth.expiresIn);
+}
+
+/**
+ * Access tokens are short-lived and a resumed run can outlive one, so the
+ * session is refreshed on a timer rather than lazily at write time: a write
+ * must never wait for anything (§6.2). At 80% of the lifetime there is room
+ * for a slow network, and a run shorter than the token's life never refreshes.
+ */
+function scheduleRefresh(expiresIn) {
+  if (!auth || !Number.isFinite(expiresIn) || expiresIn <= 0) return;
+  auth.timer = window.setTimeout(refreshSession, Math.max(30, Math.floor(expiresIn * 0.8)) * 1000);
+}
+
+async function refreshSession() {
+  if (!auth) return;
+  try {
+    const response = await fetch(supabaseUrl("/auth/v1/token?grant_type=refresh_token"), {
+      method: "POST",
+      cache: "no-store",
+      headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: auth.refreshToken })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    holdSession(await response.json());
+    console.info("[auth] session refreshed");
+  } catch (error) {
+    // There is nothing to do about it: the participant is mid-task and must
+    // not be interrupted. Writes after the token expires will fail and be
+    // logged like any other failure.
+    console.error(`[auth] session refresh failed: ${error.message}. Later rows may be refused.`);
+  }
+}
+
+/**
+ * The login screen's whole view of authentication. Returns the participant id
+ * on success and null on a wrong code or password.
+ */
+async function checkCredential(code, password) {
+  if (CONFIG.authMode === "remote") {
+    // Sign-in treats the address case-insensitively; the row-level security
+    // policy does not. It compares participant_id against the local part of
+    // the account's email, exactly, and Supabase stores that lowercased. A
+    // participant typing TEST would therefore sign in happily and have every
+    // single row refused with 42501 — invisibly, because writes are
+    // fire-and-forget and nobody is ever told. Verified against the live
+    // project on 2026-09-17: "test" accepted, "TEST" refused.
+    const token = await signIn(code.trim().toLowerCase(), password);
+    if (!token) return null;
+    holdSession(token);
+
+    // Take the id from the account that was actually signed in, not from what
+    // was typed. It is the one value the policy is guaranteed to accept.
+    const email = token.user && typeof token.user.email === "string" ? token.user.email : "";
+    const fromAccount = email.split("@")[0];
+    if (!fromAccount) throw new Error("sign-in returned no account email to derive participant_id from");
+    return fromAccount;
+  }
+
+  // authMode "roster": offline only, and unreachable above. Not authentication
+  // (§2) — it binds a response set to an identifier and nothing more.
+  const match = roster.participants.find(
+    (participant) => participant.id === code && participant.password === password
+  );
+  return match ? match.id : null;
+}
+
+/* --- writing a row (§6.2, §12.4) ---------------------------------------- */
+
 function noteFailure(row, reason) {
   transmission.failed += 1;
   transmission.failures.push({ ...row, reason });
@@ -249,44 +384,53 @@ function noteFailure(row, reason) {
   );
 }
 
+/** Not a failure: the row is already in the table, so the data is intact. */
+function noteDuplicate(row) {
+  transmission.duplicates += 1;
+  console.info(`[write] duplicate, ignored  item=${row.item_id}  choice=${row.choice_id}`);
+}
+
+/**
+ * Fire-and-forget, unchanged by the migration (§6.2, §12.4). Nothing here is
+ * awaited by the caller, nothing is retried, nothing is queued: the
+ * participant advances the instant they choose, whatever happens to the row.
+ * server_ts is never sent — the database sets it.
+ */
 function transmit(row) {
   transmission.attempted += 1;
 
-  if (!CONFIG.endpoint) {
-    console.info("[write] dry run (config.endpoint is empty) — row not sent:", row);
+  if (CONFIG.authMode !== "remote") {
+    console.info('[write] offline: authMode is not "remote", so no row was sent:', row);
+    return;
+  }
+  if (!auth) {
+    noteFailure(row, "no signed-in session");
     return;
   }
 
-  const payload = JSON.stringify(row);
-  // text/plain keeps this a CORS "simple request": no preflight, which an
-  // Apps Script web app cannot answer.
-  const contentType = "text/plain;charset=UTF-8";
-
   try {
-    if (CONFIG.writeMode === "beacon") {
-      const queued = navigator.sendBeacon(
-        CONFIG.endpoint,
-        new Blob([payload], { type: contentType })
-      );
-      if (!queued) noteFailure(row, "sendBeacon refused the payload");
-      return;
-    }
-
-    const opaque = CONFIG.writeMode === "no-cors";
-    fetch(CONFIG.endpoint, {
+    fetch(supabaseUrl("/rest/v1/responses"), {
       method: "POST",
-      mode: opaque ? "no-cors" : "cors",
       cache: "no-store",
       keepalive: true,
-      redirect: "follow",
-      headers: { "Content-Type": contentType },
-      body: payload
+      headers: {
+        apikey: CONFIG.supabaseAnonKey,
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(row)
     })
-      .then((response) => {
-        // An opaque response carries no status; only network-level failure is
-        // detectable in that mode.
-        if (opaque) return;
-        if (!response.ok) noteFailure(row, `HTTP ${response.status}`);
+      .then(async (response) => {
+        if (response.ok) return;
+        const detail = await response.json().catch(() => ({}));
+        if (detail && detail.code === DUPLICATE_ROW) {
+          noteDuplicate(row);
+          return;
+        }
+        const code = detail && detail.code ? ` ${detail.code}` : "";
+        const message = detail && detail.message ? ` ${detail.message}` : "";
+        noteFailure(row, `HTTP ${response.status}${code}${message}`);
       })
       .catch((error) => noteFailure(row, error && error.message ? error.message : String(error)));
   } catch (error) {
@@ -294,22 +438,157 @@ function transmit(row) {
   }
 }
 
+/**
+ * A misconfigured auth block must stop the session at startup rather than at
+ * the first login, where a room full of people would read it as a wrong
+ * password. Returns problems for the error screen, in the same shape the
+ * content validators use — the only thing boot() learns is that something is
+ * wrong, never what a Supabase URL or key is supposed to look like.
+ */
+function validateAuthConfig() {
+  const problems = [];
+
+  if (CONFIG.authMode === "remote") {
+    if (typeof CONFIG.supabaseUrl !== "string" || CONFIG.supabaseUrl.trim() === "") {
+      problems.push('config.supabaseUrl is empty, which authMode "remote" requires');
+    } else if (!/^https:\/\/[^/]+$/.test(CONFIG.supabaseUrl.replace(/\/+$/, ""))) {
+      problems.push(
+        `config.supabaseUrl should be the project base URL with no path — got "${CONFIG.supabaseUrl}"`
+      );
+    }
+    if (typeof CONFIG.supabaseAnonKey !== "string" || CONFIG.supabaseAnonKey.trim() === "") {
+      problems.push('config.supabaseAnonKey is empty, which authMode "remote" requires');
+    }
+  } else if (CONFIG.authMode !== "roster") {
+    problems.push(`config.authMode is "${CONFIG.authMode}"; expected "remote" or "roster"`);
+  }
+
+  return problems;
+}
+
+/**
+ * Says where rows are going, at startup. It lives here rather than in boot()
+ * because the shape of that URL is precisely what boot() must not know.
+ */
+function announceWriteTarget() {
+  if (CONFIG.authMode === "remote") {
+    console.info(`[write] rows go to ${supabaseUrl("/rest/v1/responses")}`);
+  } else {
+    console.warn(
+      `[write] offline: authMode is "${CONFIG.authMode}", so nothing will be transmitted anywhere.`
+    );
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * End of the outside world. Nothing below knows Supabase exists.
+ * ----------------------------------------------------------------------- */
+
 /* ==========================================================================
- * Auth (§5)
+ * Resume after interruption (§12.5)
  * --------------------------------------------------------------------------
- * The screen below knows only that it hands a credential to checkCredential
- * and gets back a participant id or null. Swapping to authMode "remote"
- * (§12.1) replaces this function, not the screen.
+ * localStorage holds, per session, who is answering, which item comes next,
+ * and when the last choice was made. A participant whose tab dies gets back
+ * to where they were instead of starting again or being locked out.
+ *
+ * Answers themselves are deliberately not restored. The summary after a
+ * resumed session shows only the choices made since the resume: it is a
+ * courtesy screen, not a data view, and the client cannot read the table back
+ * even if it wanted to — there is no select policy (§12.1).
+ *
+ * The unique constraint on (participant_id, item_id) is the backstop, not the
+ * mechanism. First answer wins by construction.
  * ========================================================================== */
 
-async function checkCredential(id, password) {
-  if (CONFIG.authMode === "remote") {
-    throw new Error('authMode "remote" is not implemented in the MVP (§12.1)');
-  }
-  const match = roster.participants.find(
-    (participant) => participant.id === id && participant.password === password
+const RESUME_KEY = "instrument.session";
+
+/** Two hours, counted from the last choice rather than from login (§12.5). */
+const RESUME_MAX_AGE_MS = 2 * 60 * 60 * 1000;
+
+/* Private browsing and some locked-down school configurations make every
+   localStorage access throw. That must cost the resume feature and nothing
+   else, so every access is wrapped and the warning is printed once. */
+let storageWorks = true;
+
+function noteStorageUnavailable(error) {
+  if (!storageWorks) return;
+  storageWorks = false;
+  console.warn(
+    `[resume] localStorage is unavailable (${(error && error.message) || error}). ` +
+      "Resume is off for this session; the instrument is otherwise unaffected."
   );
-  return match ? match.id : null;
+}
+
+function readResume() {
+  try {
+    const raw = window.localStorage.getItem(RESUME_KEY);
+    if (!raw) return null;
+    const stored = JSON.parse(raw);
+    if (
+      !stored ||
+      typeof stored.participant_id !== "string" ||
+      !Number.isInteger(stored.index) ||
+      !Number.isFinite(stored.updated)
+    ) {
+      return null;
+    }
+    return stored;
+  } catch (error) {
+    noteStorageUnavailable(error);
+    return null;
+  }
+}
+
+function writeResume(nextIndex) {
+  try {
+    window.localStorage.setItem(
+      RESUME_KEY,
+      JSON.stringify({
+        participant_id: session.participantId,
+        index: nextIndex,
+        updated: Date.now()
+      })
+    );
+  } catch (error) {
+    noteStorageUnavailable(error);
+  }
+}
+
+function clearResume() {
+  try {
+    window.localStorage.removeItem(RESUME_KEY);
+  } catch (error) {
+    noteStorageUnavailable(error);
+  }
+}
+
+/**
+ * The item index to continue from, or null to start at the intro. Anything
+ * that does not match on all three counts — same participant, less than two
+ * hours old, pointing somewhere inside this run — clears the stored session
+ * rather than half-trusting it.
+ *
+ * index 0 deliberately does not resume: nothing has been answered, and
+ * skipping the intro for someone who never read it would be wrong. An index
+ * at or past the end is a run that finished without reaching the summary, and
+ * also starts fresh; the unique constraint makes the re-answers harmless.
+ */
+function resumeIndexFor(participantId) {
+  const stored = readResume();
+  if (!stored) return null;
+
+  const sameParticipant = stored.participant_id === participantId;
+  const recent = Date.now() - stored.updated < RESUME_MAX_AGE_MS;
+  const insideThisRun = stored.index > 0 && stored.index < session.items.length;
+
+  if (sameParticipant && recent && insideThisRun) return stored.index;
+
+  if (!sameParticipant) console.info("[resume] stored session belongs to another participant; discarded");
+  else if (!recent) console.info("[resume] stored session is older than two hours; discarded");
+  else console.info("[resume] stored session does not point inside this run; discarded");
+
+  clearResume();
+  return null;
 }
 
 /* ==========================================================================
@@ -389,7 +668,20 @@ function renderLogin(prefillId = "") {
           }
           session.participantId = participantId;
           pinHistory();
-          renderIntro();
+
+          // A returning participant continues where they stopped; everyone
+          // else, including the same participant after two hours, sees the
+          // intro (§12.5).
+          const resumeAt = resumeIndexFor(participantId);
+          if (resumeAt === null) {
+            renderIntro();
+          } else {
+            console.info(
+              `[resume] continuing at item ${resumeAt + 1} of ${session.items.length}`
+            );
+            session.index = resumeAt;
+            renderItem();
+          }
         } catch (failure) {
           showError([`login: ${failure.message}`]);
         }
@@ -587,15 +879,20 @@ function commit() {
   const item = current.item;
   const option = current.pending.option;
 
+  // The row as the table expects it (§12.1). server_ts is the database's to
+  // set, and is never sent.
   const row = {
-    timestamp: isoWithOffset(new Date()),
     participant_id: session.participantId,
     item_id: item.id,
-    choice_id: option.id
+    choice_id: option.id,
+    client_ts: isoWithOffset(new Date())
   };
 
   session.choices.push({ item, option, row });
   transmit(row);
+  // Refreshed at every choice, so the two-hour window runs from the last thing
+  // the participant did rather than from when they logged in (§12.5).
+  writeResume(session.index + 1);
 
   window.setTimeout(() => {
     session.index += 1;
@@ -612,6 +909,8 @@ function commit() {
 
 function renderSummary() {
   Object.assign(current, { item: null, buttons: [], pending: null, hint: null, next: null });
+  // The run is over: nothing left to resume into (§12.5).
+  clearResume();
 
   const rows = session.choices.map(({ item, option }, i) => {
     const itemText =
@@ -786,9 +1085,9 @@ async function boot() {
     return;
   }
 
-  const problems = validateItems(items).concat(
-    CONFIG.authMode === "roster" ? validateRoster(roster) : []
-  );
+  const problems = validateItems(items)
+    .concat(CONFIG.authMode === "roster" ? validateRoster(roster) : [])
+    .concat(validateAuthConfig());
   if (problems.length) {
     showError(problems);
     return;
@@ -819,9 +1118,7 @@ async function boot() {
         "Set itemSubset and itemLimit to null in config.js for the full set."
     );
   }
-  if (!CONFIG.endpoint) {
-    console.warn("[write] dry run: config.endpoint is empty, no rows will be transmitted.");
-  }
+  announceWriteTarget();
 
   // A handle for the researcher during logistics testing: transmission counts
   // and the rows that were lost. Not used by the app.

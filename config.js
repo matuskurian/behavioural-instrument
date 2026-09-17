@@ -7,46 +7,54 @@
  */
 export const CONFIG = {
   /* ------------------------------------------------------------------ *
-   * Write path (§6.2)
+   * Supabase — auth and the write path (§12.1, §12.2)
    * ------------------------------------------------------------------ */
 
   /**
-   * Google Apps Script web app URL, deployed as "Execute as: me",
-   * "Who has access: anyone". See apps-script/Code.gs.
-   *
-   * Leave as "" to run in dry-run mode: rows are logged to the console and
-   * nothing leaves the browser. Use this for think-alouds and layout work
-   * before the sheet exists.
+   * Project base URL. No "/rest/v1", no trailing slash:
+   *   https://abcdefghijklm.supabase.co
    */
-  endpoint: "https://script.google.com/macros/s/AKfycbznc8ln9dPyzyzF9S7hHsB8jsSUHE-3DfnzbfRK6sIXBw1hEqx1HWAaz6xVFJPtB9O6/exec",
+  supabaseUrl: "https://gafgvugkyscisoicjcqc.supabase.co",
 
   /**
-   * Transport for the fire-and-forget row POST.
+   * The anon / publishable key, and only that key.
    *
-   *   "cors"    normal fetch; Apps Script's CORS headers let us see whether the
-   *             request succeeded, so failures are logged with a real reason.
-   *   "no-cors" opaque fetch; survives a misconfigured deployment but only
-   *             network-level failures are detectable (HTTP 4xx/5xx look like
-   *             success). Fallback only.
-   *   "beacon"  navigator.sendBeacon; most robust against a page being closed
-   *             mid-write, but reports only whether the send was queued.
+   * It is designed to ship in client source: on its own it can do nothing,
+   * because row-level security allows an insert into public.responses only
+   * when the caller is authenticated and writing rows for their own
+   * participant_id. An anonymous insert is refused with 42501.
    *
-   * Whatever the mode, the participant is never blocked and never told (§6.2).
+   * A key labelled service_role or secret bypasses row-level security
+   * completely. One of those in this file would hand every reader of this
+   * public repository full read and write access to the responses table.
+   * tools/validate.mjs decodes whatever is here and fails the build if it is
+   * anything other than an anon/publishable key, and scans the rest of the
+   * repository for the same mistake.
    */
-  writeMode: "cors",
+  supabaseAnonKey: "sb_publishable_l9iWaABkrVEvwiFU9ZL6Qw_IKy-GqDA",
 
   /* ------------------------------------------------------------------ *
-   * Auth (§5, §12.1)
+   * Auth (§12.1, §12.2)
    * ------------------------------------------------------------------ */
 
   /**
-   * "roster"  credentials checked against content/roster.json in the client.
-   *           Not real authentication — see §2.
-   * "remote"  credentials POSTed to a server that returns a session token.
-   *           Not implemented in the MVP; the login screen is structured so
-   *           that adding it touches only auth.js-level code, not the screen.
+   * "remote"  the operating mode. The participant's code is turned into
+   *           <code>@instrument.local and signed in against Supabase Auth;
+   *           the returned session authorises every row written afterwards.
+   *           Accounts are created by hand in the Supabase dashboard —
+   *           signup is disabled.
+   *
+   * "roster"  offline mode, for layout and copy work with no network at all.
+   *           Credentials are checked against content/roster.json in the
+   *           client, which is not authentication in any meaningful sense
+   *           (§2) — and nothing is written anywhere. That file is not in
+   *           the repository; create it locally from
+   *           content/roster.example.json when you need this mode.
+   *
+   * The roster path is unreachable while this is "remote": checkCredential()
+   * returns or throws before it, and boot() does not even fetch the file.
    */
-  authMode: "roster",
+  authMode: "remote",
 
   /* ------------------------------------------------------------------ *
    * Presentation

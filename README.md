@@ -24,24 +24,24 @@ intro copy follows the flag: `strings.json` holds `intro.body` and
 `intro.body__immediate`, and any string key may carry a `__confirm` or
 `__immediate` variant the same way.
 
-**This is not a production instrument.** Read §2 of the spec before deploying
-it anywhere: authentication is decorative, the write endpoint is open, and
-nothing is validated server-side. Do not put anything in the MVP sheet that
-would matter if it were read or corrupted.
+**Repozitár je verejný, a to je v poriadku.** Kľúč v `config.js` je *anon*
+(publikovateľný) kľúč, ktorý je na to určený: sám o sebe nezmôže nič. Zápis do
+`public.responses` povolí row-level security iba prihlásenému účastníkovi, a
+iba pre riadky s jeho vlastným `participant_id`. Anonymný zápis je odmietnutý
+s kódom `42501`. Čítať tabuľku klient nevie vôbec — selectovacia politika
+zámerne neexistuje.
 
-**This repository is public and `config.js` carries a live write endpoint.**
-Two consequences, both accepted deliberately for the demo stage:
+**Kľúč `service_role` (alebo `secret`) sem nepatrí za žiadnych okolností.**
+Obchádza row-level security úplne a v tomto repozitári by ho čítal ktokoľvek.
+`tools/validate.mjs` dekóduje kľúč v `config.js` aj prehľadá celý repozitár a
+build spadne, ak nájde čokoľvek iné než anon kľúč.
 
-- Anyone who opens the live build and logs in with a code from
-  `content/roster.json` writes real rows to the `responses` sheet. Expect
-  colleague traffic in the data and filter it out before looking at anything.
-- The Apps Script URL is in the page source, so it is now permanently public.
-  Anyone who finds it can append arbitrary rows. Retiring it means creating a
-  new Apps Script deployment and changing `endpoint` here.
-
-Therefore: **never commit the real participant roster to this repository.**
-The entries in `content/roster.json` are placeholders. When run (a) starts,
-either keep the repo private or move to `authMode: "remote"` (§12.1) first.
+**Zoznam účastníkov už nie je v repozitári.** Účty existujú v Supabase;
+`content/roster.json` je v `.gitignore` a slúži len na offline prácu
+(`authMode: "roster"`). Pozor: v histórii gitu zostávajú staré verzie súboru s
+pôvodnými zástupnými heslami — do histórie sme nezasahovali. Žiadne z nich sa
+už nedá použiť na prihlásenie, ale skutočné heslá účastníkov sa do tohto
+súboru nesmú dostať nikdy.
 
 ## Run it
 
@@ -92,12 +92,16 @@ needed after editing `app.js` or `theme.css`, where `serve.ps1` sends
 `content/` is browsable — which changes nothing material, since the roster is
 readable in the page source anyway (§2).
 
-Log in with any pair from `content/roster.json` — `TEST` / `test` is there for
-development.
+Log in with a participant code and its password — the account has to exist in
+Supabase (see **Dáta — Supabase** below). The participant types only the code;
+the `@instrument.local` domain is added for them and never appears in the UI.
 
-With `CONFIG.endpoint` empty the app runs in **dry run**: rows are logged to the
-console and nothing leaves the browser. That is the right mode for think-alouds
-and layout work. Fill the endpoint in when the sheet exists.
+**To work with no network at all** — layout, copy, theming — set
+`authMode: "roster"` and copy `content/roster.example.json` to
+`content/roster.json`. Credentials are then checked in the browser and nothing
+is written anywhere. That file is gitignored and must stay that way. Switch
+`authMode` back to `"remote"` before committing; the validator fails the build
+if a deployed config asks for a roster the repository does not have.
 
 ## What lives where
 
@@ -106,11 +110,11 @@ and layout work. Fill the endpoint in when the sheet exists.
 | `content/items.json` | items, options, captions, image paths | add/remove/reword items |
 | `content/strings.json` | every participant-facing string, Czech | reword any UI copy |
 | ↳ `key__immediate` | a variant of any string used only in that selection mode | keep the copy true to the interaction |
-| `content/roster.json` | participant codes and passwords | change who can log in |
-| `config.js` | endpoint URL, auth mode, flags | repoint the store, flip a flag |
+| `content/roster.example.json` | template for the offline-only roster | copy to `roster.json` for `authMode: "roster"` |
+| `config.js` | Supabase URL and anon key, auth mode, flags | repoint the store, flip a flag |
 | `theme.css` | every colour, size, spacing and layout constant | restyle |
 | `app.js` | logic only | — |
-| `apps-script/Code.gs` | the write endpoint | see `apps-script/DEPLOYMENT.md` |
+| `tools/validate.mjs` | the pre-deploy checks | add a rule |
 
 `app.js` contains no content, no copy, no credentials, no URL and no styling.
 If a change to any of the first five files requires touching it, that is a
@@ -167,23 +171,150 @@ Run it yourself before pushing, if you have Node:
 A pull request runs the validation but does not deploy, so it is a safe way to
 check a risky edit.
 
-## Things worth knowing before a session
+## Dáta — Supabase
 
-**Writes are fire-and-forget and gaps are tolerated (§6.2).** A failed
-transmission loses that one choice. The participant is not interrupted and not
-told; the session continues and later items transmit normally. Consequences for
-analysis: response sets will be ragged, loss is not missing-at-random (it
-tracks network conditions, which track room, time and device), and a gap is
-indistinguishable from an item that was never reached. Define completion as a
-pre-registered row-count threshold, not as "reached the summary screen".
+Tabuľka `public.responses` v projekte (región `eu-west-1`). Jeden riadok = jedna
+voľba:
 
-Failures are logged to the console with item id and reason, and accumulate on
-`window.__instrument.transmission` — check it after a pilot session to see
-whether the room's wifi is losing rows.
+| stĺpec | odkiaľ |
+|---|---|
+| `id` | databáza |
+| `participant_id` | klient, kód účastníka |
+| `item_id`, `choice_id` | klient, z `items.json` |
+| `client_ts` | klient, ISO 8601 s posunom |
+| `server_ts` | **databáza** — klient ho neposiela nikdy |
 
-**Duplicate rows are possible (§6.1).** Nothing stops a participant restarting
-and answering an item twice; both rows exist and the app does not resolve them.
-Accepted because MVP data is not analysed. §12.4 removes it.
+Unikátne obmedzenie na `(participant_id, item_id)`: jedna odpoveď na položku.
+Prvá odpoveď vyhráva.
+
+### Nový účastník
+
+Supabase dashboard → **Authentication → Users → Add user**:
+
+- e-mail `<kód>@instrument.local` (doménu účastník nikdy nevidí, do
+  prihlasovacieho poľa píše len svoj kód)
+- heslo podľa §14
+- **Auto Confirm User zaškrtnúť.** Bez toho sa účet nedá prihlásiť a chyba
+  vyzerá presne ako chyba v kóde: účastník zadá správne údaje a aplikácia
+  odpovie „Kód alebo heslo nesúhlasí." V konzole je v tom prípade vidieť
+  `[auth] sign-in refused: email_not_confirmed`.
+
+Registrácia je v dashboarde vypnutá — účty vznikajú iba takto.
+
+**Kódy sú v dátach vždy malými písmenami.** Supabase ukladá e-maily malými
+písmenami a RLS politika porovnáva `participant_id` s lokálnou časťou e-mailu
+*presne*. Prihlásenie na veľkosť písmen nehľadí, zápis áno. Aplikácia preto
+`participant_id` neberie z toho, čo účastník napísal, ale z účtu, do ktorého sa
+naozaj prihlásil — nech napíše `TEST` alebo `test`, do tabuľky ide `test`.
+
+Bez toho by to dopadlo najhoršie možným spôsobom: účastník sa normálne
+prihlási, prejde celý nástroj, uvidí súhrn — a *každý* jeho riadok by databáza
+odmietla s `42501`, bez akéhokoľvek varovania, pretože zápis je fire-and-forget.
+Overené na živom projekte 17. 9. 2026: `test` prijaté, `TEST` odmietnuté.
+
+Pri návrhu formátu kódu (§14) s tým treba počítať: kódy sa v dátach objavia
+malými písmenami.
+
+### Celá trieda naraz
+
+Ručné klikanie je v poriadku pri troch účtoch; pri tridsiatich je to tridsať
+príležitostí zabudnúť na **Auto Confirm User**. Na hromadné založenie sú dva
+skripty:
+
+    .\tools\new-roster.ps1 -Count 30 -Prefix cz -OutFile ..\roster-2026-09.csv
+    .\tools\create-users.ps1 -RosterPath ..\roster-2026-09.csv -WhatIf
+    .\tools\create-users.ps1 -RosterPath ..\roster-2026-09.csv
+
+`new-roster.ps1` vygeneruje kódy a heslá: krátke, zapamätateľné, navzájom
+odlišné a písateľné na českej klávesnici bez diakritiky (`dest-list-5`,
+`ryba-zvon-9`). Kódy sú malými písmenami. Číslice 0 a 1 sa nepoužívajú, lebo sa
+na kartičke pletú s O a l.
+
+`create-users.ps1` z toho CSV založí potvrdené účty. Najprv skontroluje celý
+súbor — veľké písmená v kóde, krátke heslo, duplicitný kód — a ak niečo nájde,
+neodošle **nič**: polovične založený roster je horší než žiadny, lebo sa naň
+nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo by
+založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
+
+**O kľúči.** Zakladanie účtov potrebuje kľúč, ktorý obchádza row-level
+security. Supabase ho volá dvoma menami podľa generácie: staršie projekty majú
+`service_role` (JWT), novšie — vrátane tohto — `sb_secret_...`. Sú to to isté
+oprávnenie. Náprotivkom je `anon`, dnes `sb_publishable_...`, ktorý je v
+`config.js` a je bezpečný.
+
+Skript prijme obe podoby. Starší kľúč posiela aj v hlavičke `Authorization`,
+nový nie je JWT a tam by ho endpoint odmietol, takže pri prvom odmietnutí
+prepne na samotnú `apikey` a pokračuje.
+
+Kľúč sa pýta až pri spustení a nikam ho neukladá. Nedávajte ho do príkazového
+riadka (zostane v histórii shellu), do žiadneho súboru v tomto repozitári, ani
+do chatu. Je potrebný len na túto jednu úlohu. `tools/validate.mjs` mimochodom
+hľadá obe podoby: `sb_secret_` aj JWT s rolou `service_role`.
+
+**O súbore s heslami.** `roster-*.csv` je jediná kópia hesiel — Supabase ich
+ukladá zahašované a nikdy ich znova neukáže. Je v `.gitignore`; držte ho mimo
+repozitára a kartičky tlačte z neho.
+
+### Export a analýza
+
+Dashboard → **Table Editor → `responses` → Export → CSV**.
+
+**Hodiny analýzy sú `server_ts`, nie `client_ts`.** Školské notebooky majú
+rozbehnuté systémové hodiny, takže `client_ts` hovorí o nastavení stroja, nie o
+čase odpovede. `client_ts` je užitočný len na poradie volieb v rámci jedného
+sedenia a na porovnanie s `server_ts`, keď je podozrenie na problém so sieťou.
+
+### Zápis je fire-and-forget (§6.2) — dôsledky pre analýzu
+
+Neúspešný zápis stratí tú jednu voľbu. Účastníka to nepreruší a nedozvie sa o
+tom; sedenie pokračuje a ďalšie položky sa odosielajú normálne. Z toho vyplýva:
+
+- Dátové sady budú **deravé**. Nepredpokladajte, že každý účastník má riadok ku
+  každej položke.
+- Strata **nie je náhodná**: viaže sa na kvalitu siete, a tá sa viaže na
+  miestnosť, dennú dobu a zariadenie.
+- Medzera v dátach sa **nedá odlíšiť** od položky, ku ktorej sa účastník nikdy
+  nedostal.
+- **Dokončenie definujte ako predregistrovaný prah počtu riadkov**, nie ako
+  „došiel na súhrnnú obrazovku".
+
+Chyby sa vypisujú do konzoly s id položky a dôvodom a zbierajú sa v
+`window.__instrument.transmission`. Po pilotnom sedení sa tam dá pozrieť, či
+sieť v miestnosti neje riadky.
+
+Konzolové hlásenia už hovoria to, čo hovoria. Falošné `HTTP 404` boli
+patológiou presmerovania Apps Scriptu a sú preč; obchádzka s počítaním riadkov
+v hárku už nie je potrebná. Odpoveď `23505` je duplicita, nie strata — vypíše sa
+ako `duplicate, ignored` a znamená, že účastník po návrate odpovedal na položku,
+ktorú už mal zodpovedanú.
+
+### Návrat po prerušení (§12.5)
+
+Ak účastníkovi spadne prehliadač alebo zavrie kartu, po opätovnom prihlásení
+**pokračuje tam, kde skončil**, a úvodná obrazovka sa preskočí. Platí to, len
+ak ide o toho istého účastníka a od poslednej voľby uplynuli **menej než dve
+hodiny**; inak sa začína odznova od úvodu. Dve hodiny sa počítajú od poslednej
+voľby, nie od prihlásenia.
+
+Kto vedie sedenie, nech počíta s tým, že:
+
+- súhrn po návrate ukáže **iba voľby od návratu**, nie celé sedenie. Je to
+  zdvorilostná obrazovka, nie výpis dát — kompletnú sadu má databáza a klient si
+  ju zámerne nevie prečítať;
+- prihlásenie iného účastníka na tom istom notebooku uložené sedenie **zmaže**,
+  takže sa doň nedá omylom vstúpiť;
+- v anonymnom okne alebo pri zamknutej školskej konfigurácii `localStorage`
+  nefunguje. Vtedy návrat jednoducho nie je k dispozícii a účastník začína
+  odznova; nástroj funguje inak úplne normálne.
+
+### Platnosť prihlásenia (§12.3)
+
+Automatické obnovovanie je zapnuté. Access token má štandardnú životnosť **1
+hodinu** a aplikácia ho obnovuje na 80 % tejto doby, teda po ~48 minútach, na
+časovači — zápis na nič nečaká. Jeden beh nástroja je kratší než token, takže
+k obnove spravidla vôbec nedôjde; je tam kvôli návratom podľa §12.5. Po
+obnovení prehliadača sa účastník prihlasuje znova, takže každé načítanie
+stránky začína s čerstvým tokenom.
 
 **Only what is on screen is real.** The summary screen renders from session
 state and writes nothing; every row it shows was written at the moment of the
@@ -193,9 +324,9 @@ choice.
 
 | flag | default | what it is for |
 |---|---|---|
-| `endpoint` | `""` | Apps Script URL; empty = dry run |
-| `writeMode` | `"cors"` | `cors` \| `no-cors` \| `beacon` transport for the row POST |
-| `authMode` | `"roster"` | `roster` now, `remote` after §12.1 |
+| `supabaseUrl` | — | project base URL, no `/rest/v1`, no trailing slash |
+| `supabaseAnonKey` | — | the anon/publishable key, and only ever that one |
+| `authMode` | `"remote"` | `remote` = Supabase; `roster` = offline, no network, writes nothing |
 | `shuffleOptions` | `false` | option order randomisation, off in the MVP |
 | `itemSubset` | `null` | array of item ids to run, in the order given |
 | `itemLimit` | `null` | keep only the first N items |
@@ -204,16 +335,24 @@ choice.
 | `confirmDelayMs` | `450` | how long the chosen card is shown before advancing |
 | `numericShortcuts` | `true` | keys 1–9 select an option |
 
-## Migration to run (b)
+## The boundary (§12.6)
 
-Three changes, all at the boundary already drawn (§12): `authMode: "remote"`
-with the roster deleted from the repo, the write path pointed at the mediated
-Supabase endpoint with a session token per row, and server-side validation of
-rows against the known ids. Nothing in the content model, screens, interaction,
-layout or theming changes. `checkCredential()` and `transmit()` in `app.js` are
-the only two functions that know about the outside world; if endpoint or auth
-assumptions start appearing in the screen functions, that is the defect §12
+`checkCredential()` and `transmit()` in `app.js` are the only two functions
+that know the outside world exists. They sit inside a block marked *The outside
+world*, and everything Supabase-shaped — the URL, the key, the headers, the
+tokens, the Postgres error codes — lives between its opening and closing
+comments and nowhere else. The screens, the content loading and the theming
+were not touched by the migration to Supabase, exactly as §12 requires. If a
+Supabase detail starts appearing outside that block, that is the defect §12
 warns about.
+
+Still not done, and worth knowing: row contents are **not** validated
+server-side against the known item and option ids. Row-level security
+guarantees that a participant can only write rows under their own
+`participant_id`; it does not check that `item_id` is a real item. A signed-in
+participant could, with devtools open, insert a row naming an item that does
+not exist. For run (b) that wants a check constraint or a trigger on
+`public.responses`.
 
 ## Verification (§13)
 
@@ -230,11 +369,10 @@ Checked in a browser at 1280×720 with the placeholder content:
 - five cards on one row at 1280×720: 227.2px each, image area 225×150 (3:2),
   20px gutters, no horizontal scroll and no vertical scroll. Framing block
   108–266px, option strip 314–530px — the 22% / 30% vertical budget of §9
-- a POST to an unreachable endpoint logs
-  `[write] failed item=B02 choice=B02c reason=Failed to fetch` and the
-  participant advances to the next item without noticing. Because there is no
-  queue and no retry state, later items transmit normally the moment the
-  network is back
+- a failed insert logs
+  `[write] failed item=B02 choice=B02c reason=…` and the participant advances
+  to the next item without noticing. Because there is no queue and no retry
+  state, later items transmit normally the moment the network is back
 - the two-step flow: clicking an option frames it and reveals "Další" without
   writing anything; clicking a different option moves the frame (still nothing
   written); clicking the framed option again does nothing at all. The strip
@@ -253,8 +391,34 @@ Checked in a browser at 1280×720 with the placeholder content:
   and no evaluative language
 - below 900px the strip stacks vertically with no horizontal scroll
 
-Not verified here: a real round trip to a deployed Apps Script endpoint, which
-needs a sheet that does not exist yet.
+### Supabase migration (§12)
+
+Verified against the live project on 2026-09-17, not inferred from the policy
+definitions:
+
+- a logged-out caller cannot insert: `HTTP 401`, `42501`. The request reached
+  the RLS check rather than failing on a column name, which independently
+  confirms the four columns the client sends match the table
+- a signed-in participant can write their own rows and nobody else's: as
+  `test`, `participant_id: "test"` accepted; `"CZ-999"` refused with `42501`
+- **the policy is case-sensitive and sign-in is not**: `"TEST"` was refused
+  while `"test"` was accepted from the same session. `participant_id` is
+  therefore derived from the signed-in account's email, never from what the
+  participant typed
+- a duplicate `(participant_id, item_id)` returns `HTTP 409` / `23505` and is
+  logged `duplicate, ignored`, not as a failure
+- a store made unreachable mid-session costs exactly one row: the participant
+  advanced without noticing, the failure was logged, and the next item
+  transmitted normally once the URL was restored
+- sign-in failure shows the Czech retry message and keeps the participant on
+  the login screen — it does not reach the developer error screen
+- `expires_in` is 3600s, so the refresh timer fires at ~48 minutes
+- `return=representation` on an insert is refused with `42501`, confirming the
+  deliberate absence of a select policy
+
+Not verifiable from the client, by design: that `server_ts` is populated. The
+client cannot read the table back, so this one has to be checked in the
+dashboard's Table Editor.
 
 ## Still open (§14)
 

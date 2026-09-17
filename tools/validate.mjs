@@ -13,13 +13,16 @@
  * Exit code 0 = safe to deploy. Anything else = do not publish.
  */
 
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const problems = [];
 const notes = [];
+
+/** Set while reading config.js; decides whether a roster file is required. */
+let rosterMode = false;
 
 function fail(where, message) {
   problems.push(`${where}: ${message}`);
@@ -144,14 +147,13 @@ async function checkConfig(itemIds) {
       fail("config.js", `${key} is ${JSON.stringify(CONFIG[key])}; expected one of ${allowed.map((v) => JSON.stringify(v)).join(", ")}`);
     }
   };
-  oneOf("writeMode", ["cors", "no-cors", "beacon"]);
   oneOf("authMode", ["roster", "remote"]);
+  rosterMode = CONFIG.authMode === "roster";
   oneOf("selectionMode", ["confirm", "immediate"]);
   oneOf("summaryItemText", ["framing", "label"]);
 
-  if (typeof CONFIG.endpoint !== "string") {
-    fail("config.js", "endpoint must be a string (empty string = dry run)");
-  }
+  checkSupabaseConfig(CONFIG);
+
   if (!Number.isInteger(CONFIG.confirmDelayMs) || CONFIG.confirmDelayMs < 0) {
     fail("config.js", "confirmDelayMs must be a whole number of milliseconds");
   }
@@ -174,27 +176,119 @@ async function checkConfig(itemIds) {
   }
 
   // Not failures — things worth seeing in the build log before they surprise
-  // someone. A short run or a dry run is legitimate; silently shipping one is
-  // what causes trouble.
-  if (!CONFIG.endpoint) notes.push("endpoint is empty: the deployed build will not write any rows");
+  // someone. A short run is legitimate; silently shipping one is the trouble.
   if (CONFIG.itemSubset || CONFIG.itemLimit) {
     notes.push(`short run configured: itemSubset=${JSON.stringify(CONFIG.itemSubset)} itemLimit=${JSON.stringify(CONFIG.itemLimit)}`);
   }
-  if (CONFIG.authMode === "remote") notes.push('authMode is "remote", which the MVP does not implement');
+  if (CONFIG.authMode === "roster") {
+    notes.push('authMode is "roster": offline mode, nothing will be written to Supabase');
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * Keys (§12.2)
+ * --------------------------------------------------------------------------
+ * The anon key belongs in client source; a service_role or secret key would
+ * hand every reader of this public repository unrestricted read and write
+ * access to the responses table, row-level security included. The word itself
+ * appears in prose all over this repository, so what is matched here is
+ * key-shaped material, never the term.
+ * ---------------------------------------------------------------------- */
+
+/** Decodes a JWT payload without verifying it — enough to read `role`. */
+function jwtRole(token) {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const payload = Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
+    return JSON.parse(payload).role ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function checkSupabaseConfig(CONFIG) {
+  if (CONFIG.authMode !== "remote") return;
+
+  const url = typeof CONFIG.supabaseUrl === "string" ? CONFIG.supabaseUrl.replace(/\/+$/, "") : "";
+  if (!url) fail("config.js", 'supabaseUrl is empty, which authMode "remote" requires');
+  else if (!/^https:\/\/[^/]+$/.test(url)) {
+    fail("config.js", `supabaseUrl must be the project base URL with no path — got "${CONFIG.supabaseUrl}"`);
+  }
+
+  const key = typeof CONFIG.supabaseAnonKey === "string" ? CONFIG.supabaseAnonKey.trim() : "";
+  if (!key) {
+    fail("config.js", 'supabaseAnonKey is empty, which authMode "remote" requires');
+    return;
+  }
+  const role = jwtRole(key);
+  if (role && role !== "anon") {
+    fail("config.js", `supabaseAnonKey is a "${role}" key. Only the anon/publishable key may appear here.`);
+  } else if (!role && !/^sb_publishable_/.test(key) && !key.startsWith("eyJ")) {
+    notes.push("supabaseAnonKey is not in a recognised format; check it is the anon/publishable key");
+  }
+}
+
+const SKIP_DIRECTORIES = new Set([".git", "node_modules"]);
+const TEXT_FILE = /\.(js|mjs|cjs|json|html|css|md|yml|yaml|txt|gs|ps1)$/i;
+
+async function* textFiles(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (SKIP_DIRECTORIES.has(entry.name)) continue;
+      yield* textFiles(join(directory, entry.name));
+    } else if (TEXT_FILE.test(entry.name)) {
+      yield join(directory, entry.name);
+    }
+  }
+}
+
+async function checkNoSecretKeys() {
+  const jwtLike = /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g;
+  const secretLike = /\bsb_secret_[A-Za-z0-9_-]{8,}/g;
+
+  for await (const file of textFiles(root)) {
+    const where = relative(root, file).replace(/\\/g, "/");
+    const text = await readFile(file, "utf8");
+
+    for (const match of text.match(secretLike) ?? []) {
+      fail(where, `contains a Supabase secret key (${match.slice(0, 16)}…). It must never be in this repository.`);
+    }
+    for (const match of text.match(jwtLike) ?? []) {
+      const role = jwtRole(match);
+      if (role && role !== "anon") {
+        fail(where, `contains a "${role}" key. It bypasses row-level security and must never be in this repository.`);
+      }
+    }
+  }
 }
 
 /* ---------------------------------------------------------------------- */
 
-const [items, roster, strings] = await Promise.all([
+const [items, strings] = await Promise.all([
   readJSON("content/items.json"),
-  readJSON("content/roster.json"),
   readJSON("content/strings.json")
 ]);
 
 const itemIds = checkItems(items);
-checkRoster(roster);
 checkStrings(strings);
 await checkConfig(itemIds);
+await checkNoSecretKeys();
+
+/* content/roster.json is not in the repository (§12.3) and exists only on a
+   machine doing offline work. It is checked when present, and required only
+   when the committed config actually asks for it — which would mean a build
+   that cannot log anyone in. */
+const rosterPresent = await readFile(join(root, "content/roster.json"), "utf8").then(
+  () => true,
+  () => false
+);
+if (rosterPresent) {
+  checkRoster(await readJSON("content/roster.json"));
+  notes.push("content/roster.json is present locally — make sure it is not committed");
+} else if (rosterMode) {
+  fail("config.js", 'authMode is "roster" but content/roster.json is not in the repository, so nobody could log in');
+}
 
 for (const note of notes) console.log(`note:  ${note}`);
 
@@ -205,4 +299,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ ${items?.items.length ?? 0} items, ${roster?.participants.length ?? 0} participants, config.js loads. Safe to deploy.\n`);
+console.log(`\n✓ ${items?.items.length ?? 0} items, config.js loads, no secret keys. Safe to deploy.\n`);
