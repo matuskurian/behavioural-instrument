@@ -56,9 +56,15 @@ if ($key.StartsWith('eyJ')) {
   }
 }
 
+# Supabase refuses a secret key when the request looks like a browser, matching
+# on User-Agent and answering 401. PowerShell's default is
+# "Mozilla/5.0 (compatible; MSIE 9.0; ...)", which trips it every time and makes
+# a perfectly good key look invalid.
+$UserAgent = "behavioural-instrument-tools/1.0 (PowerShell)"
+
 function Ask($label, $uri, $headers) {
   try {
-    $r = Invoke-WebRequest -UseBasicParsing -Method GET $uri -Headers $headers -TimeoutSec 20
+    $r = Invoke-WebRequest -UseBasicParsing -Method GET $uri -Headers $headers -UserAgent $UserAgent -TimeoutSec 20
     return [PSCustomObject]@{ Label = $label; Status = [int]$r.StatusCode; Body = $r.Content }
   } catch {
     $resp = $_.Exception.Response
@@ -71,10 +77,14 @@ function Ask($label, $uri, $headers) {
 }
 
 Write-Host ""
-Write-Host "--- 1. does this key belong to this project? ---"
+Write-Host "--- 1. is this key recognised as a client key? ---"
+# NOTE: /auth/v1/settings is a CLIENT endpoint. A publishable or anon key gets
+# 200; a secret key is expected to be refused here, and that refusal says
+# nothing about whether the key is good. Do not read a 401 here as "invalid".
 $settings = Ask "settings" "$ProjectUrl/auth/v1/settings" @{ apikey = $key }
-$belongs = $settings.Status -eq 200
-Write-Host ("  GET /auth/v1/settings -> HTTP {0}  {1}" -f $settings.Status, $(if ($belongs) { "yes" } else { "NO" }))
+$clientKey = $settings.Status -eq 200
+Write-Host ("  GET /auth/v1/settings -> HTTP {0}  {1}" -f $settings.Status,
+  $(if ($clientKey) { "accepted - this behaves as a client key" } else { "refused - expected for a secret key" }))
 
 Write-Host ""
 Write-Host "--- 2. does it bypass row-level security? (only admin keys do) ---"
@@ -100,25 +110,26 @@ foreach ($s in $shapes) {
 
 Write-Host ""
 Write-Host "--- verdict ---"
-if (-not $belongs) {
-  Write-Host "  This key is not valid for this project." -ForegroundColor Red
-  Write-Host "  Either it belongs to a different Supabase project, or it was truncated"
-  Write-Host "  when pasted. Copy it again from Project Settings -> API Keys."
-} elseif ($worked.Count -gt 0) {
+if ($worked.Count -gt 0) {
   Write-Host ("  Working admin key. Accepted with: {0}" -f ($worked -join ", ")) -ForegroundColor Green
   Write-Host "  create-users.ps1 will work with this key."
-} elseif (-not $bypasses) {
-  Write-Host "  This is a restricted key, not an admin key." -ForegroundColor Red
+} elseif ($bypasses) {
+  Write-Host "  The key bypasses row-level security, so it IS an admin key, but the Auth" -ForegroundColor Yellow
+  Write-Host "  admin API still refuses it. With the browser guardrail already handled by"
+  Write-Host "  the User-Agent this script sends, the remaining likely cause is the"
+  Write-Host "  project's key mode: try the legacy service_role JWT from"
+  Write-Host "  Project Settings -> API Keys -> Legacy API keys, if that section exists."
+} elseif ($clientKey) {
+  Write-Host "  This is a client key, not an admin key." -ForegroundColor Red
   Write-Host "  It is valid for the project but cannot create users. You want the SECRET"
   Write-Host "  key: Project Settings -> API Keys -> Secret keys -> reveal (sb_secret_...)."
-  Write-Host "  Do not use the publishable key, the anon key, or the JWT secret - the JWT"
-  Write-Host "  secret is a signing secret and is not an API key at all."
+  Write-Host "  Not the publishable key, the anon key, or the JWT secret - the JWT secret"
+  Write-Host "  is a signing secret and is not an API key at all."
 } else {
-  Write-Host "  The key bypasses RLS but the Auth admin API still refuses it." -ForegroundColor Yellow
-  Write-Host "  That points at the project's key mode rather than at the key: some projects"
-  Write-Host "  require the legacy service_role JWT for Auth admin calls even when new-style"
-  Write-Host "  keys work for the database. Try the legacy service_role JWT from"
-  Write-Host "  Project Settings -> API Keys -> Legacy API keys, if that section exists."
+  Write-Host "  Refused everywhere: not accepted as a client key, no RLS bypass, no admin." -ForegroundColor Red
+  Write-Host "  Most likely the key was truncated when pasted, or belongs to another"
+  Write-Host "  project. Check the length above against the key in the dashboard, and"
+  Write-Host "  re-copy it from Project Settings -> API Keys."
 }
 $key = $null
 $raw = $null

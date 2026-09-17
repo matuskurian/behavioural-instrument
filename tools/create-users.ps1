@@ -108,6 +108,13 @@ function New-AdminHeaders($key, $withBearer) {
   return $headers
 }
 
+# Supabase refuses a secret key outright when the request looks like it came
+# from a browser -- it matches on User-Agent and answers 401. PowerShell's
+# default is "Mozilla/5.0 (compatible; MSIE 9.0; ...)", which trips that
+# guardrail every time, so the key looks broken when it is perfectly good.
+# Announcing ourselves honestly is the whole fix.
+$UserAgent = "behavioural-instrument-tools/1.0 (PowerShell)"
+
 $withBearer = $true
 $created = 0; $existed = 0; $failed = 0
 
@@ -118,7 +125,7 @@ foreach ($row in $roster) {
   $status = 0; $detail = ""; $ok = $false
   for ($attempt = 1; $attempt -le 2; $attempt++) {
     try {
-      $null = Invoke-RestMethod -Method POST "$ProjectUrl/auth/v1/admin/users" -Headers (New-AdminHeaders $key $withBearer) -Body $body -TimeoutSec 30
+      $null = Invoke-RestMethod -Method POST "$ProjectUrl/auth/v1/admin/users" -Headers (New-AdminHeaders $key $withBearer) -Body $body -UserAgent $UserAgent -TimeoutSec 30
       $ok = $true
       break
     } catch {
