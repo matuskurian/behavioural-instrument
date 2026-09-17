@@ -1,0 +1,7 @@
+{
+  "_note": "VZOR. Skopírujte na content/roster.json a použite iba s config.authMode = \"roster\", teda pri práci offline na rozložení a textoch. Samotný roster.json je v .gitignore a do repozitára nepatrí: je verejný a heslá v ňom by si prečítal ktokoľvek. Pri ostrom behu je authMode \"remote\" a účty existujú v Supabase, nie tu.",
+  "participants": [
+    { "id": "TEST", "password": "test" },
+    { "id": "CZ-001", "password": "kolo-most-7" }
+  ]
+}
