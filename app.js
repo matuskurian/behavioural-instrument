@@ -200,29 +200,6 @@ function validateItems(data) {
   return problems;
 }
 
-/**
- * A misconfigured auth block must stop the session at startup rather than at
- * the first login, where it would look to the room like a wrong password.
- */
-function validateAuthConfig() {
-  const problems = [];
-  if (CONFIG.authMode === "remote") {
-    if (typeof CONFIG.supabaseUrl !== "string" || CONFIG.supabaseUrl.trim() === "") {
-      problems.push('config.supabaseUrl is empty, which authMode "remote" requires');
-    } else if (!/^https:\/\/[^/]+$/.test(CONFIG.supabaseUrl.replace(/\/+$/, ""))) {
-      problems.push(
-        `config.supabaseUrl should be the project base URL with no path — got "${CONFIG.supabaseUrl}"`
-      );
-    }
-    if (typeof CONFIG.supabaseAnonKey !== "string" || CONFIG.supabaseAnonKey.trim() === "") {
-      problems.push('config.supabaseAnonKey is empty, which authMode "remote" requires');
-    }
-  } else if (CONFIG.authMode !== "roster") {
-    problems.push(`config.authMode is "${CONFIG.authMode}"; expected "remote" or "roster"`);
-  }
-  return problems;
-}
-
 function validateRoster(data) {
   if (!data || !Array.isArray(data.participants)) {
     return ['roster.json: expected an object with a "participants" array'];
@@ -445,6 +422,48 @@ function transmit(row) {
       .catch((error) => noteFailure(row, error && error.message ? error.message : String(error)));
   } catch (error) {
     noteFailure(row, error && error.message ? error.message : String(error));
+  }
+}
+
+/**
+ * A misconfigured auth block must stop the session at startup rather than at
+ * the first login, where a room full of people would read it as a wrong
+ * password. Returns problems for the error screen, in the same shape the
+ * content validators use — the only thing boot() learns is that something is
+ * wrong, never what a Supabase URL or key is supposed to look like.
+ */
+function validateAuthConfig() {
+  const problems = [];
+
+  if (CONFIG.authMode === "remote") {
+    if (typeof CONFIG.supabaseUrl !== "string" || CONFIG.supabaseUrl.trim() === "") {
+      problems.push('config.supabaseUrl is empty, which authMode "remote" requires');
+    } else if (!/^https:\/\/[^/]+$/.test(CONFIG.supabaseUrl.replace(/\/+$/, ""))) {
+      problems.push(
+        `config.supabaseUrl should be the project base URL with no path — got "${CONFIG.supabaseUrl}"`
+      );
+    }
+    if (typeof CONFIG.supabaseAnonKey !== "string" || CONFIG.supabaseAnonKey.trim() === "") {
+      problems.push('config.supabaseAnonKey is empty, which authMode "remote" requires');
+    }
+  } else if (CONFIG.authMode !== "roster") {
+    problems.push(`config.authMode is "${CONFIG.authMode}"; expected "remote" or "roster"`);
+  }
+
+  return problems;
+}
+
+/**
+ * Says where rows are going, at startup. It lives here rather than in boot()
+ * because the shape of that URL is precisely what boot() must not know.
+ */
+function announceWriteTarget() {
+  if (CONFIG.authMode === "remote") {
+    console.info(`[write] rows go to ${supabaseUrl("/rest/v1/responses")}`);
+  } else {
+    console.warn(
+      `[write] offline: authMode is "${CONFIG.authMode}", so nothing will be transmitted anywhere.`
+    );
   }
 }
 
@@ -1086,13 +1105,7 @@ async function boot() {
         "Set itemSubset and itemLimit to null in config.js for the full set."
     );
   }
-  if (CONFIG.authMode === "remote") {
-    console.info(`[write] rows go to ${CONFIG.supabaseUrl.replace(/\/+$/, "")}/rest/v1/responses`);
-  } else {
-    console.warn(
-      `[write] offline: authMode is "${CONFIG.authMode}", so nothing will be transmitted anywhere.`
-    );
-  }
+  announceWriteTarget();
 
   // A handle for the researcher during logistics testing: transmission counts
   // and the rows that were lost. Not used by the app.
