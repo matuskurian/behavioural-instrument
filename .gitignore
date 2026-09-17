@@ -27,4 +27,5 @@ content/roster.json
 .vscode/
 .idea/
 Thumbs.db
+.DS_Store
 *.swp

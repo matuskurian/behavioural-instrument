@@ -1,0 +1,32 @@
+{
+  "version": "A-2026-09-17",
+  "note": "Poradi options se pri zobrazeni randomizuje. Ukladej vzdy i zobrazenou pozici.",
+  "questions": [
+    {
+      "id": 10,
+      "order": 2,
+      "title": "Jsi v zoo. Na jaká zvířata se podíváš jako první?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        { "id": "10a", "icon": "ikony/10a.svg", "text": "Roztomilá mláďata." },
+        { "id": "10b", "icon": "ikony/10b.svg", "text": "Nově objevený druh ryb z hlubin moře." },
+        { "id": "10c", "icon": "ikony/10c.svg", "text": "Tygři, lvi a jiné divoké šelmy." },
+        { "id": "10d", "icon": "ikony/10d.svg", "text": "Zvířata, která znáš z filmu (např. Madagaskar)." },
+        { "id": "10e", "icon": "ikony/10e.svg", "text": "Fenek ušatý." }
+      ]
+    },
+    {
+      "id": 13,
+      "order": 5,
+      "title": "Otevřeš YouTube nebo TikTok. Na které video z nabídky klikneš jako první?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        { "id": "13a", "icon": "ikony/13a.svg", "text": "Nejnovější video od tvého oblíbeného youtubera, na které ses těšil/a." },
+        { "id": "13b", "icon": "ikony/13b.svg", "text": "Video o něčem, o čem jsi do teď vůbec neslyšel/a." },
+        { "id": "13c", "icon": "ikony/13c.svg", "text": "Výběr vtipných memes nebo failů, u kterých se vždycky dobře zasměješ." },
+        { "id": "13d", "icon": "ikony/13d.svg", "text": "Video s miliony zhlédnutí, které je zrovna jedničkou v trendech." },
+        { "id": "13e", "icon": "ikony/13e.svg", "text": "Video od neznámého kanálu s názvem: „Záhada, kterou se doteď nepodařilo nikomu vysvětlit.“" }
+      ]
+    }
+  ]
+}
