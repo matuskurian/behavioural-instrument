@@ -14,7 +14,7 @@ export const CONFIG = {
    * Project base URL. No "/rest/v1", no trailing slash:
    *   https://abcdefghijklm.supabase.co
    */
-  supabaseUrl: "",
+  supabaseUrl: "https://gafgvugkyscisoicjcqc.supabase.co",
 
   /**
    * The anon / publishable key, and only that key.
@@ -31,7 +31,7 @@ export const CONFIG = {
    * anything other than an anon/publishable key, and scans the rest of the
    * repository for the same mistake.
    */
-  supabaseAnonKey: "",
+  supabaseAnonKey: "sb_publishable_l9iWaABkrVEvwiFU9ZL6Qw_IKy-GqDA",
 
   /* ------------------------------------------------------------------ *
    * Auth (§12.1, §12.2)
