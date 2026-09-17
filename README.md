@@ -201,6 +201,20 @@ Supabase dashboard → **Authentication → Users → Add user**:
 
 Registrácia je v dashboarde vypnutá — účty vznikajú iba takto.
 
+**Kódy sú v dátach vždy malými písmenami.** Supabase ukladá e-maily malými
+písmenami a RLS politika porovnáva `participant_id` s lokálnou časťou e-mailu
+*presne*. Prihlásenie na veľkosť písmen nehľadí, zápis áno. Aplikácia preto
+`participant_id` neberie z toho, čo účastník napísal, ale z účtu, do ktorého sa
+naozaj prihlásil — nech napíše `TEST` alebo `test`, do tabuľky ide `test`.
+
+Bez toho by to dopadlo najhoršie možným spôsobom: účastník sa normálne
+prihlási, prejde celý nástroj, uvidí súhrn — a *každý* jeho riadok by databáza
+odmietla s `42501`, bez akéhokoľvek varovania, pretože zápis je fire-and-forget.
+Overené na živom projekte 17. 9. 2026: `test` prijaté, `TEST` odmietnuté.
+
+Pri návrhu formátu kódu (§14) s tým treba počítať: kódy sa v dátach objavia
+malými písmenami.
+
 ### Export a analýza
 
 Dashboard → **Table Editor → `responses` → Export → CSV**.
@@ -339,7 +353,32 @@ Checked in a browser at 1280×720 with the placeholder content:
 
 ### Supabase migration (§12)
 
-Verified against the live project, not inferred from the policy definitions:
+Verified against the live project on 2026-09-17, not inferred from the policy
+definitions:
+
+- a logged-out caller cannot insert: `HTTP 401`, `42501`. The request reached
+  the RLS check rather than failing on a column name, which independently
+  confirms the four columns the client sends match the table
+- a signed-in participant can write their own rows and nobody else's: as
+  `test`, `participant_id: "test"` accepted; `"CZ-999"` refused with `42501`
+- **the policy is case-sensitive and sign-in is not**: `"TEST"` was refused
+  while `"test"` was accepted from the same session. `participant_id` is
+  therefore derived from the signed-in account's email, never from what the
+  participant typed
+- a duplicate `(participant_id, item_id)` returns `HTTP 409` / `23505` and is
+  logged `duplicate, ignored`, not as a failure
+- a store made unreachable mid-session costs exactly one row: the participant
+  advanced without noticing, the failure was logged, and the next item
+  transmitted normally once the URL was restored
+- sign-in failure shows the Czech retry message and keeps the participant on
+  the login screen — it does not reach the developer error screen
+- `expires_in` is 3600s, so the refresh timer fires at ~48 minutes
+- `return=representation` on an insert is refused with `42501`, confirming the
+  deliberate absence of a select policy
+
+Not verifiable from the client, by design: that `server_ts` is populated. The
+client cannot read the table back, so this one has to be checked in the
+dashboard's Table Editor.
 
 ## Still open (§14)
 

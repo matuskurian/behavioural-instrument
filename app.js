@@ -347,10 +347,23 @@ async function refreshSession() {
  */
 async function checkCredential(code, password) {
   if (CONFIG.authMode === "remote") {
-    const token = await signIn(code, password);
+    // Sign-in treats the address case-insensitively; the row-level security
+    // policy does not. It compares participant_id against the local part of
+    // the account's email, exactly, and Supabase stores that lowercased. A
+    // participant typing TEST would therefore sign in happily and have every
+    // single row refused with 42501 — invisibly, because writes are
+    // fire-and-forget and nobody is ever told. Verified against the live
+    // project on 2026-09-17: "test" accepted, "TEST" refused.
+    const token = await signIn(code.trim().toLowerCase(), password);
     if (!token) return null;
     holdSession(token);
-    return code;
+
+    // Take the id from the account that was actually signed in, not from what
+    // was typed. It is the one value the policy is guaranteed to accept.
+    const email = token.user && typeof token.user.email === "string" ? token.user.email : "";
+    const fromAccount = email.split("@")[0];
+    if (!fromAccount) throw new Error("sign-in returned no account email to derive participant_id from");
+    return fromAccount;
   }
 
   // authMode "roster": offline only, and unreachable above. Not authentication
