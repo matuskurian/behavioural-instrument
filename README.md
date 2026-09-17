@@ -183,9 +183,45 @@ voľba:
 | `item_id`, `choice_id` | klient, z `items.json` |
 | `client_ts` | klient, ISO 8601 s posunom |
 | `server_ts` | **databáza** — klient ho neposiela nikdy |
+| `shown_order` | poradie piatich možností tak, ako boli na obrazovke |
+| `shown_position` | koľkátá v tomto poradí bola vybraná možnosť (1–5) |
+| `response_time_ms` | od vykreslenia obrazovky po definitívnu odpoveď |
+| `first_touch_ms` | od vykreslenia po prvé položenie rámčeka |
+| `frame_moves` | koľkokrát sa rámček presunul na inú možnosť |
 
 Unikátne obmedzenie na `(participant_id, item_id)`: jedna odpoveď na položku.
 Prvá odpoveď vyhráva.
+
+### Poradie možností a prečo sa zapisuje
+
+Poradie piatich možností sa **náhodne mieša zvlášť pre každého účastníka a
+každú položku** (`shuffleOptions`). Bez toho by sa nedalo odlíšiť „vybral si
+tú možnosť" od „vybral si to, čo bolo vľavo".
+
+Miešanie samo osebe ale nestačí: bez `shown_order` a `shown_position` by
+randomizácia informáciu **zničila**, nie ošetrila. Preto sa oboje zapisuje ku
+každému riadku. Ak by sa niekedy miešanie vyplo, zápis nechajte tak.
+
+Obrázok patrí k svojej možnosti a putuje s ňou; farbu určuje pozícia na
+obrazovke. Naopak by to zaviedlo systematickú chybu.
+
+### Časy
+
+`response_time_ms` je od vykreslenia položky po okamih, keď sa odpoveď stala
+definitívnou — v režime `confirm` je to kliknutie na „Další“, v režime
+`immediate` to jediné kliknutie. Zahŕňa teda aj čítanie zadania, čo je zámer.
+
+`first_touch_ms` je od vykreslenia po prvé položenie rámčeka. Rozdiel medzi
+nimi je čas strávený nad už vybranou možnosťou. V režime `immediate` obe
+hodnoty splývajú, lebo ide o tú istú udalosť.
+
+`frame_moves` počíta presuny rámčeka na **inú** možnosť; opätovné kliknutie na
+už vybranú možnosť nerobí nič a nepočíta sa. V režime `immediate` je vždy 0.
+
+**Do analýzy si prineste pravidlo na odľahlé hodnoty, a to predregistrované.**
+Dieťa, ktoré uprostred položky osloví učiteľ, je od dieťaťa, ktoré dlho
+premýšľa, nerozoznateľné. Časy budú mať dlhý pravý chvost a rozhodovať o ňom
+až pri pohľade na dáta je presne to, čomu sa predregistrácia má vyhnúť.
 
 ### Nový účastník
 
@@ -327,7 +363,7 @@ choice.
 | `supabaseUrl` | — | project base URL, no `/rest/v1`, no trailing slash |
 | `supabaseAnonKey` | — | the anon/publishable key, and only ever that one |
 | `authMode` | `"remote"` | `remote` = Supabase; `roster` = offline, no network, writes nothing |
-| `shuffleOptions` | `false` | option order randomisation, off in the MVP |
+| `shuffleOptions` | `true` | randomise option order per participant per item; only safe because `shown_order` is recorded |
 | `itemSubset` | `null` | array of item ids to run, in the order given |
 | `itemLimit` | `null` | keep only the first N items |
 | `selectionMode` | `"confirm"` | `confirm` = frame, then "Další"; `immediate` = one click is the answer. Also selects the matching intro copy |

@@ -768,9 +768,17 @@ function renderIntro() {
 const current = {
   item: null,
   buttons: [],
-  pending: null,   // { option, button } — framed, not yet committed
+  pending: null,     // { option, button } — framed, not yet committed
   hint: null,
-  next: null
+  next: null,
+
+  /* Behavioural measurement of the choice itself, not of the answer.
+   * Times come from performance.now(), which is monotonic from page load:
+   * a school laptop whose clock jumps mid-session cannot corrupt a duration
+   * the way it corrupts client_ts. */
+  renderedAt: 0,     // when this item appeared
+  firstTouchAt: null, // when the frame was first placed, null until then
+  moves: 0           // times the frame moved to a different option after that
 };
 
 function optionMedia(option) {
@@ -855,15 +863,29 @@ function renderItem() {
   show("item", screen);
   // Nothing is auto-focused on an item screen: focusing the first card would
   // put a visible ring on one option and bias the choice. Tab reaches them.
-  Object.assign(current, { item, buttons, pending: null, hint, next });
+  Object.assign(current, {
+    item,
+    buttons,
+    pending: null,
+    hint,
+    next,
+    // The clock starts when the item is on screen, so the duration includes
+    // reading the framing — which is what was asked for.
+    renderedAt: performance.now(),
+    firstTouchAt: null,
+    moves: 0
+  });
 }
 
 /** Step 1: move the frame. Writes nothing. */
 function select(option, button, fromKeyboard) {
   if (session.locked) return;
   // Clicking the option that is already framed does nothing at all — no
-  // re-render, no focus move, no row.
+  // re-render, no focus move, no row, and no counted change of mind.
   if (current.pending && current.pending.option === option) return;
+
+  if (current.firstTouchAt === null) current.firstTouchAt = performance.now();
+  else current.moves += 1;   // the frame moved to a different option
 
   for (const other of current.buttons) {
     other.classList.remove("option__button--selected");
@@ -901,11 +923,29 @@ function commit() {
 
   // The row as the table expects it (§12.1). server_ts is the database's to
   // set, and is never sent.
+  //
+  // shown_order and shown_position are what make the randomisation worth
+  // doing: without them there is no way to tell an option chosen for what it
+  // says from one chosen for being leftmost, and randomising while failing to
+  // record the order would destroy that information rather than control for it.
+  const committedAt = performance.now();
   const row = {
     participant_id: session.participantId,
     item_id: item.id,
     choice_id: option.id,
-    client_ts: isoWithOffset(new Date())
+    client_ts: isoWithOffset(new Date()),
+    shown_order: item.options.map((each) => each.id),
+    shown_position: item.options.indexOf(option) + 1,
+    // Render to answer-final: the single click in "immediate", the "Další"
+    // click in "confirm".
+    response_time_ms: Math.round(committedAt - current.renderedAt),
+    // Render to the frame first landing anywhere. In "immediate" this is the
+    // same event as the commit, so the two times coincide by construction.
+    first_touch_ms:
+      current.firstTouchAt === null
+        ? null
+        : Math.round(current.firstTouchAt - current.renderedAt),
+    frame_moves: current.moves
   };
 
   // The summary must show what was recorded, not what was clicked, so each

@@ -60,9 +60,20 @@ export const CONFIG = {
    * Presentation
    * ------------------------------------------------------------------ */
 
-  /** §4.1: option order is array order in the MVP. Flag exists so it can be
-   *  turned on later without touching logic. */
-  shuffleOptions: false,
+  /**
+   * Randomise the order of the options, independently for each item and each
+   * participant. On, because a fixed order confounds "chose this option" with
+   * "chose the leftmost thing".
+   *
+   * It is only safe to have on because every row records shown_order and
+   * shown_position. Randomising without recording what was shown would destroy
+   * the information rather than control for it — so if you ever turn this off,
+   * leave the recording alone.
+   *
+   * The drawing travels with its option; the colour belongs to the position on
+   * screen. Binding colour to content would put the bias straight back in.
+   */
+  shuffleOptions: true,
 
   /**
    * Run only part of the item set without touching items.json — for
