@@ -3,7 +3,10 @@
   "_version": "2026-09-11",
 
   "app": {
-    "title": "Úloha"
+    "title": "Úloha",
+    "_wordmark_note": "Pracovní název, zatím neschválený — pochází z návrhu frontendu.",
+    "wordmark": "Den navíc",
+    "tagline": "24 hodin jen pro tebe"
   },
 
   "login": {
@@ -45,7 +48,9 @@
 
   "item": {
     "progress": "{current} / {total}",
-    "hint": "Vyber jednu možnost.",
+    "eyebrow": "Volba {current} z {total}",
+    "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+    "_lead_note": "Výchozí text pod zadáním. Jednotlivá položka ho může přepsat vlastním polem \"lead\" v items.json.",
     "next": "Další"
   },
 

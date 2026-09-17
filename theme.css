@@ -1,94 +1,139 @@
 /* ==========================================================================
    theme.css — every visual decision in the instrument (§10)
    --------------------------------------------------------------------------
+   Visual design: front-end proposal "varianta A", 2026-09-17. The reference
+   mockup is in frontend_0917/ and is the source of truth for the look; this
+   file is that design expressed against the instrument's own markup.
+
    The token block below is the only place a colour, size, spacing value or
    layout constant is written as a literal. Every rule beneath it consumes
-   tokens only. Restyling the instrument is an edit to :root plus, at most,
-   the rules in this file. app.js contains no styling.
+   tokens only. app.js contains no styling whatsoever.
    ========================================================================== */
 
 :root {
-  /* --- colour ----------------------------------------------------------- */
-  --color-bg:            #f6f5f2;
-  --color-surface:       #ffffff;
-  --color-ink:           #1b1b1b;
-  --color-ink-muted:     #6b6b6b;
-  --color-border:        #d6d3cd;
-  --color-border-strong: #1b1b1b;
-  --color-accent:        #1f4fd8;
-  --color-accent-soft:   #e8eeff;
-  --color-focus:         #1f4fd8;
-  --color-danger:        #a02020;
-  --color-placeholder:   #ffffff;
+  /* --- ground ----------------------------------------------------------- */
+  --color-bg:        #0A0518;
+  --color-bg-far:    #150A2E;
+  --color-panel:     rgba(255, 255, 255, 0.035);
+  --color-panel-lit: rgba(255, 255, 255, 0.06);
+  --color-panel-sel: rgba(255, 255, 255, 0.08);
+  --color-line:      rgba(255, 255, 255, 0.14);
+  --color-line-soft: rgba(255, 255, 255, 0.09);
 
+  /* --- ink -------------------------------------------------------------- */
+  --color-ink:       #F2EEFF;
+  --color-ink-muted: #B9AEDC;
+  --color-ink-dim:   #8C82AE;
+  --color-ink-invert:#1A0E33;
+  --color-caption:   #EDE8FF;
+  --color-danger:    #FF8FAE;
+
+  /* --- accents ---------------------------------------------------------- *
+   * Five hues, one per position on screen. They belong to the position and
+   * never to the option: the drawing travels with its option when the order
+   * is shuffled, the colour stays where it is. Binding colour to content
+   * would put the very bias the shuffling removes straight back in.       */
+  --color-pos-1: #3FD9E8;
+  --color-pos-2: #9A78FF;
+  --color-pos-3: #FF6FB0;
+  --color-pos-4: #58A6FF;
+  --color-pos-5: #56DDA0;
+
+  --color-accent:      var(--color-pos-1);
+  --color-accent-ink:  #BFF6FB;
+  --color-accent-warm: #FF9ECB;
+  --color-focus:       #9FE9F2;
+
+  /* --- derived glows and surfaces --------------------------------------- *
+   * Named for the job they do, so the design can be retuned from here
+   * without hunting for rgba() values in the rules below.                 */
+  --color-halo-cyan:   var(--color-halo-cyan);
+  --color-halo-soft:   var(--color-halo-soft);
+  --color-halo-inner:  var(--color-halo-inner);
+  --color-halo-hair:   var(--color-halo-hair);
+  --color-bar-from:    #5FE8F2;
+  --color-bar-to:      #2FB9CC;
+  --color-count:       #CFE9FF;
+  --color-input-bg:    rgba(0, 0, 0, 0.25);
+  --color-button-hot:  #FFFFFF;
+  --color-framing-glow: rgba(154, 120, 255, 0.35);
+  --shadow-card:       var(--shadow-card);
+
+  /* The lit haze behind every screen, as one value. */
+  --page-haze:
+    radial-gradient(900px 600px at 15% -10%, rgba(63, 217, 232, 0.16), transparent 60%),
+    radial-gradient(900px 600px at 85% 5%, rgba(154, 120, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 700px at 50% 110%, rgba(255, 111, 176, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-far) 100%);
+
+  /* --- progress bars ----------------------------------------------------- */
+  --bar-width:        14px;
+  --bar-height:       26px;
+  --bar-width-small:  10px;
+  --bar-height-small: 20px;
+  --bar-gap:          4px;
   /* --- type ------------------------------------------------------------- */
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+  --font-body: "Rubik", "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
                Arial, sans-serif;
   --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
 
-  --type-xs:   0.8125rem;   /* 13px — progress, meta                        */
-  --type-sm:   0.9375rem;   /* 15px — captions                              */
-  --type-md:   1.0625rem;   /* 17px — body, form fields                     */
-  --type-lg:   1.375rem;    /* 22px — headings                              */
-  --type-xl:   1.75rem;     /* 28px — item framing                          */
+  --type-xs:  11px;
+  --type-sm:  13px;
+  --type-md:  16px;
+  --type-lg:  22px;
+  --type-xl:  clamp(24px, 3.4vw, 40px);   /* item framing */
 
-  --line-tight: 1.25;
-  --line-body:  1.5;
+  --line-tight: 1.15;
+  --line-snug:  1.4;
+  --line-body:  1.45;
 
   --weight-normal: 400;
-  --weight-medium: 550;
-  --weight-bold:   700;
+  --weight-medium: 500;
+  --weight-semi:   600;
+  --weight-bold:   800;
+
+  --tracking-wide:  0.14em;
+  --tracking-wider: 0.2em;
 
   /* --- spacing ---------------------------------------------------------- */
   --space:    8px;
   --space-05: calc(var(--space) * 0.5);
   --space-1:  var(--space);
+  --space-15: calc(var(--space) * 1.5);
   --space-2:  calc(var(--space) * 2);
   --space-3:  calc(var(--space) * 3);
   --space-4:  calc(var(--space) * 4);
+  --space-5:  calc(var(--space) * 5);
   --space-6:  calc(var(--space) * 6);
-  --space-8:  calc(var(--space) * 8);
 
   /* --- shape ------------------------------------------------------------ */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --border-width:        1px;
+  --radius-card: 20px;
+  --radius-md:   14px;
+  --radius-sm:   8px;
+  --radius-pill: 999px;
+  --border-width:        1.5px;
   --border-width-strong: 2px;
 
-  /* --- layout constants (§9) -------------------------------------------- *
-   * Target device is a school laptop at 1280x720. These are the numbers the
-   * layout is built against; the asset spec is provisional and will be
-   * revised when the graphics team states its format.                      */
-  /* The design width is the target device: 1280px, less a 32px page margin
-     on each side, leaves a 1216px content column. Wider screens keep the
-     1216px column and gain whitespace. */
-  --layout-max-width:      1280px;
-  --layout-page-padding:   32px;
-  --layout-gutter:         20px;  /* four gutters between five cards        */
-  --card-aspect:      3 / 2;   /* image area; ~225x150 at target width      */
-  --card-min-width:   150px;   /* below this the strip stacks vertically    */
-  --card-padding:     0px;     /* image sits flush to the card edge         */
-  --caption-lines:    2;       /* caption clamps to this many lines         */
-  --frame-width:      3px;     /* the frame drawn on the selected picture   */
+  /* --- layout ----------------------------------------------------------- */
+  --layout-max-width:    1280px;
+  --layout-page-padding: 20px;
+  --layout-gutter:       16px;
+  --option-columns:      5;
+  --icon-size:           132px;
+  --icon-size-stacked:   76px;
+  --measure:             900px;   /* framing and lead line length */
+  --advance-height:      64px;    /* reserved band under the cards */
+  --advance-min-width:   calc(var(--space) * 18);
 
-  /* The band under the strip that holds the hint and the "Další" button.
-     Fixed, so that revealing the button does not move the cards. */
-  --advance-height:    calc(var(--space) * 8);  /* >= the button's own height */
-  --advance-min-width: calc(var(--space) * 18);
-
-  --framing-height-fraction: 0.22;  /* ~20–25% of viewport height           */
-  --strip-height-fraction:   0.30;  /* ~30% of viewport height              */
-  --framing-measure:         70ch;  /* max line length of the framing text  */
-
-  /* Breakpoint below which the option strip becomes a vertical stack.
-     NOTE: custom properties cannot be used inside a media query condition;
-     the literal in the @media rule at the bottom of this file must be kept
-     in step with this value. */
-  --stack-breakpoint: 900px;
+  /* Breakpoints. NOTE: custom properties cannot be used in a media query
+     condition, so the literals in the @media rules at the bottom of this file
+     must be kept in step with these. */
+  --bp-wrap:  1080px;   /* five across becomes 2 + 2 + 1 */
+  --bp-stack: 620px;    /* becomes a vertical list, icon beside the text */
 
   /* --- motion ----------------------------------------------------------- */
-  --transition-fast: 120ms ease-out;
-  --transition-slow: 220ms ease-out;
+  --transition-fast: 160ms ease-out;
+  --lift: 3px;          /* how far a card rises on hover */
 }
 
 /* ==========================================================================
@@ -104,6 +149,7 @@
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 body {
@@ -113,6 +159,16 @@ body {
   font-size: var(--type-md);
   line-height: var(--line-body);
   -webkit-font-smoothing: antialiased;
+}
+
+/* The lit haze behind everything. Fixed, so it does not scroll with content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--page-haze);
 }
 
 .app {
@@ -133,23 +189,255 @@ body {
   width: 100%;
   max-width: var(--layout-max-width);
   margin: 0 auto;
-  padding: var(--space-4) var(--layout-page-padding) var(--space-3);
+  padding: var(--space-3) var(--layout-page-padding) var(--space-5);
 }
 
-/* a centred, narrow column — login, intro, error */
 .screen--centred {
   justify-content: center;
   align-items: center;
-  text-align: left;
 }
+
+/* ==========================================================================
+   masthead — who this is, and how far through
+   ========================================================================== */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.wordmark {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--color-halo-cyan);
+  border-radius: var(--radius-md);
+  color: var(--color-accent-ink);
+  box-shadow: 0 0 18px var(--color-halo-soft),
+              inset 0 0 18px var(--color-halo-inner);
+}
+
+.wordmark__name {
+  display: block;
+  font-size: var(--type-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.wordmark__tagline {
+  display: block;
+  font-size: var(--type-xs);
+  letter-spacing: 0.22em;
+  color: var(--color-accent-warm);
+  text-transform: uppercase;
+}
+
+.progress {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-15);
+}
+
+.progress__bars {
+  display: flex;
+  gap: var(--bar-gap);
+}
+
+.progress__bars i {
+  width: 14px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--color-line-soft);
+  border: 1px solid var(--color-line);
+}
+
+.progress__bars i.is-done {
+  background: linear-gradient(180deg, var(--color-bar-from), var(--color-bar-to));
+  border-color: transparent;
+  box-shadow: 0 0 12px var(--color-halo-cyan);
+}
+
+.progress__count {
+  margin: 0;
+  font-size: var(--type-sm);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-count);
+}
+
+/* ==========================================================================
+   item screen
+   ========================================================================== */
+
+.item {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.item__question {
+  max-width: var(--measure);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.item__eyebrow {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-05) var(--space-2);
+  font-size: var(--type-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-focus);
+  border: 1px solid var(--color-halo-hair);
+  border-radius: var(--radius-pill);
+}
+
+.item__framing {
+  margin: 0 0 var(--space-15);
+  font-size: var(--type-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--line-tight);
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 28px var(--color-framing-glow);
+  text-wrap: balance;
+}
+
+.item__lead {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--type-md);
+}
+
+/* --- the cards ----------------------------------------------------------- */
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(var(--option-columns), 1fr);
+  gap: var(--layout-gutter);
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option { display: flex; }
+
+.option__button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-2) var(--space-3);
+  overflow: hidden;
+  font: inherit;
+  text-align: center;
+  color: var(--color-ink);
+  background: var(--color-panel);
+  border: var(--border-width) solid var(--color-line);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+              background var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+/* One hue per position on screen, never per option. */
+.option:nth-child(1) .option__button { --c: var(--color-pos-1); }
+.option:nth-child(2) .option__button { --c: var(--color-pos-2); }
+.option:nth-child(3) .option__button { --c: var(--color-pos-3); }
+.option:nth-child(4) .option__button { --c: var(--color-pos-4); }
+.option:nth-child(5) .option__button { --c: var(--color-pos-5); }
+
+.option__button:hover:not(:disabled),
+.option__button:focus-visible {
+  border-color: var(--c);
+  background: var(--color-panel-lit);
+  transform: translateY(calc(var(--lift) * -1));
+  box-shadow: var(--shadow-card), 0 0 22px -6px var(--c);
+}
+
+/* Every option is frozen the instant one is chosen (§8), so the disabled
+   state must not read as "unavailable" — it is simply no longer offered. */
+.option__button:disabled { cursor: default; }
+
+/* The chosen card: an inset ring rather than a thicker border, so confirming
+   cannot shift the row under the participant's cursor. */
+.option__button--selected {
+  border-color: var(--c);
+  background: var(--color-panel-sel);
+  box-shadow: inset 0 0 0 var(--border-width-strong) var(--c),
+              0 0 26px -8px var(--c);
+}
+
+.option__media {
+  flex: none;
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: var(--c);
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.option__icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* No sprite at all: keep the card's shape with a plain ring. */
+.option__media--empty {
+  border: var(--border-width-strong) dashed var(--color-line);
+  border-radius: 50%;
+  filter: none;
+}
+
+.option__caption {
+  font-size: var(--type-md);
+  line-height: var(--line-snug);
+  color: var(--color-caption);
+}
+
+.option__key {
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+  color: var(--color-ink-dim);
+}
+
+/* --- the advance band ---------------------------------------------------- */
+
+/* Reserved whether or not the button is in it, so revealing the button cannot
+   move the cards (§8). */
+.item__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--advance-height);
+}
+
+.item__next { min-width: var(--advance-min-width); }
+
+/* ==========================================================================
+   panels, forms, buttons — login, intro, summary, error
+   ========================================================================== */
 
 .panel {
   width: 100%;
   max-width: 46rem;
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-6);
+  background: var(--color-panel);
+  border: var(--border-width) solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+  backdrop-filter: blur(10px);
 }
 
 .panel--narrow { max-width: 26rem; }
@@ -159,11 +447,12 @@ body {
   font-size: var(--type-lg);
   font-weight: var(--weight-bold);
   line-height: var(--line-tight);
+  letter-spacing: -0.01em;
 }
 
 .body-text {
   margin: 0 0 var(--space-2);
-  max-width: var(--framing-measure);
+  max-width: var(--measure);
 }
 
 .body-text:last-child { margin-bottom: 0; }
@@ -173,53 +462,52 @@ body {
   font-size: var(--type-sm);
 }
 
-/* ==========================================================================
-   form controls
-   ========================================================================== */
-
-.field {
-  display: block;
-  margin-bottom: var(--space-3);
-}
+.field { display: block; margin-bottom: var(--space-3); }
 
 .field__label {
   display: block;
   margin-bottom: var(--space-1);
   font-size: var(--type-sm);
   font-weight: var(--weight-medium);
+  color: var(--color-ink-muted);
 }
 
 .field__input {
   display: block;
   width: 100%;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-15) var(--space-2);
   font: inherit;
   font-size: var(--type-md);
   color: var(--color-ink);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
+  background: var(--color-input-bg);
+  border: var(--border-width) solid var(--color-line);
   border-radius: var(--radius-sm);
 }
 
 .field__input:focus-visible { border-color: var(--color-focus); }
 
+/* The primary action, in the design's own vocabulary: a bright pill against
+   the dark ground, so it reads as the one thing to do next. */
 .button {
   display: inline-block;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-15) var(--space-3);
   font: inherit;
   font-size: var(--type-md);
-  font-weight: var(--weight-medium);
-  color: var(--color-surface);
-  background: var(--color-accent);
-  border: var(--border-width-strong) solid var(--color-accent);
-  border-radius: var(--radius-sm);
+  font-weight: var(--weight-semi);
+  color: var(--color-ink-invert);
+  background: var(--color-caption);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
 }
 
 .button:hover:not(:disabled) {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
+  background: var(--color-button-hot);
+  box-shadow: 0 0 24px -4px var(--color-accent);
+  transform: translateY(calc(var(--lift) * -1));
 }
 
 .button:disabled { cursor: default; }
@@ -231,183 +519,9 @@ body {
   font-weight: var(--weight-medium);
 }
 
-.form-error[hidden] { display: none; }
-
-/* ==========================================================================
-   item screen (§9)
-   --------------------------------------------------------------------------
-   Vertical budget at 720px height:
-     framing block  ~22% of viewport height
-     option strip   ~30% of viewport height
-     the rest       whitespace and the progress indicator
-   ========================================================================== */
-
-.item {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-6);
-}
-
-.item__framing {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(var(--framing-height-fraction) * 100vh);
-  margin: 0 auto;
-  max-width: var(--framing-measure);
-  font-size: var(--type-xl);
-  line-height: var(--line-tight);
-  text-align: center;
-  text-wrap: balance;
-}
-
-/* The hint and the advance button occupy the same reserved band, one at a
-   time: the button appearing must not move the option strip (§8). */
-.item__footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--advance-height);
-}
-
-.item__hint {
-  margin: 0;
-  text-align: center;
-  color: var(--color-ink-muted);
-  font-size: var(--type-sm);
-}
-
-.item__next { min-width: var(--advance-min-width); }
-
-/* --- the option strip ----------------------------------------------------
-   Cards are flex items with a zero basis, so they are always equal width
-   whatever the option count (3–6 degrade sanely, §4.1). At 1280px:
-   (1216 - 4 * 20) / 5 = 227.2px per card.                                  */
-
-.options {
-  display: flex;
-  flex-wrap: nowrap;
-  /* Cards take their content height and hang from a common top edge, so the
-     five image areas line up whatever the captions do. The min-height below
-     reserves the strip's share of the vertical budget without stretching the
-     cards into it. */
-  align-items: flex-start;
-  gap: var(--layout-gutter);
-  min-height: calc(var(--strip-height-fraction) * 100vh);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.option {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-}
-
-.option__button {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: var(--card-padding);
-  overflow: hidden;
-  font: inherit;
-  text-align: center;
-  color: var(--color-ink);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: border-color var(--transition-fast),
-              background var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast);
-}
-
-.option__button:hover:not(:disabled) {
-  border-color: var(--color-border-strong);
-  transform: translateY(calc(var(--space-05) * -1));
-}
-
-/* Every option is disabled the instant one is chosen (§8), so the disabled
-   state must not read as "unavailable" — it is simply frozen. */
-.option__button:disabled { cursor: default; }
-
-/* The selected option: a frame drawn on the picture itself, plus an accent
-   card edge and a tinted caption area. None of it changes a box size, so
-   moving the frame between cards never shifts the strip under the cursor. */
-.option__button--selected {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
-}
-
-.option__button--selected .option__media {
-  box-shadow: inset 0 0 0 var(--frame-width) var(--color-accent);
-}
-
-.option__media {
-  display: block;   /* it is a <span>, and outside the card it is not a flex item */
-  position: relative;
-  width: 100%;
-  aspect-ratio: var(--card-aspect);
-  overflow: hidden;
-  background: var(--color-placeholder);
-  border-bottom: var(--border-width) solid var(--color-border);
-}
-
-.option__image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* §4.2 — no image, or an image that fails to load: a plain white box at the
-   correct dimensions with a thin border. Never a broken-image icon. */
-.option__media--placeholder .option__image { display: none; }
-
-.option__caption {
-  padding: var(--space-1) var(--space-1) 0;
-  font-size: var(--type-sm);
-  line-height: var(--line-tight);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--caption-lines);
-  line-clamp: var(--caption-lines);
-  overflow: hidden;
-}
-
-.option__key {
-  padding: var(--space-05) 0 var(--space-1);
-  color: var(--color-ink-muted);
-  font-family: var(--font-mono);
-  font-size: var(--type-xs);
-}
-
-/* The summary reuses the option media block, where the card border that
-   normally closes it off is absent. */
-.summary__media .option__media {
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-/* --- progress ------------------------------------------------------------ */
-
-.progress {
-  margin: 0;
-  text-align: center;
-  color: var(--color-ink-muted);
-  font-size: var(--type-xs);
-  letter-spacing: 0.04em;
-}
-
 /* ==========================================================================
    summary (§7)
    ========================================================================== */
-
-.summary { padding-bottom: var(--space-8); }
 
 .summary__list {
   margin: var(--space-4) 0 0;
@@ -415,7 +529,7 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .summary__row {
@@ -423,14 +537,20 @@ body {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
+  background: var(--color-panel);
+  border: var(--border-width) solid var(--color-line);
   border-radius: var(--radius-md);
 }
 
-.summary__media {
-  flex: 0 0 auto;
-  width: calc(var(--card-min-width) * 0.8);
+.summary__media { flex: 0 0 auto; }
+
+/* The summary reuses the option media block, outside the card that normally
+   gives it a colour. One accent for all of them: by then the position a card
+   happened to occupy means nothing. */
+.summary__media .option__media {
+  width: var(--icon-size-stacked);
+  height: var(--icon-size-stacked);
+  color: var(--color-accent);
 }
 
 .summary__text { flex: 1 1 auto; min-width: 0; }
@@ -464,26 +584,44 @@ body {
 .error__list li { margin-bottom: var(--space-05); }
 
 /* ==========================================================================
-   narrow viewports — not a supported target, just a sane degradation (§9).
-   Keep the literal in step with --stack-breakpoint.
+   narrower viewports
+   Keep these literals in step with --bp-wrap and --bp-stack.
    ========================================================================== */
 
-@media (max-width: 900px) {
-  .options {
-    flex-wrap: wrap;
-    min-height: 0;
+/* Five across stops fitting: 2 + 2 + 1, the last card spanning the row. */
+@media (max-width: 1080px) {
+  .options { grid-template-columns: repeat(2, 1fr); }
+  .option:nth-child(5) { grid-column: 1 / -1; }
+}
+
+/* A vertical list, icon beside the text. Not a supported target — a sane
+   degradation, so a phone shows something usable rather than something
+   broken (§9). */
+@media (max-width: 620px) {
+  .options { grid-template-columns: 1fr; gap: var(--space-15); }
+  .option:nth-child(5) { grid-column: auto; }
+
+  .option__button {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: var(--space-15) var(--space-2);
+    gap: var(--space-15);
   }
 
-  .option { flex: 1 1 100%; }
-
-  .item__framing {
-    min-height: 0;
-    font-size: var(--type-lg);
+  .option__media {
+    width: var(--icon-size-stacked);
+    height: var(--icon-size-stacked);
   }
 
+  .masthead { gap: var(--space-15); }
+  .progress { margin-left: 0; }
+  .progress__bars i { width: var(--bar-width-small); height: var(--bar-height-small); }
   .summary__row { flex-direction: column; align-items: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+  .option__button:hover:not(:disabled),
+  .button:hover:not(:disabled) { transform: none; }
 }

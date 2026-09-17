@@ -131,6 +131,33 @@ function paragraphs(path, className = "body-text") {
  * Content loading and validation (§4.3)
  * ========================================================================== */
 
+/**
+ * Fetches the icon sprite once and puts it in the document, so that every
+ * <use href="#icon-x"> is a same-document reference. That is what lets the
+ * drawings inherit currentColor from the card they sit in, and it costs one
+ * request for a whole item set instead of one per option.
+ *
+ * Failure is survivable by design: options fall back to a ring, and the
+ * session runs. A missing picture must never stop a classroom.
+ */
+async function loadIcons(path) {
+  if (!path) return;
+  try {
+    const response = await fetch(path, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const holder = document.createElement("div");
+    holder.innerHTML = await response.text();
+    const sprite = holder.querySelector("svg");
+    if (!sprite) throw new Error("no <svg> element in the sprite");
+    sprite.setAttribute("aria-hidden", "true");
+    sprite.setAttribute("focusable", "false");
+    document.body.insertBefore(sprite, document.body.firstChild);
+    console.info(`[assets] ${sprite.querySelectorAll("symbol").length} icons loaded from ${path}`);
+  } catch (error) {
+    console.warn(`[assets] icon sprite not loaded (${error.message}); options will show a ring`);
+  }
+}
+
 async function loadJSON(path) {
   const response = await fetch(path, { cache: "no-store" });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
@@ -769,7 +796,6 @@ const current = {
   item: null,
   buttons: [],
   pending: null,     // { option, button } — framed, not yet committed
-  hint: null,
   next: null,
 
   /* Behavioural measurement of the choice itself, not of the answer.
@@ -781,30 +807,73 @@ const current = {
   moves: 0           // times the frame moved to a different option after that
 };
 
-function optionMedia(option) {
-  const hasImage = typeof option.image === "string" && option.image.trim() !== "";
-  const media = el("span", {
-    class: hasImage ? "option__media" : "option__media option__media--placeholder"
-  });
+const SVG_NS = "http://www.w3.org/2000/svg";
 
-  if (hasImage) {
-    // A path that 404s degrades to the same white placeholder rather than a
-    // broken-image icon (§4.2).
-    const image = el("img", {
-      class: "option__image",
-      src: option.image,
-      alt: typeof option.alt === "string" && option.alt ? option.alt : option.caption || "",
-      loading: "eager",
-      decoding: "async",
-      draggable: false,
-      onerror: () => {
-        media.className = "option__media option__media--placeholder";
-        console.warn(`[assets] image failed to load: ${option.image}`);
-      }
-    });
-    media.appendChild(image);
+/**
+ * The drawing for one option, as a same-document <use> into the sprite.
+ *
+ * It is aria-hidden and carries no alt text, deliberately. A screen reader
+ * describing the picture would tell that child something the sighted child
+ * does not get — the caption is the option, the drawing is decoration.
+ *
+ * An option whose drawing has not been made yet, or a sprite that failed to
+ * load at all, falls back to a ring of the same geometry: a half-illustrated
+ * item set looks deliberate rather than broken, and a missing picture is never
+ * a reason to stop a classroom.
+ */
+function optionMedia(option) {
+  const media = el("span", { class: "option__media" });
+  const named = typeof option.icon === "string" && option.icon.trim() !== "";
+  const id = named ? `icon-${option.icon.trim()}` : "icon-placeholder";
+  const symbol = document.getElementById(id) || document.getElementById("icon-placeholder");
+
+  if (!symbol) {
+    // No sprite at all. CSS draws the ring instead so the card keeps its shape.
+    media.classList.add("option__media--empty");
+    if (named) console.warn(`[assets] no icon "${option.icon}" and no sprite to fall back on`);
+    return media;
   }
+  if (named && symbol.id !== id) {
+    console.warn(`[assets] icon "${option.icon}" is not in the sprite; using the placeholder`);
+  }
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "option__icon");
+  svg.setAttribute("viewBox", symbol.getAttribute("viewBox") || "0 0 240 240");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  const use = document.createElementNS(SVG_NS, "use");
+  use.setAttribute("href", `#${symbol.id}`);
+  svg.appendChild(use);
+  media.appendChild(svg);
   return media;
+}
+
+/**
+ * The bar across the top of an item screen: who this is, and how far through.
+ * The bars are decorative — the count beside them carries the same information
+ * as text, so a screen reader is not read a row of empty list items.
+ */
+function masthead(current1, total) {
+  const bars = el("div", { class: "progress__bars", "aria-hidden": "true" });
+  for (let i = 0; i < total; i += 1) {
+    bars.appendChild(el("i", { class: i < current1 ? "is-done" : "" }));
+  }
+
+  return el("header", { class: "masthead" }, [
+    el("div", { class: "wordmark" }, [
+      el("span", { class: "wordmark__name", text: t("app.wordmark") }),
+      el("span", { class: "wordmark__tagline", text: t("app.tagline") })
+    ]),
+    el("div", { class: "progress" }, [
+      bars,
+      el("p", {
+        class: "progress__count",
+        text: t("item.progress", { current: current1, total })
+      })
+    ])
+  ]);
 }
 
 function renderItem() {
@@ -827,7 +896,9 @@ function renderItem() {
       [
         optionMedia(option),
         el("span", { class: "option__caption", text: option.caption || "" }),
-        CONFIG.numericShortcuts && i < 9
+        // The keyboard shortcuts still work; the badge is off by default
+        // because the design does not have one. showShortcutHints brings it back.
+        CONFIG.numericShortcuts && CONFIG.showShortcutHints && i < 9
           ? el("span", { class: "option__key", text: String(i + 1), "aria-hidden": "true" })
           : null
       ]
@@ -835,8 +906,6 @@ function renderItem() {
     buttons.push(button);
     return el("li", { class: "option" }, button);
   });
-
-  const hint = el("p", { class: "item__hint", text: t("item.hint") });
 
   const next = el("button", {
     class: "button item__next",
@@ -846,18 +915,22 @@ function renderItem() {
     onclick: () => commit()
   });
 
-  const screen = el("section", { class: "screen" }, [
+  const current1 = session.index + 1;
+  const total = session.items.length;
+
+  const screen = el("section", { class: "screen screen--item" }, [
+    masthead(current1, total),
     el("div", { class: "item" }, [
-      el("h1", { class: "item__framing", text: item.framing }),
+      el("div", { class: "item__question" }, [
+        el("p", { class: "item__eyebrow", text: t("item.eyebrow", { current: current1, total }) }),
+        el("h1", { class: "item__framing", text: item.framing }),
+        el("p", { class: "item__lead", text: item.lead || t("item.lead") })
+      ]),
       el("ul", { class: "options" }, cards),
-      // Hint and button share one reserved band, so revealing the button
-      // cannot move the option strip under the participant's cursor.
-      el("div", { class: "item__footer" }, [hint, next])
-    ]),
-    el("p", {
-      class: "progress",
-      text: t("item.progress", { current: session.index + 1, total: session.items.length })
-    })
+      // The band is reserved whether or not the button is in it, so revealing
+      // the button cannot move the cards under the participant's cursor.
+      el("div", { class: "item__footer" }, next)
+    ])
   ]);
 
   show("item", screen);
@@ -867,7 +940,6 @@ function renderItem() {
     item,
     buttons,
     pending: null,
-    hint,
     next,
     // The clock starts when the item is on screen, so the duration includes
     // reading the framing — which is what was asked for.
@@ -900,7 +972,6 @@ function select(option, button, fromKeyboard) {
     return;
   }
 
-  current.hint.hidden = true;
   current.next.hidden = false;
   // Only when the participant is working by keyboard: a mouse user gets no
   // focus ring, and a keyboard user would otherwise have to tab past the
@@ -983,7 +1054,7 @@ function commit() {
 const RECORDED = ["recorded", "offline"];
 
 async function renderSummary() {
-  Object.assign(current, { item: null, buttons: [], pending: null, hint: null, next: null });
+  Object.assign(current, { item: null, buttons: [], pending: null, next: null });
   // The run is over: nothing left to resume into (§12.5).
   clearResume();
 
@@ -1212,6 +1283,9 @@ async function boot() {
 
   document.documentElement.lang = "cs";
   document.title = t("app.title");
+
+  // Before the first screen, so the first item already has its drawings.
+  await loadIcons(CONFIG.content.icons);
 
   session.items = selection.items.map((item) =>
     CONFIG.shuffleOptions ? { ...item, options: shuffled(item.options) } : item

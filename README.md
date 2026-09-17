@@ -114,11 +114,52 @@ if a deployed config asks for a roster the repository does not have.
 | `config.js` | Supabase URL and anon key, auth mode, flags | repoint the store, flip a flag |
 | `theme.css` | every colour, size, spacing and layout constant | restyle |
 | `app.js` | logic only | — |
+| `assets/icons.svg` | the icon sprite, **generated** | never by hand — rebuild it |
+| `frontend_0917/` | the visual design and its brief, as delivered | reference only, not built from |
+| `tools/build-icons.ps1` | turns source drawings into the sprite | add icons |
 | `tools/validate.mjs` | the pre-deploy checks | add a rule |
 
 `app.js` contains no content, no copy, no credentials, no URL and no styling.
 If a change to any of the first five files requires touching it, that is a
 defect against §3 of the spec.
+
+## The look, and adding drawings
+
+The visual design is the front-end proposal "varianta A" (2026-09-17). Its
+mockup and brief are in `frontend_0917/`, and it is live for reference at
+[/frontend_0917/](https://matuskurian.github.io/behavioural-instrument/frontend_0917/).
+`theme.css` is that design expressed against this instrument's markup; the
+mockup itself is never built from.
+
+It supersedes §9's provisional asset spec. Options are not 3:2 photographs but
+square monochrome line drawings that take their colour from CSS.
+
+**To add drawings**, drop the `.svg` files into `frontend_0917/ikony/`, named
+by option id, then:
+
+    .\tools\build-icons.ps1
+
+That rebuilds `assets/icons.svg`, one sprite holding every drawing as a
+`<symbol>`. Reference one from `items.json` with `"icon": "10a"` — no path, no
+extension. An option with no `icon`, or one naming a drawing that is not in the
+sprite, renders a ring of the same size: a half-illustrated item set looks
+deliberate rather than broken, and a missing picture never stops a session.
+
+Two things the sprite buys over `<img src="…svg">`. The drawings use
+`stroke="currentColor"`, so inside a card they inherit that card's colour — an
+`<img>` is an isolated document and would render every one of them black. And
+a full item set is one request instead of fifty. The build also strips the
+provenance metadata the drawing tool embeds, which is about 90% of each file:
+86 KB of sources became an 8 KB sprite.
+
+**Colour belongs to the position, never to the option.** The drawing travels
+with its option when the order is shuffled; the five hues stay where they are
+on screen. Reversing that would reintroduce exactly the bias the shuffling
+exists to remove.
+
+**The drawings carry no alt text and are `aria-hidden`, deliberately.** A
+screen reader describing the picture would tell that child something the
+sighted child does not get. The caption is the option; the drawing decorates it.
 
 ## Running a short session
 
@@ -396,15 +437,16 @@ Checked in a browser at 1280×720 with the placeholder content:
 
 - adding items needs no code change — item count comes from the array length,
   option count per item from the options array
-- an option with no image renders a white box at the card's dimensions; an
-  image path that 404s falls back to the same box and logs to the console
+- an option with no drawing, or one naming a symbol absent from the sprite,
+  renders a ring of the same size and logs to the console
 - `content/_broken.items.json` is a deliberately malformed fixture: point
   `CONFIG.content.items` at it and reload — the error screen lists all four
   problems (empty framing, single option, duplicate item id, duplicate option
   id) and no session starts
-- five cards on one row at 1280×720: 227.2px each, image area 225×150 (3:2),
-  20px gutters, no horizontal scroll and no vertical scroll. Framing block
-  108–266px, option strip 314–530px — the 22% / 30% vertical budget of §9
+- at 1280 wide: five columns of 235.2px with 16px gutters and 132px drawings,
+  matching the design's own arithmetic exactly, no scroll in either axis. At
+  1000px the grid becomes 2 + 2 + 1 with the last card spanning its row; below
+  620px a vertical list with 76px drawings beside the text
 - a failed insert logs
   `[write] failed item=B02 choice=B02c reason=…` and the participant advances
   to the next item without noticing. Because there is no queue and no retry

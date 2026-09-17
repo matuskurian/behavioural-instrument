@@ -1,7 +1,32 @@
 {
-  "_note": "ZÁSTUPNÝ OBSAH (12 položek). Finální počet (10–15), znění zadání a popisky jsou otevřené položky (§14). Pořadí zobrazení = pořadí v poli. Cesty k obrázkům jsou zatím prázdné, takže se vykreslí bílý zástupný rámeček (§4.2). Pole \"label\" je krátký štítek pro souhrnnou obrazovku; použije se jen když config.summaryItemText = \"label\".",
-  "version": "2026-09-11-placeholder",
+  "_note": "Položky Q10 a Q13 jsou skutečný obsah včetně kreseb. Zbytek (B01–B12) je zástupný a čeká na finální zadání (§14). Pořadí zobrazení = pořadí v poli, ale pořadí možností se na obrazovce míchá (config.shuffleOptions) a zapisuje se do shown_order.",
+  "_icon_note": "Pole \"icon\" je id kresby ve sprite souboru assets/icons.svg, bez předpony: \"10a\" ukazuje na symbol icon-10a. Chybějící nebo neznámá kresba se vykreslí jako prstenec, layout se nerozbije. Kresby nemají alt text záměrně — viz README.",
+  "version": "2026-09-17",
   "items": [
+    {
+      "id": "Q10",
+      "label": "Zoo",
+      "framing": "Jsi v zoo. Na jaká zvířata se podíváš jako první?",
+      "options": [
+        { "id": "Q10a", "caption": "Roztomilá mláďata.", "icon": "10a" },
+        { "id": "Q10b", "caption": "Nově objevený druh ryb z hlubin moře.", "icon": "10b" },
+        { "id": "Q10c", "caption": "Tygři, lvi a jiné divoké šelmy.", "icon": "10c" },
+        { "id": "Q10d", "caption": "Zvířata, která znáš z filmu (např. Madagaskar).", "icon": "10d" },
+        { "id": "Q10e", "caption": "Fenek ušatý.", "icon": "10e" }
+      ]
+    },
+    {
+      "id": "Q13",
+      "label": "Video",
+      "framing": "Otevřeš YouTube nebo TikTok. Na které video z nabídky klikneš jako první?",
+      "options": [
+        { "id": "Q13a", "caption": "Nejnovější video od tvého oblíbeného youtubera, na které ses těšil/a.", "icon": "13a" },
+        { "id": "Q13b", "caption": "Video o něčem, o čem jsi do teď vůbec neslyšel/a.", "icon": "13b" },
+        { "id": "Q13c", "caption": "Výběr vtipných memes nebo failů, u kterých se vždycky dobře zasměješ.", "icon": "13c" },
+        { "id": "Q13d", "caption": "Video s miliony zhlédnutí, které je zrovna jedničkou v trendech.", "icon": "13d" },
+        { "id": "Q13e", "caption": "Video od neznámého kanálu s názvem: „Záhada, kterou se doteď nepodařilo nikomu vysvětlit.“", "icon": "13e" }
+      ]
+    },
     {
       "id": "B01",
       "label": "Výlet",

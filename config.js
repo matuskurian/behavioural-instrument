@@ -93,10 +93,13 @@ export const CONFIG = {
    *
    * Examples:
    *   itemLimit: 3,                        first three items
-   *   itemSubset: ["B03", "B01", "B07"],   these three, in this order
+   *   itemSubset: ["Q13", "Q10"],          these two, in this order
+   *
+   * Currently showing the two items that have real content and drawings; the
+   * B01-B12 placeholders are still in items.json waiting for theirs.
    */
-  itemSubset: ["B03", "B01", "B07"],
-  itemLimit: 3,
+  itemSubset: ["Q10", "Q13"],
+  itemLimit: 2,
   /**
    * How an option becomes an answer.
    *
@@ -129,12 +132,23 @@ export const CONFIG = {
   /** §8: numeric shortcuts 1–9 for options. */
   numericShortcuts: true,
 
+  /**
+   * Whether each card also shows its shortcut number.
+   *
+   * Off: the design does not have one, and a numeral in the corner of a card
+   * is another mark competing with the drawing. The shortcuts still work and
+   * the intro explains them; this only controls whether they are labelled.
+   */
+  showShortcutHints: false,
+
   /** Paths to the content files. Here so a deployment can serve a different
    *  item set from the same code. */
   content: {
     items: "content/items.json",
     strings: "content/strings.json",
-    roster: "content/roster.json"
+    roster: "content/roster.json",
+    /** Built from the source drawings by tools/build-icons.ps1. */
+    icons: "assets/icons.svg"
   }
 };
 
