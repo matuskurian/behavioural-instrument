@@ -396,15 +396,24 @@ function noteDuplicate(row) {
  * participant advances the instant they choose, whatever happens to the row.
  * server_ts is never sent — the database sets it.
  */
-function transmit(row) {
+function transmit(row, onOutcome) {
+  // The outcome is reported back in the store's own vocabulary translated into
+  // four plain words, so that the summary can show only what was actually
+  // recorded without learning anything about Postgres or HTTP.
+  const settle = (outcome) => {
+    if (typeof onOutcome === "function") onOutcome(outcome);
+  };
+
   transmission.attempted += 1;
 
   if (CONFIG.authMode !== "remote") {
     console.info('[write] offline: authMode is not "remote", so no row was sent:', row);
+    settle("offline");
     return;
   }
   if (!auth) {
     noteFailure(row, "no signed-in session");
+    settle("failed");
     return;
   }
 
@@ -422,19 +431,30 @@ function transmit(row) {
       body: JSON.stringify(row)
     })
       .then(async (response) => {
-        if (response.ok) return;
+        if (response.ok) {
+          settle("recorded");
+          return;
+        }
         const detail = await response.json().catch(() => ({}));
         if (detail && detail.code === DUPLICATE_ROW) {
           noteDuplicate(row);
+          // Not recorded: the stored answer is the earlier one, which this
+          // client cannot read back and must therefore not claim to know.
+          settle("duplicate");
           return;
         }
         const code = detail && detail.code ? ` ${detail.code}` : "";
         const message = detail && detail.message ? ` ${detail.message}` : "";
         noteFailure(row, `HTTP ${response.status}${code}${message}`);
+        settle("failed");
       })
-      .catch((error) => noteFailure(row, error && error.message ? error.message : String(error)));
+      .catch((error) => {
+        noteFailure(row, error && error.message ? error.message : String(error));
+        settle("failed");
+      });
   } catch (error) {
     noteFailure(row, error && error.message ? error.message : String(error));
+    settle("failed");
   }
 }
 
@@ -888,8 +908,13 @@ function commit() {
     client_ts: isoWithOffset(new Date())
   };
 
-  session.choices.push({ item, option, row });
-  transmit(row);
+  // The summary must show what was recorded, not what was clicked, so each
+  // choice carries the fate of its own row. "pending" until the store answers.
+  const choice = { item, option, row, status: "pending" };
+  session.choices.push(choice);
+  transmit(row, (outcome) => {
+    choice.status = outcome;
+  });
   // Refreshed at every choice, so the two-hour window runs from the last thing
   // the participant did rather than from when they logged in (§12.5).
   writeResume(session.index + 1);
@@ -903,16 +928,57 @@ function commit() {
 
 /* --- summary (§7) --------------------------------------------------------
  * The participant's own choices in order. No scoring, no interpretation, no
- * feedback. Rendered from session state; nothing here is written to the store
- * — every row shown was already written at the moment of the choice.
+ * feedback. Nothing here is written to the store.
+ *
+ * It shows only the choices that were actually recorded. A choice the store
+ * refused as a duplicate was not recorded — the stored answer is the earlier
+ * one, and this client has no select policy and so cannot read it back to
+ * display it (§12.1). Showing the clicked option instead would tell the
+ * participant something untrue about their own data, which matters most
+ * precisely when someone is being asked to talk about what they chose.
  * ------------------------------------------------------------------------ */
 
-function renderSummary() {
+/** Outcomes that mean the answer stands: it reached the table, or there is no
+ *  table to reach because the instrument is running offline. */
+const RECORDED = ["recorded", "offline"];
+
+async function renderSummary() {
   Object.assign(current, { item: null, buttons: [], pending: null, hint: null, next: null });
   // The run is over: nothing left to resume into (§12.5).
   clearResume();
 
-  const rows = session.choices.map(({ item, option }, i) => {
+  // The last write is fired a few hundred milliseconds before this screen, so
+  // give the store a bounded moment to answer rather than guessing. Bounded:
+  // a slow network must delay the courtesy screen, never withhold it.
+  const deadline = Date.now() + CONFIG.summarySettleMs;
+  while (session.choices.some((c) => c.status === "pending") && Date.now() < deadline) {
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+  }
+  const unsettled = session.choices.filter((c) => c.status === "pending").length;
+  if (unsettled) {
+    console.warn(
+      `[summary] ${unsettled} write(s) had not answered within ${CONFIG.summarySettleMs}ms; ` +
+        "shown as recorded. The store, not this screen, is the record."
+    );
+  }
+
+  // Still-pending counts as shown: it was sent, and withholding it would be as
+  // misleading as the problem this filter exists to fix.
+  const shown = session.choices.filter(
+    (c) => RECORDED.includes(c.status) || c.status === "pending"
+  );
+  const withheld = session.choices.length - shown.length;
+  if (withheld) {
+    console.info(
+      `[summary] ${withheld} of ${session.choices.length} choices are not shown: ` +
+        session.choices
+          .filter((c) => !RECORDED.includes(c.status) && c.status !== "pending")
+          .map((c) => `${c.row.item_id}/${c.row.choice_id} (${c.status})`)
+          .join(", ")
+    );
+  }
+
+  const rows = shown.map(({ item, option }, i) => {
     const itemText =
       CONFIG.summaryItemText === "label" && item.label ? item.label : item.framing;
 
@@ -931,7 +997,12 @@ function renderSummary() {
   const panel = el("div", { class: "panel summary" }, [
     el("h1", { class: "heading", text: t("summary.heading") }),
     ...paragraphs("summary.intro"),
-    el("ul", { class: "summary__list" }, rows),
+    // A run in which every answer was already on record leaves nothing to
+    // list. That is a normal outcome of returning to a finished session, not
+    // an error, and it needs saying rather than showing an empty box.
+    rows.length
+      ? el("ul", { class: "summary__list" }, rows)
+      : el("p", { class: "body-text muted", text: t("summary.nothingNew") }),
     el("p", { class: "body-text summary__closing", text: t("summary.closing") })
   ]);
 

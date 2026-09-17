@@ -25,6 +25,7 @@
       "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
       "Obrázek vybereš kliknutím — kolem vybraného obrázku se objeví rámeček. Dokud nepokračuješ dál, můžeš si to rozmyslet a kliknout na jiný obrázek; rámeček se přesune.",
       "Když jsi s výběrem spokojený nebo spokojená, klikni dole na tlačítko „Další“. Tím se přejde na další obrazovku. Zpátky se vrátit nedá a volbu už pak nejde změnit.",
+      "Kdyby ti aplikace spadla nebo se zavřela, můžeš se znovu přihlásit a pokračovat. U každé otázky se ale počítá ta odpověď, kterou jsi dal nebo dala jako první — pokud bys na stejnou otázku odpovídal znovu, ta druhá odpověď se už nikam nezapíše. V přehledu na konci proto uvidíš jen odpovědi, které se skutečně zaznamenaly.",
       "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
       "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
       "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
@@ -34,6 +35,7 @@
       "ZÁSTUPNÝ TEXT — tato část čeká na finální znění příběhového rámce (§14).",
       "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
       "Obrázek vybereš kliknutím. Jakmile klikneš, aplikace rovnou přejde na další obrazovku — zpátky se vrátit nedá a volbu už nejde změnit. Vyber tedy to, co tě napadne jako první.",
+      "Kdyby ti aplikace spadla nebo se zavřela, můžeš se znovu přihlásit a pokračovat. U každé otázky se ale počítá ta odpověď, kterou jsi dal nebo dala jako první — pokud bys na stejnou otázku odpovídal znovu, ta druhá odpověď se už nikam nezapíše. V přehledu na konci proto uvidíš jen odpovědi, které se skutečně zaznamenaly.",
       "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
       "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
       "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
@@ -54,6 +56,7 @@
       "Tím je úloha hotová. Děkujeme."
     ],
     "closing": "Obrazovku teď můžeš zavřít.",
+    "nothingNew": "Na všechny otázky už máš odpověď z dřívějška, takže tady teď není co nového ukázat. Platí to, co jsi vybral nebo vybrala poprvé.",
     "noCaption": "Volba u otázky {n}"
   }
 }

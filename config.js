@@ -106,6 +106,15 @@ export const CONFIG = {
   /** Milliseconds the chosen card is shown confirmed before advancing (§8). */
   confirmDelayMs: 450,
 
+  /**
+   * How long the summary screen waits for outstanding writes to be answered
+   * before rendering, so that it lists what was recorded rather than what was
+   * clicked. A choice still unanswered after this is shown anyway and logged
+   * to the console: a slow network should delay the courtesy screen, never
+   * withhold it. Set to 0 to render immediately.
+   */
+  summarySettleMs: 1500,
+
   /** §8: numeric shortcuts 1–9 for options. */
   numericShortcuts: true,
 
