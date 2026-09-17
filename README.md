@@ -215,6 +215,36 @@ Overené na živom projekte 17. 9. 2026: `test` prijaté, `TEST` odmietnuté.
 Pri návrhu formátu kódu (§14) s tým treba počítať: kódy sa v dátach objavia
 malými písmenami.
 
+### Celá trieda naraz
+
+Ručné klikanie je v poriadku pri troch účtoch; pri tridsiatich je to tridsať
+príležitostí zabudnúť na **Auto Confirm User**. Na hromadné založenie sú dva
+skripty:
+
+    .\tools\new-roster.ps1 -Count 30 -Prefix cz -OutFile ..\roster-2026-09.csv
+    .\tools\create-users.ps1 -RosterPath ..\roster-2026-09.csv -WhatIf
+    .\tools\create-users.ps1 -RosterPath ..\roster-2026-09.csv
+
+`new-roster.ps1` vygeneruje kódy a heslá: krátke, zapamätateľné, navzájom
+odlišné a písateľné na českej klávesnici bez diakritiky (`dest-list-5`,
+`ryba-zvon-9`). Kódy sú malými písmenami. Číslice 0 a 1 sa nepoužívajú, lebo sa
+na kartičke pletú s O a l.
+
+`create-users.ps1` z toho CSV založí potvrdené účty. Najprv skontroluje celý
+súbor — veľké písmená v kóde, krátke heslo, duplicitný kód — a ak niečo nájde,
+neodošle **nič**: polovične založený roster je horší než žiadny, lebo sa naň
+nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo by
+založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
+
+**O kľúči.** Zakladanie účtov potrebuje kľúč `service_role`, ktorý obchádza
+row-level security. Skript sa naň spýta pri spustení a nikam ho neukladá.
+Nedávajte ho do príkazového riadka (zostane v histórii shellu), do žiadneho
+súboru v tomto repozitári, ani do chatu. Je potrebný len na túto jednu úlohu.
+
+**O súbore s heslami.** `roster-*.csv` je jediná kópia hesiel — Supabase ich
+ukladá zahašované a nikdy ich znova neukáže. Je v `.gitignore`; držte ho mimo
+repozitára a kartičky tlačte z neho.
+
 ### Export a analýza
 
 Dashboard → **Table Editor → `responses` → Export → CSV**.

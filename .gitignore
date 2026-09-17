@@ -12,6 +12,12 @@ desktop.ini
 # The current version is apps-script/Code.gs; delete this when you're done with it.
 apps-script/Code_old_v01.gs
 
+# Participant credential lists produced by tools/new-roster.ps1. These are the
+# only copy of the passwords — Supabase stores them hashed and cannot show them
+# again — and they must never reach a public repository.
+*roster*.csv
+*.roster.csv
+
 # Local-only roster for offline work (authMode "roster"). Never committed:
 # this repository is public, so credentials in it are credentials in public.
 # Copy content/roster.example.json to content/roster.json when you need it.
