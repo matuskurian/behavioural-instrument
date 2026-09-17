@@ -72,6 +72,8 @@ try {
   [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
 }
 if ([string]::IsNullOrWhiteSpace($key)) { throw "No key given." }
+# A stray space or newline from a paste is enough on its own to produce 401.
+$key = $key.Trim()
 if ($key -like 'sb_publishable_*') {
   throw "That is the publishable key. Creating users needs the secret key (sb_secret_...), formerly called service_role."
 }
