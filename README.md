@@ -236,10 +236,20 @@ neodošle **nič**: polovične založený roster je horší než žiadny, lebo s
 nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo by
 založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
 
-**O kľúči.** Zakladanie účtov potrebuje kľúč `service_role`, ktorý obchádza
-row-level security. Skript sa naň spýta pri spustení a nikam ho neukladá.
-Nedávajte ho do príkazového riadka (zostane v histórii shellu), do žiadneho
-súboru v tomto repozitári, ani do chatu. Je potrebný len na túto jednu úlohu.
+**O kľúči.** Zakladanie účtov potrebuje kľúč, ktorý obchádza row-level
+security. Supabase ho volá dvoma menami podľa generácie: staršie projekty majú
+`service_role` (JWT), novšie — vrátane tohto — `sb_secret_...`. Sú to to isté
+oprávnenie. Náprotivkom je `anon`, dnes `sb_publishable_...`, ktorý je v
+`config.js` a je bezpečný.
+
+Skript prijme obe podoby. Starší kľúč posiela aj v hlavičke `Authorization`,
+nový nie je JWT a tam by ho endpoint odmietol, takže pri prvom odmietnutí
+prepne na samotnú `apikey` a pokračuje.
+
+Kľúč sa pýta až pri spustení a nikam ho neukladá. Nedávajte ho do príkazového
+riadka (zostane v histórii shellu), do žiadneho súboru v tomto repozitári, ani
+do chatu. Je potrebný len na túto jednu úlohu. `tools/validate.mjs` mimochodom
+hľadá obe podoby: `sb_secret_` aj JWT s rolou `service_role`.
 
 **O súbore s heslami.** `roster-*.csv` je jediná kópia hesiel — Supabase ich
 ukladá zahašované a nikdy ich znova neukáže. Je v `.gitignore`; držte ho mimo

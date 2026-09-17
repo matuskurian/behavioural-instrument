@@ -73,35 +73,81 @@ try {
 }
 if ([string]::IsNullOrWhiteSpace($key)) { throw "No key given." }
 if ($key -like 'sb_publishable_*') {
-  throw "That is the publishable key. Creating users needs the service_role key."
+  throw "That is the publishable key. Creating users needs the secret key (sb_secret_...), formerly called service_role."
 }
 
-$headers = @{ apikey = $key; Authorization = "Bearer $key"; "Content-Type" = "application/json" }
+# A legacy key is a JWT and says its own role; refuse the anon one early rather
+# than after thirty failed requests.
+if ($key.StartsWith('eyJ')) {
+  $role = $null
+  $parts = $key.Split('.')
+  if ($parts.Count -eq 3) {
+    $payload = $parts[1].Replace('-', '+').Replace('_', '/')
+    switch ($payload.Length % 4) { 2 { $payload += '==' } 3 { $payload += '=' } }
+    try {
+      $role = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload)) | ConvertFrom-Json).role
+    } catch {
+      $role = $null
+    }
+  }
+  if ($role -and $role -ne 'service_role') {
+    throw "That key's role is '$role'. Creating users needs the service_role key (or a new-style sb_secret_ key)."
+  }
+}
+
+# Legacy service_role keys are JWTs and go in Authorization: Bearer as well as
+# apikey. New-style sb_secret_ keys are not JWTs, and an endpoint that tries to
+# parse one as a token rejects the request. Rather than guess which this
+# deployment wants, start with both headers and fall back to apikey alone the
+# first time that is refused.
+function New-AdminHeaders($key, $withBearer) {
+  $headers = @{ apikey = $key; "Content-Type" = "application/json" }
+  if ($withBearer) { $headers["Authorization"] = "Bearer $key" }
+  return $headers
+}
+
+$withBearer = $true
 $created = 0; $existed = 0; $failed = 0
 
 foreach ($row in $roster) {
   $email = "$($row.code)@$EmailDomain"
   $body = @{ email = $email; password = $row.password; email_confirm = $true } | ConvertTo-Json -Compress
-  try {
-    $null = Invoke-RestMethod -Method POST "$ProjectUrl/auth/v1/admin/users" -Headers $headers -Body $body -TimeoutSec 30
+
+  $status = 0; $detail = ""; $ok = $false
+  for ($attempt = 1; $attempt -le 2; $attempt++) {
+    try {
+      $null = Invoke-RestMethod -Method POST "$ProjectUrl/auth/v1/admin/users" -Headers (New-AdminHeaders $key $withBearer) -Body $body -TimeoutSec 30
+      $ok = $true
+      break
+    } catch {
+      $response = $_.Exception.Response
+      $status = 0
+      if ($response) { $status = [int]$response.StatusCode }
+      $detail = ""
+      if ($response) {
+        $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
+        $detail = $reader.ReadToEnd()
+      }
+      # Only an authentication refusal is worth retrying, and only once: if the
+      # header shape was wrong, it was wrong for every row.
+      if ($attempt -eq 1 -and $withBearer -and ($status -eq 401 -or $status -eq 403)) {
+        Write-Host "  (retrying without the Authorization header: this looks like a new-style secret key)" -ForegroundColor DarkGray
+        $withBearer = $false
+        continue
+      }
+      break
+    }
+  }
+
+  if ($ok) {
     Write-Host ("  created   {0}" -f $email) -ForegroundColor Green
     $created++
-  } catch {
-    $response = $_.Exception.Response
-    $status = 0
-    if ($response) { $status = [int]$response.StatusCode }
-    $detail = ""
-    if ($response) {
-      $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
-      $detail = $reader.ReadToEnd()
-    }
-    if ($status -eq 422 -and $detail -match 'already|exists|registered') {
-      Write-Host ("  exists    {0}" -f $email) -ForegroundColor DarkGray
-      $existed++
-    } else {
-      Write-Host ("  FAILED    {0}  HTTP {1} {2}" -f $email, $status, $detail) -ForegroundColor Red
-      $failed++
-    }
+  } elseif ($status -eq 422 -and $detail -match 'already|exists|registered') {
+    Write-Host ("  exists    {0}" -f $email) -ForegroundColor DarkGray
+    $existed++
+  } else {
+    Write-Host ("  FAILED    {0}  HTTP {1} {2}" -f $email, $status, $detail) -ForegroundColor Red
+    $failed++
   }
 }
 
