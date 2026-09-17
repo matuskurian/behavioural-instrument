@@ -108,12 +108,12 @@ function checkRoster(roster) {
 /* Keys app.js asks for by name. A missing one is not a crash — it renders to
  * the participant as literal "[intro.start]" — so it has to be checked here. */
 const REQUIRED_STRINGS = [
-  "app.title",
+  "app.title", "app.wordmark", "app.tagline",
   "login.heading", "login.idLabel", "login.passwordLabel", "login.submit",
   "login.empty", "login.invalid",
   "intro.heading", "intro.body", "intro.start",
-  "item.progress", "item.hint", "item.next",
-  "summary.heading", "summary.intro", "summary.closing"
+  "item.progress", "item.eyebrow", "item.lead", "item.next",
+  "summary.heading", "summary.intro", "summary.closing", "summary.nothingNew"
 ];
 
 function checkStrings(strings) {
