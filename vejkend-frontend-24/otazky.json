@@ -1,0 +1,799 @@
+{
+  "version": "24-otazek-2026-09-18",
+  "source": "Google Sheet „Hotové otázky“, sloupec F (Wording 17. 9.)",
+  "note": "Pořadí options se při zobrazení randomizuje. Ukládej vždy i zobrazenou pozici.",
+  "questions": [
+    {
+      "id": 1,
+      "order": 1,
+      "title": "MÁŠ CHUŤ NA NĚCO DOBRÉHO – CO SI DÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "1a",
+          "icon": "ikony/1a.svg",
+          "text": "Donáška z restaurace, odkud si často objednáváte."
+        },
+        {
+          "id": "1b",
+          "icon": "ikony/1b.svg",
+          "text": "Jídlo, které jsi nikdy nejedl/a — víš jen, z čeho je, ale ne jak chutná."
+        },
+        {
+          "id": "1c",
+          "icon": "ikony/1c.svg",
+          "text": "Box tvých oblíbených sladkostí."
+        },
+        {
+          "id": "1d",
+          "icon": "ikony/1d.svg",
+          "text": "Jídlo, které jste od malička jedli snad milionkrát."
+        },
+        {
+          "id": "1e",
+          "icon": "ikony/1e.svg",
+          "text": "Nové oblíbené jídlo tvé/ho bestie, o kterém pořád básní."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "order": 2,
+      "title": "SEDÁŠ NA GAUČ, ZAPÍNÁŠ TELEVIZI. PUSTÍŠ SI…",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "2a",
+          "icon": "ikony/2a.svg",
+          "text": "Nový film s hercem, kterého máš rád/a."
+        },
+        {
+          "id": "2b",
+          "icon": "ikony/2b.svg",
+          "text": "Experimentální film, který vyhrává všechna ocenění ve své kategorii."
+        },
+        {
+          "id": "2c",
+          "icon": "ikony/2c.svg",
+          "text": "Film, který rád/a rewatchuješ i po tisící."
+        },
+        {
+          "id": "2d",
+          "icon": "ikony/2d.svg",
+          "text": "Film, o kterém teď mluví celá třída."
+        },
+        {
+          "id": "2e",
+          "icon": "ikony/2e.svg",
+          "text": "Nový populární film o tématu, o kterém moc nevíš a zajímá tě."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "order": 3,
+      "title": "MÁŠ PŮL HODINY NA HUDBU – CO SI VYBEREŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "3a",
+          "icon": "ikony/3a.svg",
+          "text": "Top 50 – Global (největší hity současnosti)."
+        },
+        {
+          "id": "3b",
+          "icon": "ikony/3b.svg",
+          "text": "Best of ze žánru, který běžně neposloucháš."
+        },
+        {
+          "id": "3c",
+          "icon": "ikony/3c.svg",
+          "text": "Legendární hity, které zná každý a všichni je milujeme."
+        },
+        {
+          "id": "3d",
+          "icon": "ikony/3d.svg",
+          "text": "Playlist s písničkami, které jsi nejvíc poslouchal/a minulý rok."
+        },
+        {
+          "id": "3e",
+          "icon": "ikony/3e.svg",
+          "text": "Písničky, které neznáš, ale algoritmus ti je doporučuje na základě toho, co posloucháš."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "order": 4,
+      "title": "MÁŠ CHUŤ POTKAT LIDI – ZA KÝM SE VYDÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "4a",
+          "icon": "ikony/4a.svg",
+          "text": "Za partou, se kterou se vídáš skoro každý týden."
+        },
+        {
+          "id": "4b",
+          "icon": "ikony/4b.svg",
+          "text": "Půjdeš s kámošem za jeho partou, kterou ty neznáš."
+        },
+        {
+          "id": "4c",
+          "icon": "ikony/4c.svg",
+          "text": "Za jedním kámošem — jen si sednete a budete kecat, jako vždycky."
+        },
+        {
+          "id": "4d",
+          "icon": "ikony/4d.svg",
+          "text": "Tam, kde se scházívá nejvíc lidí z vaší školy."
+        },
+        {
+          "id": "4e",
+          "icon": "ikony/4e.svg",
+          "text": "Za lidmi, co hrajou to samý co ty, ale zatím jsi je potkal/a jenom online."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "order": 5,
+      "title": "A TEĎ TROCHU POHYBU – JAKÝ SPORT SI VYBEREŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "5a",
+          "icon": "ikony/5a.svg",
+          "text": "Sport, který jsi hrál/a tolikrát, že přesně víš, jak to bude probíhat."
+        },
+        {
+          "id": "5b",
+          "icon": "ikony/5b.svg",
+          "text": "Nový sport, kterého je teď plný internet."
+        },
+        {
+          "id": "5c",
+          "icon": "ikony/5c.svg",
+          "text": "Sport, který hrajete s kámošema nebo v tělocviku často."
+        },
+        {
+          "id": "5d",
+          "icon": "ikony/5d.svg",
+          "text": "Sport, který znáš a chceš se v něm posunout dál."
+        },
+        {
+          "id": "5e",
+          "icon": "ikony/5e.svg",
+          "text": "Zajímavý sport, který jsi ještě nedělal/a."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "order": 6,
+      "title": "ODPOLEDNE DOSTANEŠ CHUŤ NA PROCHÁZKU – JAKOU SI VYBEREŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "6a",
+          "icon": "ikony/6a.svg",
+          "text": "Známou trasu přes tvoje oblíbené místo, kde si dobře odpočineš."
+        },
+        {
+          "id": "6b",
+          "icon": "ikony/6b.svg",
+          "text": "Křížem krážem lesem, ve kterém je spousta různých malých cestiček."
+        },
+        {
+          "id": "6c",
+          "icon": "ikony/6c.svg",
+          "text": "Okruh přes místa, kde je velká šance, že potkáš někoho z kámošů."
+        },
+        {
+          "id": "6d",
+          "icon": "ikony/6d.svg",
+          "text": "Klasické kolečko blízko domu, u kterého vůbec nemusíš přemýšlet."
+        },
+        {
+          "id": "6e",
+          "icon": "ikony/6e.svg",
+          "text": "Místa, kterými jsi nikdy neprošel/neprošla — zjistíš, co tam vlastně je."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "order": 7,
+      "title": "MŮŽEŠ STRÁVIT ODPOLEDNE S KÝMKOLI NA SVĚTĚ. KDO TO BUDE?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "7a",
+          "icon": "ikony/7a.svg",
+          "text": "Influencer/ka, kterého/kterou sleduješ tak dlouho, že o něm/ní víš všechno."
+        },
+        {
+          "id": "7b",
+          "icon": "ikony/7b.svg",
+          "text": "Vědec, který nedávno udělal zásadní objev."
+        },
+        {
+          "id": "7c",
+          "icon": "ikony/7c.svg",
+          "text": "Člověk, kterého jsi sto let neviděl/a a máš ho velmi rád/ráda."
+        },
+        {
+          "id": "7d",
+          "icon": "ikony/7d.svg",
+          "text": "Tvůj oblíbený člen rodiny."
+        },
+        {
+          "id": "7e",
+          "icon": "ikony/7e.svg",
+          "text": "Tvůj vrstevník, který od malička žije s rodinou na cestách a nikde nezůstane dýl než měsíc."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "order": 8,
+      "title": "UPSSS – POKAZILO SE TI ELEKTRONICKÉ ZAŘÍZENÍ. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "8a",
+          "icon": "ikony/8a.svg",
+          "text": "Zeptáš se AI, jako vždycky, když si nevíš rady."
+        },
+        {
+          "id": "8b",
+          "icon": "ikony/8b.svg",
+          "text": "Sám/sama hledáš způsoby, jak zařízení fixnout, i když to jsou nové věci."
+        },
+        {
+          "id": "8c",
+          "icon": "ikony/8c.svg",
+          "text": "Zeptáš se rodičů."
+        },
+        {
+          "id": "8d",
+          "icon": "ikony/8d.svg",
+          "text": "Najdeš návod a jdeš krok po kroku."
+        },
+        {
+          "id": "8e",
+          "icon": "ikony/8e.svg",
+          "text": "Budeš zkoušet jednu věc za druhou, dokud nepřijdeš na to, kde je problém."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "order": 9,
+      "title": "SNÍŠ O DOVOLENÉ S KAMARÁDY. KAM BYSTE JELI, KDYBYSTE MOHLI JET KAMKOLIV?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "9a",
+          "icon": "ikony/9a.svg",
+          "text": "Populární pláž s krásným mořem."
+        },
+        {
+          "id": "9b",
+          "icon": "ikony/9b.svg",
+          "text": "Exotická země, ve které ještě nebyl nikdo, koho znáš."
+        },
+        {
+          "id": "9c",
+          "icon": "ikony/9c.svg",
+          "text": "Opěvovaná evropská metropole."
+        },
+        {
+          "id": "9d",
+          "icon": "ikony/9d.svg",
+          "text": "Místo, kam jezdíváte s rodinou každé léto."
+        },
+        {
+          "id": "9e",
+          "icon": "ikony/9e.svg",
+          "text": "Roadtrip přes více různých míst."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "order": 10,
+      "title": "MÁŠ PŮLHODINU V ZOO. KAM PŮJDEŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "10a",
+          "icon": "ikony/10a.svg",
+          "text": "Roztomilá mláďata."
+        },
+        {
+          "id": "10b",
+          "icon": "ikony/10b.svg",
+          "text": "Nově objevený druh ryb z hlubin moře."
+        },
+        {
+          "id": "10c",
+          "icon": "ikony/10c.svg",
+          "text": "Tygři, lvi a jiné divoké šelmy."
+        },
+        {
+          "id": "10d",
+          "icon": "ikony/10d.svg",
+          "text": "Zvířata, která znáš z filmu (např. Madagaskar)."
+        },
+        {
+          "id": "10e",
+          "icon": "ikony/10e.svg",
+          "text": "Fenek ušatý."
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "order": 11,
+      "title": "VENKU JE BOUŘKA. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "11a",
+          "icon": "ikony/11a.svg",
+          "text": "Zachumláš se doma do deky."
+        },
+        {
+          "id": "11b",
+          "icon": "ikony/11b.svg",
+          "text": "Zkoumáš blesky — jestli jsou si něčím podobné, nebo je každý úplně jiný."
+        },
+        {
+          "id": "11c",
+          "icon": "ikony/11c.svg",
+          "text": "Kontroluješ radar, jak dlouho bude trvat."
+        },
+        {
+          "id": "11d",
+          "icon": "ikony/11d.svg",
+          "text": "Jdeš je sledovat jako vždy, když máš možnost."
+        },
+        {
+          "id": "11e",
+          "icon": "ikony/11e.svg",
+          "text": "Natočíš to na mobil a pak zpomaleně zjišťuješ, co se na tom záběru vlastně děje."
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "order": 12,
+      "title": "MÁŠ HODINU VOLNÉHO ČASU A ZAPÍNÁŠ POČÍTAČ NEBO MOBIL. CO SI ZAHRAJEŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "12a",
+          "icon": "ikony/12a.svg",
+          "text": "Hru, kde zrovna náháníš levely."
+        },
+        {
+          "id": "12b",
+          "icon": "ikony/12b.svg",
+          "text": "Úplně nový typ hry, abys zjistil/a, jak se vůbec hraje."
+        },
+        {
+          "id": "12c",
+          "icon": "ikony/12c.svg",
+          "text": "Populární hru, kterou teď hrají všichni tvoji kámoši."
+        },
+        {
+          "id": "12d",
+          "icon": "ikony/12d.svg",
+          "text": "Svoji ověřenou „oddechovku“, kterou zapínáš vždycky, když chceš prostě vypnout."
+        },
+        {
+          "id": "12e",
+          "icon": "ikony/12e.svg",
+          "text": "Úplně novou hru od neznámého studia, která má velmi zvláštní, krásnou grafiku."
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "order": 13,
+      "title": "LEŽÍŠ V POSTELI A SLÍBIL/A SIS, ŽE SI PUSTÍŠ JEDNO POSLEDNÍ VIDEO. KTERÉ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "13a",
+          "icon": "ikony/13a.svg",
+          "text": "Nejnovější video od tvého oblíbeného youtubera, na které ses těšil/a."
+        },
+        {
+          "id": "13b",
+          "icon": "ikony/13b.svg",
+          "text": "Video o něčem, o čem jsi do teď vůbec neslyšel/a."
+        },
+        {
+          "id": "13c",
+          "icon": "ikony/13c.svg",
+          "text": "Výběr vtipných memes nebo failů, u kterých se vždycky dobře zasměješ."
+        },
+        {
+          "id": "13d",
+          "icon": "ikony/13d.svg",
+          "text": "Video s miliony zhlédnutí, které je zrovna jedničkou v trendech."
+        },
+        {
+          "id": "13e",
+          "icon": "ikony/13e.svg",
+          "text": "Video od neznámého kanálu s názvem: „Záhada, kterou se doteď nepodařilo nikomu vysvětlit.“"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "order": 14,
+      "title": "S KAMARÁDY VYBÍRÁTE TÉMA ÚNIKOVKY. KTERÉ NAVRHNEŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "14a",
+          "icon": "ikony/14a.svg",
+          "text": "Téma, o kterém už toho spoustu víš, takže to bude „easy“ výhra."
+        },
+        {
+          "id": "14b",
+          "icon": "ikony/14b.svg",
+          "text": "Téma, o kterém organizátor říká, že ho dělá úplně jinak, než by kohokoli napadlo."
+        },
+        {
+          "id": "14c",
+          "icon": "ikony/14c.svg",
+          "text": "Stejné téma, jako jste vybrali loni a byla u toho sranda."
+        },
+        {
+          "id": "14d",
+          "icon": "ikony/14d.svg",
+          "text": "Známé a populární téma, které berou skoro všichni (např. zombie apokalypsa nebo vesmír)."
+        },
+        {
+          "id": "14e",
+          "icon": "ikony/14e.svg",
+          "text": "Téma, o kterém jsi nikdy neslyšel/a, ale jeho název zní bizarně a nezvykle."
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "order": 15,
+      "title": "HLOUČEK LIDÍ NA ULICI PŘEKVAPENĚ ZÍRÁ DO VÝLOHY. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "15a",
+          "icon": "ikony/15a.svg",
+          "text": "Nevšímáš si jich a jdeš prostě dál, chceš už dorazit do svého cíle."
+        },
+        {
+          "id": "15b",
+          "icon": "ikony/15b.svg",
+          "text": "Zastavíš se opodál a pozorně sleduješ situaci, abys sám/sama vydedukoval/a, na co ti lidé reagují."
+        },
+        {
+          "id": "15c",
+          "icon": "ikony/15c.svg",
+          "text": "Podíváš se později doma na sítích, jestli o tom někdo něco nepřidal."
+        },
+        {
+          "id": "15d",
+          "icon": "ikony/15d.svg",
+          "text": "Zeptáš se kámoše, který jde s tebou, jestli neví, co se děje, ale nezastavujete se."
+        },
+        {
+          "id": "15e",
+          "icon": "ikony/15e.svg",
+          "text": "Hned k nim přijdeš a protlačíš se dopředu, abys viděl/a, o co jde."
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "order": 16,
+      "title": "JAKOU TAJNOU MAGICKOU APKU BY SIS STÁHL/A DO MOBILU?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "16a",
+          "icon": "ikony/16a.svg",
+          "text": "Apka, která tě přenese kamkoli, kde jsi už někdy byl/a."
+        },
+        {
+          "id": "16b",
+          "icon": "ikony/16b.svg",
+          "text": "Apka, která ti o čemkoli, na co namíříš foťák, něco prozradí."
+        },
+        {
+          "id": "16c",
+          "icon": "ikony/16c.svg",
+          "text": "Apka na neomezené peníze do her (např. nekonečno Robuxů / V-Bucksů)."
+        },
+        {
+          "id": "16d",
+          "icon": "ikony/16d.svg",
+          "text": "Apka, která by přesně věděla, jak z tebe udělat nejoblíbenějšího člověka na celé škole."
+        },
+        {
+          "id": "16e",
+          "icon": "ikony/16e.svg",
+          "text": "Apka, co ti bude říkat všechno, co si myslí zvířata v tvém okolí."
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "order": 17,
+      "title": "NA PÁRTY JE KREATIVNÍ ZÓNA, KDE SI MŮŽEŠ VYZDOBIT TRIČKO. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "17a",
+          "icon": "ikony/17a.svg",
+          "text": "Zkusíš to, v čem jsi už fakt dobrý/á, aby výsledek vypadal super a mohl/a ses tím hned pochlubit."
+        },
+        {
+          "id": "17b",
+          "icon": "ikony/17b.svg",
+          "text": "Vyzkoušíš úplně novou techniku, kterou jsi ještě nikdy nedělal/a, protože tě fascinuje, jak to funguje (i když to možná na konci vyhodíš)."
+        },
+        {
+          "id": "17c",
+          "icon": "ikony/17c.svg",
+          "text": "Budeš dělat to samé, co kámoši, abyste se u toho mohli bavit a kecat."
+        },
+        {
+          "id": "17d",
+          "icon": "ikony/17d.svg",
+          "text": "Najdeš si na mobilu návod krok za krokem a uděláš to podle něj, abys to měl/a rychle a bez chyb za sebou."
+        },
+        {
+          "id": "17e",
+          "icon": "ikony/17e.svg",
+          "text": "Vezmeš různé materiály a barvy a budeš je jen tak náhodně spojovat, abys viděl/a, jaký zajímavý efekt z toho vznikne."
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "order": 18,
+      "title": "MÁŠ V NEZNÁMÉM MĚSTĚ DVĚ HODINY ROZCHOD. KAM VYRAZÍŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "18a",
+          "icon": "ikony/18a.svg",
+          "text": "Hned vyrazíš do známého obchodu oblíbené značky (např. obchody s oblečením, Apple store…), na který ses těšil/a."
+        },
+        {
+          "id": "18b",
+          "icon": "ikony/18b.svg",
+          "text": "Vyrazíš úplně jinam než všichni ostatní a necháš to náhodě."
+        },
+        {
+          "id": "18c",
+          "icon": "ikony/18c.svg",
+          "text": "Půjdeš k nejznámější památce, kde si všichni turisti dělají fotky, abys měl/a dobrou fotku i ty."
+        },
+        {
+          "id": "18d",
+          "icon": "ikony/18d.svg",
+          "text": "Zapadneš do kavárny s dobrou wifi, dáš si něco dobrého a budeš scrollovat mobil."
+        },
+        {
+          "id": "18e",
+          "icon": "ikony/18e.svg",
+          "text": "Zláká tě výloha podivného malého obchůdku kousek od hlavní ulice a jdeš si ty fascinující a netradiční věci prohlédnout blíž."
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "order": 19,
+      "title": "KRÁTÍŠ SI ČEKÁNÍ V KNIHOVNĚ. JAKOU KNIHU NEBO ČASOPIS SI VYBEREŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "19a",
+          "icon": "ikony/19a.svg",
+          "text": "Komiks nebo knihu, kterou jsi už četl/a a víš, že ji miluješ."
+        },
+        {
+          "id": "19b",
+          "icon": "ikony/19b.svg",
+          "text": "Knihu o vzdálené kultuře, o které vůbec nic nevíš, jen abys zjistil/a, jak tam lidé žijí."
+        },
+        {
+          "id": "19c",
+          "icon": "ikony/19c.svg",
+          "text": "Knihu k filmu, který zrovna běží v kině a všichni tvoji kámoši o něm mluví."
+        },
+        {
+          "id": "19d",
+          "icon": "ikony/19d.svg",
+          "text": "Časopis o hrách, sportu nebo celebritách, kde je spousta obrázků a nemusíš u toho moc přemýšlet."
+        },
+        {
+          "id": "19e",
+          "icon": "ikony/19e.svg",
+          "text": "Encyklopedii o tvorech, jejichž jména ani neumíš vyslovit."
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "order": 20,
+      "title": "MÁŠ ROZCHOD V INTERAKTIVNÍM VĚDECKÉM MUZEU. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "20a",
+          "icon": "ikony/20a.svg",
+          "text": "Půjdeš k největší a nejhlučnější atrakci, kde je největší zábava."
+        },
+        {
+          "id": "20b",
+          "icon": "ikony/20b.svg",
+          "text": "Zastavíš se u stánku s chemickými pokusy, kde dělají kombinace různých látek."
+        },
+        {
+          "id": "20c",
+          "icon": "ikony/20c.svg",
+          "text": "Zavěsíš se na svoje nejlepší kámoše a budeš chodit jen tam, kam jdou oni, hlavně ať jste spolu."
+        },
+        {
+          "id": "20d",
+          "icon": "ikony/20d.svg",
+          "text": "Najdeš si bufet nebo odpočinkovou zónu a budeš tam chillovat."
+        },
+        {
+          "id": "20e",
+          "icon": "ikony/20e.svg",
+          "text": "Zajdeš do tišší části, kde se zkoušejí věci, které ještě nejsou hotové."
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "order": 21,
+      "title": "CESTUJEŠ DLOUHO AUTEM A POSLOUCHÁŠ HUDBU PŘES SLUCHÁTKA. CO SI PUSTÍŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "21a",
+          "icon": "ikony/21a.svg",
+          "text": "Svůj „Top“ playlist, kde máš všechny svoje nejoblíbenější písničky a znáš všechny texty nazpaměť."
+        },
+        {
+          "id": "21b",
+          "icon": "ikony/21b.svg",
+          "text": "Skladby, ve kterých se hraje na nějaký úplně netradiční nástroj, o kterém jsi teprve teď slyšel/a, protože tě zajímá, jak zní."
+        },
+        {
+          "id": "21c",
+          "icon": "ikony/21c.svg",
+          "text": "Playlist „Global Top 50“, abys věděl/a, co zrovna jede ve světě."
+        },
+        {
+          "id": "21d",
+          "icon": "ikony/21d.svg",
+          "text": "Nějakou „Chill/Lo-fi“ hudbu, kterou používáš jen jako podkres, když chceš usnout nebo vypnout mozek."
+        },
+        {
+          "id": "21e",
+          "icon": "ikony/21e.svg",
+          "text": "Kapelu, jejíž název ti vůbec nic neříká."
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "order": 22,
+      "title": "JSTE S RODINOU NA HRADĚ A MÁŠ MOŽNOST VYBRAT, KAM SE PŮJDETE PODÍVAT. CO VYBEREŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "22a",
+          "icon": "ikony/22a.svg",
+          "text": "Hlavní zbrojnici s meči a brněními, kterou znáš z fotek a víš, že tě baví."
+        },
+        {
+          "id": "22b",
+          "icon": "ikony/22b.svg",
+          "text": "Část hradu, která není součástí prohlídkových tras a není známé, co tam je."
+        },
+        {
+          "id": "22c",
+          "icon": "ikony/22c.svg",
+          "text": "Bohatě zdobené komnaty, které jsou jasně nejpopulárnějším místem celé prohlídky."
+        },
+        {
+          "id": "22d",
+          "icon": "ikony/22d.svg",
+          "text": "Vyběhneš nahoru na věž, kde si jen sedneš a budeš relaxovat při výhledu na okolí."
+        },
+        {
+          "id": "22e",
+          "icon": "ikony/22e.svg",
+          "text": "Starou dílnu plnou baněk a divných přístrojů kvůli její tajemné atmosféře."
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "order": 23,
+      "title": "JSI S KÁMOŠI NA CHATĚ NEBO VE STANU. JE JEDNA RÁNO A NEMŮŽEŠ SPÁT. CO UDĚLÁŠ?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "23a",
+          "icon": "ikony/23a.svg",
+          "text": "Zůstaneš ve spacáku na mobilu a zapneš hru, aby sis splnil/a denní questy."
+        },
+        {
+          "id": "23b",
+          "icon": "ikony/23b.svg",
+          "text": "Potichu se vykradeš ven do tmavé zahrady zjistit, jaké to tam je v noci."
+        },
+        {
+          "id": "23c",
+          "icon": "ikony/23c.svg",
+          "text": "Začneš si potichu šeptat s kámoši vedle a probírat zážitky ze dne."
+        },
+        {
+          "id": "23d",
+          "icon": "ikony/23d.svg",
+          "text": "Zabalíš se do kapuce, dáš si sluchátka a usneš, ať jsi ráno fit."
+        },
+        {
+          "id": "23e",
+          "icon": "ikony/23e.svg",
+          "text": "Vykloníš se ze stanu/okna a budeš zkoušet rozeznat, co se venku všechno ozývá."
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "order": 24,
+      "title": "MŮŽEŠ NAKOUKNOUT NĚKAM, KAM SE BĚŽNĚ NEDOSTANEŠ. KAM TO BUDE?",
+      "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+      "options": [
+        {
+          "id": "24a",
+          "icon": "ikony/24a.svg",
+          "text": "Do prostor, které znáš ze seriálu tak dobře, že bys jimi prošel/prošla poslepu."
+        },
+        {
+          "id": "24b",
+          "icon": "ikony/24b.svg",
+          "text": "Někam, kde se vyrábí něco, co používáš každý den, a nikdy jsi neviděl/a, jak to vzniká."
+        },
+        {
+          "id": "24c",
+          "icon": "ikony/24c.svg",
+          "text": "Na místo, kde jsi byl/a jako malý/á a dobře si ho pamatuješ."
+        },
+        {
+          "id": "24d",
+          "icon": "ikony/24d.svg",
+          "text": "Na místo, o kterém doma někdo pořád vypráví, takže ho znáš do detailu."
+        },
+        {
+          "id": "24e",
+          "icon": "ikony/24e.svg",
+          "text": "Někam, kde tě nechají chodit samotného/samotnou a nikdo ti nebude nic vysvětlovat."
+        }
+      ]
+    }
+  ]
+}

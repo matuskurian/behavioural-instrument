@@ -1,0 +1,13 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="120" cy="120" r="104" fill="currentColor" opacity=".05" stroke="none"/><circle class="ring" cx="120" cy="120" r="104" opacity=".35"/>
+<ellipse cx="114" cy="136" rx="56" ry="38"/>
+<path d="M170 136 L206 110 L206 162 Z"/>
+<path d="M98 100q22 -17 46 -3"/>
+<path d="M100 172q20 13 40 3"/>
+<circle cx="88" cy="128" r="7" fill="currentColor"/>
+<path d="M60 146q22 10 44 3"/>
+<path d="M94 102q-18 -36 8 -48"/>
+<circle cx="110" cy="50" r="11"/>
+<path d="M110 36v-8"/>
+<path d="M95 42l-6 -6"/>
+<path d="M125 42l6 -6"/>
+</g></svg>

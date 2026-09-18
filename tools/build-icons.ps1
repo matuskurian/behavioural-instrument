@@ -17,9 +17,14 @@
 # stripped here: it is of no use to a browser and this runs on school wifi.
 #
 # NOTE: keep this file ASCII-only (PowerShell 5.1 reads .ps1 as ANSI).
+# -Prefix and -PadDigits apply the same id mapping as import-content.ps1, so a
+# drawing ends up under the option id that references it: 1a.svg -> icon-Q01a.
+# Without them the file stem is used as-is.
 param(
-  [string]$Source = "frontend_0917\ikony",
-  [string]$Out    = "assets\icons.svg"
+  [string]$Source = "vejkend-frontend-24\ikony",
+  [string]$Out    = "assets\icons.svg",
+  [string]$Prefix = "",
+  [int]$PadDigits = 0
 )
 
 $root = Split-Path $PSScriptRoot -Parent
@@ -50,7 +55,15 @@ foreach ($file in $files) {
   $inner = [regex]::Match($svg, '<svg[^>]*>(.*)</svg>', 'Singleline').Groups[1].Value.Trim()
   if (-not $inner) { throw "$($file.Name): could not find the drawing inside <svg>" }
 
-  $id = "icon-" + [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+  $stem = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+  if ($Prefix -or $PadDigits -gt 0) {
+    if ($stem -match '^(\d+)(.*)$') {
+      $stem = $Prefix + ([int]$Matches[1]).ToString().PadLeft($PadDigits, '0') + $Matches[2]
+    } else {
+      Write-Host ("  note: '{0}' does not start with a number; left unmapped" -f $stem) -ForegroundColor DarkGray
+    }
+  }
+  $id = "icon-" + $stem
   $symbol = '  <symbol id="' + $id + '" viewBox="' + $viewBox + '">' + "`n    " + $inner + "`n  </symbol>"
   $symbols += $symbol
   $totalOut += $symbol.Length

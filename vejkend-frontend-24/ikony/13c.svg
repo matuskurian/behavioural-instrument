@@ -1,0 +1,9 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="120" cy="120" r="104" fill="currentColor" opacity=".05" stroke="none"/><circle class="ring" cx="120" cy="120" r="104" opacity=".35"/>
+<circle cx="118" cy="124" r="62"/>
+<path d="M90 110q11 -13 22 0"/>
+<path d="M126 110q11 -13 22 0"/>
+<path d="M80 138q38 46 76 0z"/>
+<path d="M95 154q23 13 46 0"/>
+<path d="M170 140q9 13 0 20 -9 -7 0 -20z" fill="currentColor"/>
+<path d="M62 158q-9 13 0 20 9 -7 0 -20z" fill="currentColor"/>
+</g></svg>

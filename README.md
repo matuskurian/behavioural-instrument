@@ -107,7 +107,7 @@ if a deployed config asks for a roster the repository does not have.
 
 | file | holds | change it to… |
 |---|---|---|
-| `content/items.json` | items, options, captions, image paths | add/remove/reword items |
+| `content/items.json` | items, options, captions, drawing ids — **generated** | never by hand; re-import |
 | `content/strings.json` | every participant-facing string, Czech | reword any UI copy |
 | ↳ `key__immediate` | a variant of any string used only in that selection mode | keep the copy true to the interaction |
 | `content/roster.example.json` | template for the offline-only roster | copy to `roster.json` for `authMode: "roster"` |
@@ -116,6 +116,7 @@ if a deployed config asks for a roster the repository does not have.
 | `app.js` | logic only | — |
 | `assets/icons.svg` | the icon sprite, **generated** | never by hand — rebuild it |
 | `frontend_0917/` | the visual design and its brief, as delivered | reference only, not built from |
+| `tools/import-content.ps1` | turns a delivery into `items.json` | new question content |
 | `tools/build-icons.ps1` | turns source drawings into the sprite | add icons |
 | `tools/validate.mjs` | the pre-deploy checks | add a rule |
 
@@ -134,13 +135,34 @@ mockup itself is never built from.
 It supersedes §9's provisional asset spec. Options are not 3:2 photographs but
 square monochrome line drawings that take their colour from CSS.
 
-**To add drawings**, drop the `.svg` files into `frontend_0917/ikony/`, named
-by option id, then:
+## Taking a delivery
 
-    .\tools\build-icons.ps1
+A delivery arrives as a folder — content, drawings and a README describing
+both. Two commands turn it into the instrument, and neither touches code:
 
-That rebuilds `assets/icons.svg`, one sprite holding every drawing as a
-`<symbol>`. Reference one from `items.json` with `"icon": "10a"` — no path, no
+    .\tools\import-content.ps1 -Source vejkend-frontend-24\otazky.json
+    .\tools\build-icons.ps1    -Source vejkend-frontend-24\ikony -Prefix Q -PadDigits 2
+
+Run the first with `-WhatIf` to see what it would produce without writing.
+It checks the whole delivery before writing anything — a missing title, an
+option belonging to another question, a question with fewer than two options —
+and writes nothing if any of that is wrong, because a half-converted item set
+is worse than none: it looks complete.
+
+**Ids are translated at the boundary.** The design side numbers questions
+`1..24` and options `1a..24e`; internally they are `Q01..Q24` and
+`Q01a..Q24e`, zero-padded so they sort correctly as text and prefixed so no
+spreadsheet, CSV import or person mistakes an id for a number. Both scripts
+apply the same mapping, so a drawing lands under the option id that references
+it. `import-content.ps1` is the only place that mapping lives.
+
+`content/items.json` is therefore **generated**. Editing it by hand works until
+the next import silently discards the edit; change the delivery or the script
+instead.
+
+**To add or replace drawings**, put the `.svg` files in the delivery's `ikony/`
+folder named by option id, and re-run `build-icons.ps1`. That rebuilds
+`assets/icons.svg`, one sprite holding every drawing as a `<symbol>`. Reference one from `items.json` with `"icon": "10a"` — no path, no
 extension. An option with no `icon`, or one naming a drawing that is not in the
 sprite, renders a ring of the same size: a half-illustrated item set looks
 deliberate rather than broken, and a missing picture never stops a session.
@@ -422,6 +444,16 @@ comments and nowhere else. The screens, the content loading and the theming
 were not touched by the migration to Supabase, exactly as §12 requires. If a
 Supabase detail starts appearing outside that block, that is the defect §12
 warns about.
+
+**Open, from the 18 September delivery:** its README asks for the whole set of
+answers to be sent in one request after the last question, holding the session
+in memory until then. That is the opposite of what is built, and the trade runs
+the other way from how it reads: batching means a pupil who closes the tab at
+question 20 loses all twenty answers, where writing per choice loses at most
+one. The concern it addresses — half-finished response sets — is already
+handled, by defining completion as a pre-registered row-count threshold and by
+letting the unique constraint make the first answer win. Left as it is pending
+that conversation; it is a decision, not an oversight.
 
 Still not done, and worth knowing: row contents are **not** validated
 server-side against the known item and option ids. Row-level security

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><circle class="ring" cx="120" cy="120" r="104" fill="currentColor" opacity=".05" stroke="none"/><circle class="ring" cx="120" cy="120" r="104" opacity=".35"/>
+<ellipse cx="120" cy="142" rx="52" ry="46"/>
+<circle cx="84" cy="90" r="21"/>
+<circle cx="156" cy="90" r="21"/>
+<circle cx="84" cy="90" r="9"/>
+<circle cx="156" cy="90" r="9"/>
+<circle cx="102" cy="138" r="7" fill="currentColor"/>
+<circle cx="138" cy="138" r="7" fill="currentColor"/>
+<ellipse cx="120" cy="166" rx="21" ry="15"/>
+<ellipse cx="120" cy="157" rx="7.5" ry="5.5" fill="currentColor"/>
+<path d="M120 163v7"/>
+<path d="M120 170q-8 7 -15 1"/>
+<path d="M120 170q8 7 15 1"/>
+</g></svg>

@@ -98,8 +98,8 @@ export const CONFIG = {
    * Currently showing the two items that have real content and drawings; the
    * B01-B12 placeholders are still in items.json waiting for theirs.
    */
-  itemSubset: ["Q10", "Q13"],
-  itemLimit: 2,
+  itemSubset: null,
+  itemLimit: null,
   /**
    * How an option becomes an answer.
    *
