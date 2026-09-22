@@ -406,6 +406,27 @@ Kto vedie sedenie, nech počíta s tým, že:
   nefunguje. Vtedy návrat jednoducho nie je k dispozícii a účastník začína
   odznova; nástroj funguje inak úplne normálne.
 
+### Limit prihlásení (§12.3)
+
+Supabase omezuje počet přihlášení **na IP adresu**, a celá škola sedí za jednou
+adresou — takže třída, která se přihlašuje naráz, je přesně ten případ, kdy se
+na limit narazí. Ověřeno v praxi: při kontrole 35 účtů z jedné adresy přišlo
+`HTTP 429` u třicátého druhého. Limit projektu je proto zvednutý na **600 za 5
+minut** (Authentication → Rate Limits).
+
+Aplikace si s krátkým omezením poradí sama: přihlášení, které narazí na limit,
+se **dvakrát zopakuje** (respektuje hlavičku `Retry-After`, jinak po 2 a 4
+sekundách). Během toho je tlačítko zamčené a píše „Přihlašuji…“, aby netrpělivé
+dítě nevyslalo další požadavek proti témuž limitu. Když to projde, účastník se
+vůbec nedozví, že se něco dělo.
+
+Až když ani opakování nepomůže, zobrazí se: *„Teď se přihlašuje hodně lidí
+najednou. Počkej chvilku a zkus to prosím znovu — tvůj kód je v pořádku."*
+Vědomě to **není** hlášení o špatném kódu ani chybová obrazovka pro vývojáře:
+první by účastníka poslalo hledat chybu u sebe, druhá by přivolala dospělého
+k něčemu, co za pár sekund odejde samo. V konzoli je v tom případě rada, co
+udělat (zvednout limit, nebo rozložit start sedení do vln).
+
 ### Platnosť prihlásenia (§12.3)
 
 Automatické obnovovanie je zapnuté. Access token má štandardnú životnosť **1

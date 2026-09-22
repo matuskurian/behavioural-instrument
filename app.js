@@ -297,32 +297,73 @@ function supabaseUrl(path) {
 
 /* --- sign-in and keeping the session alive (§12.3) ---------------------- */
 
+/** Sign-ins are rate limited per IP address. A whole class shares one school
+ *  address, so a room logging in together is the expected way to meet this. */
+const RATE_LIMITED = 429;
+
+/** Two retries, a few seconds apart: enough to ride out a burst as a class
+ *  starts together, short enough that nobody thinks the screen has died. */
+const SIGN_IN_RETRIES = 2;
+
+const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+/** Honours Retry-After when the server sends one, and backs off otherwise. */
+function retryDelayMs(response, attempt) {
+  const header = Number(response.headers.get("Retry-After"));
+  if (Number.isFinite(header) && header > 0) return Math.min(header * 1000, 10000);
+  return 2000 * Math.pow(2, attempt);
+}
+
 /**
- * Returns the token payload, or null when the code or password is simply
- * wrong. Throws only when something is broken rather than mistyped — an
- * unreachable project, a bad key — because those two cases need different
- * answers: a Czech retry message, or the developer error screen.
+ * Three outcomes, in words the login screen can act on without knowing any
+ * HTTP:
+ *
+ *   { status: "ok", token }  signed in
+ *   { status: "invalid" }    the code or password is wrong — or the account
+ *                            was never confirmed, which is the mistake the
+ *                            README warns about, hence the logged reason
+ *   { status: "busy" }       rate limited even after retrying: not the
+ *                            participant's fault and not a broken deployment,
+ *                            so it must not produce either of those answers
+ *
+ * Anything else throws, because an unreachable project or a bad key is a
+ * defect the researcher needs to see rather than a message to a child.
  */
 async function signIn(code, password) {
-  const response = await fetch(supabaseUrl("/auth/v1/token?grant_type=password"), {
-    method: "POST",
-    cache: "no-store",
-    headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ email: `${code}${PARTICIPANT_EMAIL_DOMAIN}`, password })
-  });
+  for (let attempt = 0; ; attempt += 1) {
+    const response = await fetch(supabaseUrl("/auth/v1/token?grant_type=password"), {
+      method: "POST",
+      cache: "no-store",
+      headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: `${code}${PARTICIPANT_EMAIL_DOMAIN}`, password })
+    });
 
-  if (response.ok) return response.json();
+    if (response.ok) return { status: "ok", token: await response.json() };
 
-  // 400 is what Supabase Auth returns for invalid credentials, and also for an
-  // account that exists but was never confirmed — the mistake the README warns
-  // about, which is why the reason is logged rather than swallowed.
-  if (response.status === 400) {
-    const detail = await response.json().catch(() => ({}));
-    console.warn(`[auth] sign-in refused: ${detail.error_code || detail.error || "invalid credentials"}`);
-    return null;
+    if (response.status === 400) {
+      const detail = await response.json().catch(() => ({}));
+      console.warn(
+        `[auth] sign-in refused: ${detail.error_code || detail.error || "invalid credentials"}`
+      );
+      return { status: "invalid" };
+    }
+
+    if (response.status === RATE_LIMITED) {
+      if (attempt >= SIGN_IN_RETRIES) {
+        console.error(
+          "[auth] still rate limited after retrying. Raise the sign-in limit in " +
+            "Supabase (Authentication -> Rate Limits) or stagger the start of the session."
+        );
+        return { status: "busy" };
+      }
+      const delay = retryDelayMs(response, attempt);
+      console.warn(`[auth] rate limited; retrying in ${delay}ms`);
+      await wait(delay);
+      continue;
+    }
+
+    throw new Error(`sign-in failed with HTTP ${response.status}`);
   }
-
-  throw new Error(`sign-in failed with HTTP ${response.status}`);
 }
 
 function holdSession(token) {
@@ -369,8 +410,11 @@ async function refreshSession() {
 }
 
 /**
- * The login screen's whole view of authentication. Returns the participant id
- * on success and null on a wrong code or password.
+ * The login screen's whole view of authentication:
+ *
+ *   { status: "ok", participantId }
+ *   { status: "invalid" }   wrong code or password
+ *   { status: "busy" }      too many sign-ins at once; try again shortly
  */
 async function checkCredential(code, password) {
   if (CONFIG.authMode === "remote") {
@@ -381,16 +425,17 @@ async function checkCredential(code, password) {
     // single row refused with 42501 — invisibly, because writes are
     // fire-and-forget and nobody is ever told. Verified against the live
     // project on 2026-09-17: "test" accepted, "TEST" refused.
-    const token = await signIn(code.trim().toLowerCase(), password);
-    if (!token) return null;
-    holdSession(token);
+    const result = await signIn(code.trim().toLowerCase(), password);
+    if (result.status !== "ok") return { status: result.status };
+    holdSession(result.token);
 
     // Take the id from the account that was actually signed in, not from what
     // was typed. It is the one value the policy is guaranteed to accept.
-    const email = token.user && typeof token.user.email === "string" ? token.user.email : "";
+    const user = result.token.user;
+    const email = user && typeof user.email === "string" ? user.email : "";
     const fromAccount = email.split("@")[0];
     if (!fromAccount) throw new Error("sign-in returned no account email to derive participant_id from");
-    return fromAccount;
+    return { status: "ok", participantId: fromAccount };
   }
 
   // authMode "roster": offline only, and unreachable above. Not authentication
@@ -398,7 +443,7 @@ async function checkCredential(code, password) {
   const match = roster.participants.find(
     (participant) => participant.id === code && participant.password === password
   );
-  return match ? match.id : null;
+  return match ? { status: "ok", participantId: match.id } : { status: "invalid" };
 }
 
 /* --- writing a row (§6.2, §12.4) ---------------------------------------- */
@@ -667,6 +712,8 @@ function pinHistory() {
 
 function renderLogin(prefillId = "") {
   const error = el("p", { class: "form-error", hidden: true, role: "alert" });
+  const submit = el("button", { class: "button", type: "submit", text: t("login.submit") });
+  let submitting = false;
 
   const idInput = el("input", {
     class: "field__input",
@@ -704,22 +751,42 @@ function renderLogin(prefillId = "") {
           error.hidden = false;
           return;
         }
+        // A sign-in can now take a few seconds, because a rate-limited one is
+        // retried rather than failed. Freeze the form while it is in flight:
+        // a second submit would be a second request against the very limit
+        // being waited out, and an impatient child will press it.
+        if (submitting) return;
+        submitting = true;
+        submit.disabled = true;
+        submit.textContent = t("login.working");
+        error.hidden = true;
+
         try {
-          const participantId = await checkCredential(id, password);
-          if (!participantId) {
+          const result = await checkCredential(id, password);
+
+          if (result.status === "busy") {
+            // Not their mistake, and not a broken instrument. Saying either
+            // would be a lie, and the second would fetch an adult.
+            error.textContent = t("login.busy");
+            error.hidden = false;
+            passwordInput.focus();
+            return;
+          }
+          if (result.status !== "ok") {
             error.textContent = t("login.invalid");
             error.hidden = false;
             passwordInput.value = "";
             passwordInput.focus();
             return;
           }
-          session.participantId = participantId;
+
+          session.participantId = result.participantId;
           pinHistory();
 
           // A returning participant continues where they stopped; everyone
           // else, including the same participant after two hours, sees the
           // intro (§12.5).
-          const resumeAt = resumeIndexFor(participantId);
+          const resumeAt = resumeIndexFor(result.participantId);
           if (resumeAt === null) {
             renderIntro();
           } else {
@@ -731,6 +798,12 @@ function renderLogin(prefillId = "") {
           }
         } catch (failure) {
           showError([`login: ${failure.message}`]);
+        } finally {
+          // Restored even on the paths that navigate away, so a participant
+          // who lands back here never finds a dead button.
+          submitting = false;
+          submit.disabled = false;
+          submit.textContent = t("login.submit");
         }
       }
     },
@@ -746,7 +819,7 @@ function renderLogin(prefillId = "") {
         el("span", { class: "field__label", text: t("login.passwordLabel") }),
         passwordInput
       ]),
-      el("button", { class: "button", type: "submit", text: t("login.submit") })
+      submit
     ]
   );
 

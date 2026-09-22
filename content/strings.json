@@ -17,8 +17,11 @@
     "idLabel": "Kód",
     "passwordLabel": "Heslo",
     "submit": "Pokračovat",
+    "working": "Přihlašuji…",
     "empty": "Vyplň prosím obě políčka.",
-    "invalid": "Kód nebo heslo nesouhlasí. Zkus to prosím znovu."
+    "invalid": "Kód nebo heslo nesouhlasí. Zkus to prosím znovu.",
+    "_busy_note": "Zobrazí se, když se naráz přihlašuje příliš mnoho lidí (limit Supabase na IP adresu). Není to chyba účastníka ani rozbitá aplikace — proto ani jedno z toho netvrdíme.",
+    "busy": "Teď se přihlašuje hodně lidí najednou. Počkej chvilku a zkus to prosím znovu — tvůj kód je v pořádku."
   },
 
   "intro": {

@@ -110,7 +110,7 @@ function checkRoster(roster) {
 const REQUIRED_STRINGS = [
   "app.title", "app.wordmark", "app.tagline",
   "login.heading", "login.idLabel", "login.passwordLabel", "login.submit",
-  "login.empty", "login.invalid",
+  "login.working", "login.empty", "login.invalid", "login.busy",
   "intro.heading", "intro.body", "intro.start",
   "item.progress", "item.eyebrow", "item.lead", "item.next",
   "summary.heading", "summary.intro", "summary.closing", "summary.nothingNew"
