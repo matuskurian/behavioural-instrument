@@ -26,7 +26,10 @@ param(
 
 if (-not (Test-Path $RosterPath)) { throw "No roster at $RosterPath" }
 
-$roster = Import-Csv -Path $RosterPath
+# @() forces an array: PowerShell 5.1 hands back a bare object for a one-row
+# CSV, and a bare object has no .Count, so every count below would come out
+# empty on a single-participant roster.
+$roster = @(Import-Csv -Path $RosterPath)
 if (-not $roster) { throw "$RosterPath is empty" }
 foreach ($column in 'code', 'password') {
   if ($roster[0].PSObject.Properties.Name -notcontains $column) {
@@ -36,15 +39,27 @@ foreach ($column in 'code', 'password') {
 
 # Check the whole file before touching the network: a half-created roster is
 # worse than none, because you cannot tell by looking which half is done.
+#
+# Codes are lowercased here rather than rejected. Supabase lowercases the
+# address anyway and the policy compares participant_id to the lowercased
+# local part, so this only makes explicit what the platform would do -- a card
+# printed in capitals still works, and the data reads lowercase either way.
+#
+# Passwords are left exactly as given. They are case-sensitive, and the same
+# CSV is what the cards are printed from: silently changing one here would
+# create accounts that no longer match the paper in a pupil's hand.
 $problems = @()
 $seen = @{}
+$lowercased = 0
 foreach ($row in $roster) {
   $code = $row.code
   if ([string]::IsNullOrWhiteSpace($code)) { $problems += "empty code"; continue }
-  if ($code -cne $code.ToLower()) { $problems += "$code has capitals; participant_id must be lowercase (see README)" }
+  if ($code -cne $code.ToLower()) { $lowercased++ }
+  $row.code = $code.Trim().ToLower()
+  $code = $row.code
   if ($code -match '[@\s]') { $problems += "$code contains a space or @" }
-  if ($seen.ContainsKey($code.ToLower())) { $problems += "$code appears twice" }
-  $seen[$code.ToLower()] = $true
+  if ($seen.ContainsKey($code)) { $problems += "$code appears twice" }
+  $seen[$code] = $true
   if ([string]::IsNullOrWhiteSpace($row.password)) { $problems += "$code has no password" }
   elseif ($row.password.Length -lt 6) { $problems += "$code password is under Supabase's 6-character minimum" }
 }
@@ -56,6 +71,13 @@ if ($problems.Count -gt 0) {
 
 Write-Host "$($roster.Count) participants in $RosterPath"
 Write-Host "Target: $ProjectUrl   addresses: <code>@$EmailDomain"
+if ($lowercased -gt 0) {
+  Write-Host "$lowercased code(s) lowercased for the account; participant_id will read lowercase in the data."
+}
+$mixedCasePasswords = @($roster | Where-Object { $_.password -cne $_.password.ToLower() }).Count
+if ($mixedCasePasswords -gt 0) {
+  Write-Host "$mixedCasePasswords password(s) contain capitals, used exactly as given: passwords are case-sensitive, so the cards must show the same capitals."
+}
 Write-Host ""
 
 if ($WhatIf) {

@@ -330,10 +330,16 @@ odlišné a písateľné na českej klávesnici bez diakritiky (`dest-list-5`,
 na kartičke pletú s O a l.
 
 `create-users.ps1` z toho CSV založí potvrdené účty. Najprv skontroluje celý
-súbor — veľké písmená v kóde, krátke heslo, duplicitný kód — a ak niečo nájde,
-neodošle **nič**: polovične založený roster je horší než žiadny, lebo sa naň
-nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo by
-založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
+súbor — krátke heslo, duplicitný kód, medzera alebo @ v kóde — a ak niečo
+nájde, neodošle **nič**: polovične založený roster je horší než žiadny, lebo sa
+naň nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo
+by založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
+
+**Kódy si prepíše na malé písmená sám** a napíše, koľkých sa to týkalo. Kartička
+môže byť vytlačená veľkými písmenami; Supabase e-mail aj tak zmenší a
+`participant_id` bude v dátach malými. **Heslá nechá presne tak, ako sú** —
+sú citlivé na veľkosť písmen a z toho istého CSV sa tlačia kartičky, takže tiché
+prepísanie hesla by založilo účty, ktoré nesedia s papierom v ruke dieťaťa.
 
 **O kľúči.** Zakladanie účtov potrebuje kľúč, ktorý obchádza row-level
 security. Supabase ho volá dvoma menami podľa generácie: staršie projekty majú
