@@ -3,7 +3,8 @@
   "_version": "2026-09-11",
 
   "app": {
-    "title": "Úloha",
+    "_title_note": "Titulek záložky prohlížeče. Shodný s wordmarkem, aby karta a stránka říkaly totéž. Záměrně neprozrazuje, co nástroj měří, a vyhýbá se slovům jako test, úloha nebo dotazník — úvodní obrazovka dítěti slibuje, že o test nejde, a titulek by to neměl popírat.",
+    "title": "Den navíc",
     "_wordmark_note": "Pracovní název, zatím neschválený — pochází z návrhu frontendu.",
     "wordmark": "Den navíc",
     "tagline": "24 hodin jen pro tebe"
