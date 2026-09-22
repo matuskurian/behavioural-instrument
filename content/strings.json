@@ -4,10 +4,10 @@
 
   "app": {
     "_title_note": "Titulek záložky prohlížeče. Shodný s wordmarkem, aby karta a stránka říkaly totéž. Záměrně neprozrazuje, co nástroj měří, a vyhýbá se slovům jako test, úloha nebo dotazník — úvodní obrazovka dítěti slibuje, že o test nejde, a titulek by to neměl popírat.",
-    "title": "Den navíc",
-    "_wordmark_note": "Pracovní název, zatím neschválený — pochází z návrhu frontendu.",
-    "wordmark": "Den navíc",
-    "tagline": "24 hodin jen pro tebe"
+    "title": "Dva dni navíc",
+    "_wordmark_note": "Pracovní název, zatím neschválený. Wordmark i tagline vykresluje CSS verzálkami, takže se tu píšou normálně. Drží se v souladu s úvodní obrazovkou: 48 hodin, dva dny.",
+    "wordmark": "Dva dni navíc",
+    "tagline": "48 hodin jen pro tebe"
   },
 
   "login": {
@@ -26,27 +26,23 @@
   },
 
   "intro": {
-    "heading": "Než svět zahyne",
+    "heading": "Tvých 48 hodin",
     "body": [
-      "ZÁSTUPNÝ TEXT — tato část čeká na finální znění příběhového rámce (§14).",
-      "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
-      "Obrázek vybereš kliknutím — kolem vybraného obrázku se objeví rámeček. Dokud nepokračuješ dál, můžeš si to rozmyslet a kliknout na jiný obrázek; rámeček se přesune.",
-      "Když jsi s výběrem spokojený nebo spokojená, klikni dole na tlačítko „Další“. Tím se přejde na další obrazovku. Zpátky se vrátit nedá a volbu už pak nejde změnit.",
-      "Kdyby ti aplikace spadla nebo se zavřela, můžeš se znovu přihlásit a pokračovat. U každé otázky se ale počítá ta odpověď, kterou jsi dal nebo dala jako první — pokud bys na stejnou otázku odpovídal znovu, ta druhá odpověď se už nikam nezapíše. V přehledu na konci proto uvidíš jen odpovědi, které se skutečně zaznamenaly.",
-      "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
-      "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
-      "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
+      "Někde v jedné laboratoři se to konečně povedlo.",
+      "Vědci roky zkoušeli vyrobit čas. Ne zpomalit ho, ne se vrátit zpátky — vyrobit. A teď to funguje: umí do týdne vložit dva dny navíc. Osmačtyřicet hodin, které nikomu nechybí a o které nikdo nepřijde. Prostě tam navíc jsou.",
+      "Zítra ráno se probudíš a ty dva dny budeš mít ty.",
+      "Vyrobený čas ale nevzniká z ničeho. Přístroj ho skládá z možností, které se ti v ten okamžik nabízejí. V každé situaci ti pět z nich ukáže a ty si vybereš tu svou. Přístroj ji zapíše a pokračuje dál.",
+      "Všechno ostatní zůstává úplně normální. Jsi pořád ty, se stejnými kamarády, rodinou i věcmi, které tě baví. Škola v těch dvou dnech není, úkoly ani kroužky a tréninky taky ne. Peníze, dopravu ani ničí svolení řešit nemusíš — o to se přístroj postará.",
+      "Vybírej to, co by sis vybral/a doopravdy. Když ti žádná z pěti možností nesedí úplně přesně, vyber tu nejbližší — přístroj jich víc najednou neudrží."
     ],
-    "_body__immediate_note": "Použije se místo \"body\", když je config.selectionMode = \"immediate\" (jedno kliknutí = odpověď). Liší se jen odstavec o ovládání; zbytek držte v souladu s \"body\".",
-    "body__immediate": [
-      "ZÁSTUPNÝ TEXT — tato část čeká na finální znění příběhového rámce (§14).",
-      "Na každé obrazovce uvidíš krátký text a pod ním pět obrázků. Přečti si text a vyber jeden obrázek — ten, který podle tebe odpovídá tomu, co bys udělal nebo udělala ty.",
-      "Obrázek vybereš kliknutím. Jakmile klikneš, aplikace rovnou přejde na další obrazovku — zpátky se vrátit nedá a volbu už nejde změnit. Vyber tedy to, co tě napadne jako první.",
-      "Kdyby ti aplikace spadla nebo se zavřela, můžeš se znovu přihlásit a pokračovat. U každé otázky se ale počítá ta odpověď, kterou jsi dal nebo dala jako první — pokud bys na stejnou otázku odpovídal znovu, ta druhá odpověď se už nikam nezapíše. V přehledu na konci proto uvidíš jen odpovědi, které se skutečně zaznamenaly.",
-      "Vybírat můžeš i klávesnicí: klávesou Tab se mezi obrázky přesouváš, klávesou Enter vybíráš a číslice 1 až 5 vyberou obrázek rovnou.",
-      "Není to test. Není tu správná ani špatná odpověď a nikdo tě nebude hodnotit. Není na to ani časový limit.",
-      "Na konci uvidíš přehled toho, co jsi vybral nebo vybrala."
+    "_checklist_note": "Odrážky pod hlavním textem. Prázdné pole je v pořádku — seznam se pak nevykreslí.",
+    "checklistHeading": "Než začneš:",
+    "checklist": [
+      "Není to test. Neexistují správné ani špatné odpovědi a nedostaneš za ně známku.",
+      "Tvoje jednotlivé odpovědi neuvidí učitelé ani rodiče.",
+      "Zabere ti to přibližně 15–20 minut a čeká tě 24 rozhodnutí."
     ],
+    "closing": "Tak jo. Přístroj je nastavený. Tvých 48 hodin právě začíná.",
     "start": "Začít"
   },
 

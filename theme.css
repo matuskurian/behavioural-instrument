@@ -462,6 +462,27 @@ body::before {
   font-size: var(--type-sm);
 }
 
+/* --- intro checklist ----------------------------------------------------- */
+
+.intro__checklist { margin: var(--space-3) 0; }
+
+.intro__checklist-heading {
+  margin: 0 0 var(--space-1);
+  font-weight: var(--weight-semi);
+}
+
+.intro__list {
+  margin: 0;
+  padding-left: var(--space-3);
+  max-width: var(--measure);
+  color: var(--color-ink-muted);
+}
+
+.intro__list li { margin-bottom: var(--space-05); }
+.intro__list li::marker { color: var(--color-accent); }
+
+.intro__closing { margin-top: var(--space-3); }
+
 .field { display: block; margin-bottom: var(--space-3); }
 
 .field__label {

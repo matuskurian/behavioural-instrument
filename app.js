@@ -840,9 +840,31 @@ function renderIntro() {
   });
   start.setAttribute("data-autofocus", "");
 
+  // The checklist and the closing line are optional: copy that does not use
+  // them simply leaves them out of strings.json and nothing empty is drawn.
+  const checklist = lookup("intro.checklist");
+  const checklistHeading = lookup("intro.checklistHeading");
+  const closing = lookup("intro.closing");
+
   const panel = el("div", { class: "panel" }, [
     el("h1", { class: "heading", text: t("intro.heading") }),
     ...paragraphs("intro.body"),
+
+    Array.isArray(checklist) && checklist.length
+      ? el("div", { class: "intro__checklist" }, [
+          typeof checklistHeading === "string"
+            ? el("p", { class: "intro__checklist-heading", text: checklistHeading })
+            : null,
+          el(
+            "ul",
+            { class: "intro__list" },
+            checklist.map((line) => el("li", { text: line }))
+          )
+        ])
+      : null,
+
+    typeof closing === "string" ? el("p", { class: "body-text intro__closing", text: closing }) : null,
+
     el("p", { class: "body-text" }, start)
   ]);
 

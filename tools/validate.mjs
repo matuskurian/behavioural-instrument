@@ -112,6 +112,8 @@ const REQUIRED_STRINGS = [
   "login.heading", "login.idLabel", "login.passwordLabel", "login.submit",
   "login.working", "login.empty", "login.invalid", "login.busy",
   "intro.heading", "intro.body", "intro.start",
+  // Optional by design, so not required here: intro.checklist,
+  // intro.checklistHeading, intro.closing.
   "item.progress", "item.eyebrow", "item.lead", "item.next",
   "summary.heading", "summary.intro", "summary.closing", "summary.nothingNew"
 ];
