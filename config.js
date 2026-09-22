@@ -95,10 +95,15 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["Q13", "Q10"],          these two, in this order
    *
-   * Currently showing the two items that have real content and drawings; the
-   * B01-B12 placeholders are still in items.json waiting for theirs.
+   * Currently listing all 24 items in reverse, Q24 first: the full set, in a
+   * deliberate order rather than the file's. Every item is present exactly
+   * once, so this changes the sequence and nothing else.
    */
-  itemSubset: null,
+  itemSubset: [
+    "Q24", "Q23", "Q22", "Q21", "Q20", "Q19", "Q18", "Q17",
+    "Q16", "Q15", "Q14", "Q13", "Q12", "Q11", "Q10", "Q09",
+    "Q08", "Q07", "Q06", "Q05", "Q04", "Q03", "Q02", "Q01"
+  ],
   itemLimit: null,
   /**
    * How an option becomes an answer.

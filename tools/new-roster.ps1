@@ -14,9 +14,15 @@
 # NOTE: keep this file ASCII-only. PowerShell 5.1 reads .ps1 as ANSI, and a
 # stray em-dash arrives as a curly quote, which it treats as a string
 # delimiter. The parse error that follows points at the wrong line.
+#   -PasswordStyle words   two words and a digit: dest-list-5 (default)
+#   -PasswordStyle simple  eight letters, alternating consonant and vowel:
+#                          kabemuzo. Pronounceable, so it survives being read
+#                          off a printed card and typed by a twelve-year-old,
+#                          and every character is unshifted on a Czech layout.
 param(
   [int]$Count = 30,
   [string]$Prefix = "cz",
+  [ValidateSet("words", "simple")][string]$PasswordStyle = "words",
   [Parameter(Mandatory = $true)][string]$OutFile,
   [switch]$Force
 )
@@ -31,10 +37,20 @@ $words = @(
   'jablko','hruska','svicka','provaz','kotva','majak','zvon','brana','veza','cesta'
 )
 
+# For the "simple" style. No 'l' among the consonants and no 'y': on a printed
+# card l reads as 1 or I. Vowels keep 'i' because a dotted i is distinct in
+# every sane face and dropping it would make the output monotonous.
+$consonants = @('b','c','d','f','g','h','j','k','m','n','p','r','s','t','v','z')
+$vowels     = @('a','e','i','o','u')
+
+# Minimal guard against a generated string reading as something you would
+# rather not hand a twelve-year-old. Not exhaustive: eyeball the output.
+$blocked = @('kok','pic','hov','kur','sex','prd','zmr','cur')
+
 if ((Test-Path $OutFile) -and -not $Force) {
   throw "$OutFile already exists. Refusing to overwrite a credential list without -Force."
 }
-if ($Count -gt ($words.Count * $words.Count)) {
+if ($PasswordStyle -eq "words" -and $Count -gt ($words.Count * $words.Count)) {
   throw "Cannot generate $Count distinct passwords from this word list."
 }
 
@@ -46,15 +62,31 @@ function Pick($array) {
   return $array[$value % $array.Count]
 }
 
+function New-WordPassword {
+  do {
+    $a = Pick $words
+    $b = Pick $words
+  } while ($a -eq $b)
+  $d = Pick @(2,3,4,5,6,7,8,9)            # 0 and 1 omitted: too like O and l
+  return "$a-$b-$d"
+}
+
+function New-SimplePassword {
+  # Four consonant-vowel pairs: eight characters, pronounceable, all letters.
+  $p = ""
+  for ($k = 0; $k -lt 4; $k++) { $p += (Pick $consonants) + (Pick $vowels) }
+  return $p
+}
+
 $seen = @{}
 $rows = @()
 for ($i = 1; $i -le $Count; $i++) {
   do {
-    $a = Pick $words
-    $b = Pick $words
-    $d = Pick @(2,3,4,5,6,7,8,9)          # 0 and 1 omitted: too like O and l
-    $password = "$a-$b-$d"
-  } while ($a -eq $b -or $seen.ContainsKey($password))
+    if ($PasswordStyle -eq "simple") { $password = New-SimplePassword }
+    else { $password = New-WordPassword }
+    $rude = $false
+    foreach ($bad in $blocked) { if ($password.Contains($bad)) { $rude = $true } }
+  } while ($rude -or $seen.ContainsKey($password))
   $seen[$password] = $true
 
   $rows += [PSCustomObject]@{
