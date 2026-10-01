@@ -11,6 +11,6 @@
     "working": "...",
     "empty": "Fill in both fields.",
     "invalid": "Incorrect Login/Password.",
-    "busy": "A lot of people are signing in at once. Wait a moment and try again - your Login is fine."
+    "busy": "Too many people at once. Wait and try again - your Login is fine."
   }
 }
