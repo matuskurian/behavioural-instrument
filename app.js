@@ -40,6 +40,9 @@ async function loadConfig() {
 
 const session = {
   participantId: null,
+  /** Resolved once at login from the account, then fixed for the whole run:
+   *  it selects the strings file and rides along on every row (§13). */
+  locale: null,
   items: [],          // validated, in presentation order
   index: 0,           // index of the item currently on screen
   choices: [],        // [{ item, option, row }] — drives the summary screen
@@ -158,6 +161,37 @@ async function loadIcons(path) {
   }
 }
 
+/**
+ * Swaps the pre-auth strings for the participant's own (§13.6).
+ *
+ * Called once, after login and before the first screen that uses them. A
+ * fetch that fails falls back to Czech rather than stopping the session: a
+ * child in front of a laptop is better served by the wrong language than by
+ * no instrument at all.
+ */
+async function loadLocaleStrings(locale) {
+  const path = CONFIG.content.strings.replace("{locale}", locale);
+  try {
+    strings = await loadJSON(path);
+    console.info(`[locale] ${locale} strings loaded from ${path}`);
+    if (strings._untranslated) console.warn(`[locale] ${locale}: ${strings._untranslated}`);
+  } catch (error) {
+    console.error(
+      `[locale] could not load ${path} (${error.message}); falling back to ${DEFAULT_LOCALE}`
+    );
+    if (locale !== DEFAULT_LOCALE) {
+      try {
+        strings = await loadJSON(CONFIG.content.strings.replace("{locale}", DEFAULT_LOCALE));
+      } catch (fallbackError) {
+        console.error(`[locale] the fallback failed too: ${fallbackError.message}`);
+      }
+    }
+  }
+  // The title may be worded differently per locale; harmless if it is not.
+  const title = lookup("app.title");
+  if (typeof title === "string") document.title = title;
+}
+
 async function loadJSON(path) {
   const response = await fetch(path, { cache: "no-store" });
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
@@ -195,10 +229,7 @@ function validateItems(data) {
       seenItemIds.add(item.id);
     }
 
-    if (typeof item.framing !== "string" || item.framing.trim() === "") {
-      problems.push(`${where}: framing is missing or empty`);
-    }
-
+    // Text is no longer here: it lives in the locale strings file (§13.3).
     if (!Array.isArray(item.options) || item.options.length < 2) {
       problems.push(`${where}: needs an options array with at least two entries`);
       return;
@@ -217,9 +248,6 @@ function validateItems(data) {
         problems.push(`${optionWhere}: duplicate option id "${option.id}" within this item`);
       } else {
         seenOptionIds.add(option.id);
-      }
-      if (typeof option.caption !== "string") {
-        problems.push(`${optionWhere}: caption must be a string (may be empty)`);
       }
     });
   });
@@ -282,6 +310,30 @@ function isoWithOffset(date) {
 /** Participant codes are turned into addresses for Supabase Auth. The domain
  *  is an implementation detail and is never shown to anyone (§12.3). */
 const PARTICIPANT_EMAIL_DOMAIN = "@instrument.local";
+
+/** The locales the instrument can run in (§13). */
+const LOCALES = ["cs", "sk", "en"];
+const DEFAULT_LOCALE = "cs";
+
+/**
+ * The account's locale, resolved to one we can actually render (§13.2).
+ *
+ * The batch verifier should make an invalid value unreachable, so this is
+ * defence in depth for accounts made by hand in the dashboard or created
+ * before the verifier existed. An absent locale is ordinary and silent; a
+ * value we do not recognise is not, and says so with the participant id so
+ * the account can be found and fixed.
+ */
+function resolveLocale(user, participantId) {
+  const raw = user && user.user_metadata ? user.user_metadata.locale : undefined;
+  if (raw === undefined || raw === null || raw === "") return DEFAULT_LOCALE;
+  if (LOCALES.includes(raw)) return raw;
+  console.warn(
+    `[locale] participant ${participantId} has locale ${JSON.stringify(raw)}, ` +
+      `which is not one of ${LOCALES.join(", ")}; falling back to ${DEFAULT_LOCALE}`
+  );
+  return DEFAULT_LOCALE;
+}
 
 /** Postgres, via PostgREST. 23505 is the unique (participant_id, item_id)
  *  constraint: the participant answered an item they had already answered,
@@ -435,7 +487,7 @@ async function checkCredential(code, password) {
     const email = user && typeof user.email === "string" ? user.email : "";
     const fromAccount = email.split("@")[0];
     if (!fromAccount) throw new Error("sign-in returned no account email to derive participant_id from");
-    return { status: "ok", participantId: fromAccount };
+    return { status: "ok", participantId: fromAccount, locale: resolveLocale(user, fromAccount) };
   }
 
   // authMode "roster": offline only, and unreachable above. Not authentication
@@ -443,7 +495,14 @@ async function checkCredential(code, password) {
   const match = roster.participants.find(
     (participant) => participant.id === code && participant.password === password
   );
-  return match ? { status: "ok", participantId: match.id } : { status: "invalid" };
+  if (!match) return { status: "invalid" };
+  // Offline mode has no account to carry metadata, so the roster entry may
+  // name a locale for copy work; otherwise the default.
+  return {
+    status: "ok",
+    participantId: match.id,
+    locale: LOCALES.includes(match.locale) ? match.locale : DEFAULT_LOCALE
+  };
 }
 
 /* --- writing a row (§6.2, §12.4) ---------------------------------------- */
@@ -781,6 +840,9 @@ function renderLogin(prefillId = "") {
           }
 
           session.participantId = result.participantId;
+          session.locale = result.locale;
+          // Before any screen that uses them, and before the first row.
+          await loadLocaleStrings(session.locale);
           pinHistory();
 
           // A returning participant continues where they stopped; everyone
@@ -902,6 +964,22 @@ const current = {
   moves: 0           // times the frame moved to a different option after that
 };
 
+/* Item text lives in the locale strings file, keyed by the ids in items.json
+ * (§13.3). items.json itself carries no words at all, so adding a language is
+ * a new strings file and nothing else. A key that is missing renders as
+ * [items.Q01.framing], which is ugly on purpose: a gap in a translation
+ * should be impossible to read past. */
+const itemFraming = (item) => t(`items.${item.id}.framing`);
+const itemLead = (item) => {
+  const own = lookup(`items.${item.id}.lead`);
+  return typeof own === "string" ? own : t("item.lead");
+};
+const itemLabel = (item) => {
+  const own = lookup(`items.${item.id}.label`);
+  return typeof own === "string" ? own : itemFraming(item);
+};
+const optionCaption = (item, option) => t(`items.${item.id}.options.${option.id}`);
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
@@ -990,7 +1068,7 @@ function renderItem() {
       },
       [
         optionMedia(option),
-        el("span", { class: "option__caption", text: option.caption || "" }),
+        el("span", { class: "option__caption", text: optionCaption(item, option) }),
         // The keyboard shortcuts still work; the badge is off by default
         // because the design does not have one. showShortcutHints brings it back.
         CONFIG.numericShortcuts && CONFIG.showShortcutHints && i < 9
@@ -1018,8 +1096,8 @@ function renderItem() {
     el("div", { class: "item" }, [
       el("div", { class: "item__question" }, [
         el("p", { class: "item__eyebrow", text: t("item.eyebrow", { current: current1, total }) }),
-        el("h1", { class: "item__framing", text: item.framing }),
-        el("p", { class: "item__lead", text: item.lead || t("item.lead") })
+        el("h1", { class: "item__framing", text: itemFraming(item) }),
+        el("p", { class: "item__lead", text: itemLead(item) })
       ]),
       el("ul", { class: "options" }, cards),
       // The band is reserved whether or not the button is in it, so revealing
@@ -1100,6 +1178,10 @@ function commit() {
     item_id: item.id,
     choice_id: option.id,
     client_ts: isoWithOffset(new Date()),
+    // The session's resolved locale, read once at login and carried, never
+    // re-derived per insert (§13.5). Analysis reads it from the row rather
+    // than inferring it afterwards.
+    locale: session.locale,
     shown_order: item.options.map((each) => each.id),
     shown_position: item.options.indexOf(option) + 1,
     // Render to answer-final: the single click in "immediate", the "Další"
@@ -1186,7 +1268,7 @@ async function renderSummary() {
 
   const rows = shown.map(({ item, option }, i) => {
     const itemText =
-      CONFIG.summaryItemText === "label" && item.label ? item.label : item.framing;
+      CONFIG.summaryItemText === "label" ? itemLabel(item) : itemFraming(item);
 
     return el("li", { class: "summary__row" }, [
       el("div", { class: "summary__media" }, optionMedia(option)),
@@ -1194,7 +1276,7 @@ async function renderSummary() {
         el("p", { class: "summary__item-text", text: itemText }),
         el("p", {
           class: "summary__choice",
-          text: option.caption || t("summary.noCaption", { n: i + 1 })
+          text: optionCaption(item, option)
         })
       ])
     ]);
@@ -1349,9 +1431,11 @@ async function boot() {
   let items;
   try {
     const needsRoster = CONFIG.authMode === "roster";
+    // Only the pre-auth strings at boot: the participant's own language is not
+    // known until they have signed in (§13.4, §13.6).
     const [itemsData, stringsData, rosterData] = await Promise.all([
       loadJSON(CONFIG.content.items),
-      loadJSON(CONFIG.content.strings),
+      loadJSON(CONFIG.content.loginStrings),
       needsRoster ? loadJSON(CONFIG.content.roster) : Promise.resolve({ participants: [] })
     ]);
     items = itemsData;

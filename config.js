@@ -149,8 +149,23 @@ export const CONFIG = {
   /** Paths to the content files. Here so a deployment can serve a different
    *  item set from the same code. */
   content: {
+    /** Structure only — ids, drawings, order. No words (§13.3). */
     items: "content/items.json",
-    strings: "content/strings.json",
+
+    /**
+     * The login screen, fetched at boot. It is deliberately separate from the
+     * locale files: it is rendered before anyone has signed in, so the
+     * participant's language is not yet known (§13.4).
+     */
+    loginStrings: "content/strings.login.json",
+
+    /**
+     * Everything after login, including the item text. {locale} is replaced
+     * with the session's resolved value — one of cs, sk, en — and a fetch
+     * that fails falls back to cs rather than stopping the session (§13.6).
+     */
+    strings: "content/strings.{locale}.json",
+
     roster: "content/roster.json",
     /** Built from the source drawings by tools/build-icons.ps1. */
     icons: "assets/icons.svg"

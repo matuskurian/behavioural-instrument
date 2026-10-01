@@ -71,8 +71,7 @@ function checkItems(items) {
     else if (seen.has(item.id)) fail(where, `duplicate item id "${item.id}"`);
     else seen.add(item.id);
 
-    if (!item?.framing?.trim()) fail(where, "framing is missing or empty");
-
+    // No text here any more: it lives in the locale files (§13.3).
     if (!Array.isArray(item?.options) || item.options.length < 2) {
       fail(where, "needs at least two options");
       return;
@@ -86,7 +85,7 @@ function checkItems(items) {
     });
   });
 
-  return seen;
+  return items.items;
 }
 
 function checkRoster(roster) {
@@ -107,10 +106,17 @@ function checkRoster(roster) {
 
 /* Keys app.js asks for by name. A missing one is not a crash — it renders to
  * the participant as literal "[intro.start]" — so it has to be checked here. */
-const REQUIRED_STRINGS = [
-  "app.title", "app.wordmark", "app.tagline",
+
+/** The login screen, rendered before the locale is known (§13.4). */
+const REQUIRED_LOGIN_STRINGS = [
+  "app.title",
   "login.heading", "login.idLabel", "login.passwordLabel", "login.submit",
-  "login.working", "login.empty", "login.invalid", "login.busy",
+  "login.working", "login.empty", "login.invalid", "login.busy"
+];
+
+/** Everything after login, required in every locale file (§13.3). */
+const REQUIRED_LOCALE_STRINGS = [
+  "app.wordmark", "app.tagline",
   "intro.heading", "intro.body", "intro.start",
   // Optional by design, so not required here: intro.checklist,
   // intro.checklistHeading, intro.closing.
@@ -118,11 +124,58 @@ const REQUIRED_STRINGS = [
   "summary.heading", "summary.intro", "summary.closing", "summary.nothingNew"
 ];
 
-function checkStrings(strings) {
+const LOCALES = ["cs", "sk", "en"];
+
+function checkKeys(where, strings, required) {
   if (!strings) return;
-  for (const path of REQUIRED_STRINGS) {
+  for (const path of required) {
     const value = path.split(".").reduce((node, key) => node?.[key], strings);
-    if (value === undefined) fail("content/strings.json", `missing key "${path}"`);
+    if (value === undefined) fail(where, `missing key "${path}"`);
+  }
+}
+
+/**
+ * Every locale file must carry the text for every item and option, because a
+ * gap renders to a child as "[items.Q07.options.Q07c]". A build that would do
+ * that is not safe to deploy, whatever the rest of it says.
+ */
+function checkLocaleCoverage(locale, strings, items) {
+  const where = `content/strings.${locale}.json`;
+  if (!strings || !items) return;
+  if (!strings.items || typeof strings.items !== "object") {
+    fail(where, 'missing the "items" block that carries the item text');
+    return;
+  }
+  let missing = 0;
+  for (const item of items) {
+    const entry = strings.items[item.id];
+    if (!entry) {
+      fail(where, `no text at all for item ${item.id}`);
+      missing += 1;
+      continue;
+    }
+    if (typeof entry.framing !== "string" || !entry.framing.trim()) {
+      fail(where, `${item.id}: framing missing or empty`);
+    }
+    for (const option of item.options ?? []) {
+      const caption = entry.options?.[option.id];
+      if (typeof caption !== "string" || !caption.trim()) {
+        fail(where, `${item.id}: no caption for option ${option.id}`);
+        missing += 1;
+      }
+    }
+    if (missing > 12) {
+      fail(where, "too many missing strings to list; the file looks incomplete");
+      return;
+    }
+  }
+  // Text for an item that no longer exists is harmless but always a mistake.
+  const known = new Set(items.map((i) => i.id));
+  for (const id of Object.keys(strings.items)) {
+    if (!known.has(id)) notes.push(`${where}: text for "${id}", which is not in items.json`);
+  }
+  if (strings._untranslated) {
+    notes.push(`${where}: seeded from another language and not yet translated`);
   }
 }
 
@@ -267,13 +320,30 @@ async function checkNoSecretKeys() {
 
 /* ---------------------------------------------------------------------- */
 
-const [items, strings] = await Promise.all([
+const [items, loginStrings] = await Promise.all([
   readJSON("content/items.json"),
-  readJSON("content/strings.json")
+  readJSON("content/strings.login.json")
 ]);
 
-const itemIds = checkItems(items);
-checkStrings(strings);
+const itemList = checkItems(items);
+const itemIds = new Set((itemList ?? []).map((i) => i.id));
+checkKeys("content/strings.login.json", loginStrings, REQUIRED_LOGIN_STRINGS);
+
+// Every locale must be present and complete: a missing file is a session that
+// falls back silently, and a missing string is a bracketed key in front of a
+// child (§13.3, §13.6).
+for (const locale of LOCALES) {
+  const path = `content/strings.${locale}.json`;
+  const present = await readFile(join(root, path), "utf8").then(() => true, () => false);
+  if (!present) {
+    fail(path, `missing: config lists ${locale} as a valid locale, so an account set to it would fall back`);
+    continue;
+  }
+  const localeStrings = await readJSON(path);
+  checkKeys(path, localeStrings, REQUIRED_LOCALE_STRINGS);
+  checkLocaleCoverage(locale, localeStrings, itemList);
+}
+
 await checkConfig(itemIds);
 await checkNoSecretKeys();
 
@@ -301,4 +371,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ ${items?.items.length ?? 0} items, config.js loads, no secret keys. Safe to deploy.\n`);
+console.log(
+  `\n✓ ${items?.items.length ?? 0} items in ${LOCALES.length} locales, ` +
+    `config.js loads, no secret keys. Safe to deploy.\n`
+);

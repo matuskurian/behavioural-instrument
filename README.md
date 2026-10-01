@@ -107,7 +107,9 @@ if a deployed config asks for a roster the repository does not have.
 
 | file | holds | change it to… |
 |---|---|---|
-| `content/items.json` | items, options, captions, drawing ids — **generated** | never by hand; re-import |
+| `content/items.json` | ids, drawing refs, order — **no words**, generated | never by hand; re-import |
+| `content/strings.login.json` | the login screen, English, pre-auth | reword the sign-in screen |
+| `content/strings.{cs,sk,en}.json` | everything after login, **including all item text** | translate, reword |
 | `content/strings.json` | every participant-facing string, Czech | reword any UI copy |
 | ↳ `key__immediate` | a variant of any string used only in that selection mode | keep the copy true to the interaction |
 | `content/roster.example.json` | template for the offline-only roster | copy to `roster.json` for `authMode: "roster"` |
@@ -123,6 +125,55 @@ if a deployed config asks for a roster the repository does not have.
 `app.js` contains no content, no copy, no credentials, no URL and no styling.
 If a change to any of the first five files requires touching it, that is a
 defect against §3 of the spec.
+
+## Languages (§13)
+
+Three locales: **`cs`, `sk`, `en`**. A participant's language comes from their
+account — `user_metadata.locale`, set when the account is created — and is
+resolved **once at login**, then fixed. Nothing in the UI, no URL parameter
+and no client code path can change it mid-session.
+
+**`items.json` holds no words.** Ids, drawing references and order only. Every
+participant-facing string, including all 24 framings and 120 captions, lives
+in `content/strings.<locale>.json` keyed by those same ids. Adding a language
+is a new strings file and nothing else.
+
+**The login screen is separate and English.** It renders before anyone has
+signed in, so the locale isn't known yet; `content/strings.login.json` holds
+it, and the two field labels are fixed as **Login** and **Password** —
+loanwords in all three languages. **Printed cards must use those same two
+words**, whatever language the account runs in.
+
+**Uploading with a locale.** The roster CSV may carry a `locale` column:
+
+    code,password,locale
+    abc-001,password1,sk
+    abc-002,password2,          <- empty means cs, written explicitly
+    abc-003,password3,EN        <- trimmed and lowercased
+
+A value that isn't one of the three **rejects the entire batch and creates
+nothing**, naming the row, the code and the offending value. `'sl'` and
+`'slovak'` fail; `' SK '` and `'Sk'` pass. All-or-nothing for the same reason
+as the rest of the uploader: a half-created roster cannot be told from a
+complete one by looking at it, and an account created in the wrong language
+is worse than one not created at all.
+
+**`locale` is a column on `responses`**, sent with every row from the
+session's resolved value — not re-derived at analysis time, and not inferred
+from anything else. The database enforces it: `not null`, and a check
+constraint limiting it to the three values. Verified — an insert with `'sl'`
+is refused with `23514`, and one omitting the column with `23502`.
+
+**Untranslated languages announce themselves.** `strings.sk.json` and
+`strings.en.json` are currently seeded from Czech. Each carries a banner as
+the first line of the welcome screen — *ENGLISH EXPECTED HERE…* — so a tester
+cannot mistake placeholder content for a finished translation, and the build
+log says so too. Delete the banner and the `_untranslated` key when the real
+text lands.
+
+A missing key renders as `[items.Q07.framing]` rather than falling back
+silently, and the build gate refuses a locale file that doesn't cover every
+item and option.
 
 ## The look, and adding drawings
 

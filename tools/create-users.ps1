@@ -24,6 +24,13 @@ param(
   [switch]$WhatIf
 )
 
+# Locale (section 13). An optional `locale` column selects the language the
+# account runs in. The batch is verified in full before a single account is
+# created: one bad value and nothing is created at all, because a roster that
+# is half uploaded cannot be told from a complete one by looking at it.
+$ValidLocales = @('cs', 'sk', 'en')
+$DefaultLocale = 'cs'
+
 if (-not (Test-Path $RosterPath)) { throw "No roster at $RosterPath" }
 
 # @() forces an array: PowerShell 5.1 hands back a bare object for a one-row
@@ -51,17 +58,40 @@ foreach ($column in 'code', 'password') {
 $problems = @()
 $seen = @{}
 $lowercased = 0
+$localeCounts = @{}
+$hasLocaleColumn = $roster[0].PSObject.Properties.Name -contains 'locale'
+$rowNumber = 0
+
 foreach ($row in $roster) {
+  $rowNumber++
   $code = $row.code
-  if ([string]::IsNullOrWhiteSpace($code)) { $problems += "empty code"; continue }
+  if ([string]::IsNullOrWhiteSpace($code)) { $problems += "row ${rowNumber}: empty code"; continue }
   if ($code -cne $code.ToLower()) { $lowercased++ }
   $row.code = $code.Trim().ToLower()
   $code = $row.code
-  if ($code -match '[@\s]') { $problems += "$code contains a space or @" }
-  if ($seen.ContainsKey($code)) { $problems += "$code appears twice" }
+  if ($code -match '[@\s]') { $problems += "row ${rowNumber} (${code}): contains a space or @" }
+  if ($seen.ContainsKey($code)) { $problems += "row ${rowNumber} (${code}): appears twice" }
   $seen[$code] = $true
-  if ([string]::IsNullOrWhiteSpace($row.password)) { $problems += "$code has no password" }
-  elseif ($row.password.Length -lt 6) { $problems += "$code password is under Supabase's 6-character minimum" }
+  if ([string]::IsNullOrWhiteSpace($row.password)) { $problems += "row ${rowNumber} (${code}): has no password" }
+  elseif ($row.password.Length -lt 6) { $problems += "row ${rowNumber} (${code}): password is under Supabase's 6-character minimum" }
+
+  # Locale (section 13.1). Empty or absent means Czech, written explicitly so
+  # the account carries a value rather than relying on the client's default.
+  # Anything else fails the whole batch: a typo like 'sl' would otherwise
+  # create an account that silently runs in the wrong language.
+  $raw = if ($hasLocaleColumn) { $row.locale } else { $null }
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    $row | Add-Member -NotePropertyName locale -NotePropertyValue $DefaultLocale -Force
+  } else {
+    $normalised = $raw.Trim().ToLower()
+    if ($ValidLocales -contains $normalised) {
+      $row | Add-Member -NotePropertyName locale -NotePropertyValue $normalised -Force
+    } else {
+      $problems += "row ${rowNumber} (${code}): locale '$raw' is not one of $($ValidLocales -join ', ')"
+      $row | Add-Member -NotePropertyName locale -NotePropertyValue $null -Force
+    }
+  }
+  if ($row.locale) { $localeCounts[$row.locale] = 1 + [int]$localeCounts[$row.locale] }
 }
 if ($problems.Count -gt 0) {
   Write-Host "The roster has problems; nothing was sent:" -ForegroundColor Red
@@ -80,9 +110,13 @@ if ($mixedCasePasswords -gt 0) {
 }
 Write-Host ""
 
+Write-Host ("locale: " + (($ValidLocales | Where-Object { $localeCounts[$_] } | ForEach-Object { "$_ x$($localeCounts[$_])" }) -join ", "))
+if (-not $hasLocaleColumn) { Write-Host "  (no locale column in the file, so every account gets $DefaultLocale)" }
+
 if ($WhatIf) {
+  Write-Host ""
   Write-Host "-WhatIf: nothing will be created. Accounts that would be made:"
-  $roster | ForEach-Object { Write-Host ("  {0}@{1}" -f $_.code, $EmailDomain) }
+  $roster | ForEach-Object { Write-Host ("  {0,-24} {1}" -f ($_.code + "@" + $EmailDomain), $_.locale) }
   exit 0
 }
 
@@ -142,7 +176,14 @@ $created = 0; $existed = 0; $failed = 0
 
 foreach ($row in $roster) {
   $email = "$($row.code)@$EmailDomain"
-  $body = @{ email = $email; password = $row.password; email_confirm = $true } | ConvertTo-Json -Compress
+  # user_metadata.locale is what the client reads at sign-in to pick its
+  # strings and to stamp every row (section 13.2).
+  $body = @{
+    email         = $email
+    password      = $row.password
+    email_confirm = $true
+    user_metadata = @{ locale = $row.locale }
+  } | ConvertTo-Json -Compress
 
   $status = 0; $detail = ""; $ok = $false
   for ($attempt = 1; $attempt -le 2; $attempt++) {
