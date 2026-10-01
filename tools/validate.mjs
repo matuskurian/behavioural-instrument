@@ -107,10 +107,11 @@ function checkRoster(roster) {
 /* Keys app.js asks for by name. A missing one is not a crash — it renders to
  * the participant as literal "[intro.start]" — so it has to be checked here. */
 
-/** The login screen, rendered before the locale is known (§13.4). */
+/** The login screen, rendered before the locale is known (§13.4). Two fields
+ *  and a button: no heading or instruction line, so neither is required. */
 const REQUIRED_LOGIN_STRINGS = [
   "app.title",
-  "login.heading", "login.idLabel", "login.passwordLabel", "login.submit",
+  "login.idLabel", "login.passwordLabel", "login.submit",
   "login.working", "login.empty", "login.invalid", "login.busy"
 ];
 

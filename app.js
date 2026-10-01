@@ -870,8 +870,9 @@ function renderLogin(prefillId = "") {
       }
     },
     [
-      el("h1", { class: "heading", text: t("login.heading") }),
-      ...paragraphs("login.intro", "body-text muted"),
+      // Nothing above the fields: no heading, no instruction line. The error
+      // line stays because it is hidden until something goes wrong, and
+      // without it a wrong password would produce no feedback at all.
       error,
       el("label", { class: "field" }, [
         el("span", { class: "field__label", text: t("login.idLabel") }),

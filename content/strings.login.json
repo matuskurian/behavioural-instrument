@@ -1,19 +1,16 @@
 {
   "_note": "Pre-authentication screen only. It is rendered before the participant's locale is known, so it is deliberately language-neutral English (section 13.4). The printed cards must use the same two words: Login and Password.",
+  "_layout_note": "The screen is two fields and a button, nothing else: no heading and no instruction line. The messages below are shown only when something goes wrong.",
   "app": {
     "title": "Dva dni navíc"
   },
   "login": {
-    "heading": "Dva dni navíc",
-    "intro": [
-      "Enter the Login and Password from your card."
-    ],
     "idLabel": "Login",
     "passwordLabel": "Password",
-    "submit": "Continue",
-    "working": "Signing in...",
-    "empty": "Please fill in both fields.",
-    "invalid": "Login or Password is not correct. Please try again.",
+    "submit": "ENTER",
+    "working": "...",
+    "empty": "Fill in both fields.",
+    "invalid": "Login or Password is not correct. Try again.",
     "busy": "A lot of people are signing in at once. Wait a moment and try again - your Login is fine."
   }
 }
