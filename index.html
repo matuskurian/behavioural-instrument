@@ -14,7 +14,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="theme.css">
+  <!--
+    ?v= is stamped with the commit sha at deploy time (.github/workflows).
+    Without it, Pages serves these with max-age=600 while app.js fetches the
+    content files with no-store — so for ten minutes after a deploy a browser
+    can pair old code with new content, which shows up as bracketed string
+    keys in front of whoever is using it.
+  -->
+  <link rel="stylesheet" href="theme.css?v=dev">
 </head>
 <body>
   <!--
@@ -24,6 +31,6 @@
     edit (§4.4).
   -->
   <main id="app" class="app"></main>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=dev"></script>
 </body>
 </html>

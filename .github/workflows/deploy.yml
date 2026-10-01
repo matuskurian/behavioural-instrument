@@ -47,6 +47,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      # Pages caches app.js and theme.css for ten minutes, while the content
+      # files are fetched with no-store. Without a version on the asset URLs a
+      # browser can therefore run last deploy's code against this deploy's
+      # content, which surfaces as bracketed string keys on screen. Stamping
+      # the commit sha makes every deploy a new URL.
+      - name: Stamp the asset version
+        run: |
+          sed -i "s/?v=dev/?v=${GITHUB_SHA::12}/g" index.html
+          grep -c "?v=${GITHUB_SHA::12}" index.html
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

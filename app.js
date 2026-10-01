@@ -26,8 +26,12 @@
  */
 let CONFIG = null;
 
+/** The ?v= this file was loaded with, passed on to config.js so the two
+ *  cannot come from different deploys. Empty when served without one. */
+const ASSET_VERSION = new URL(import.meta.url).searchParams.get("v") || "";
+
 async function loadConfig() {
-  const module = await import("./config.js");
+  const module = await import(`./config.js${ASSET_VERSION ? `?v=${ASSET_VERSION}` : ""}`);
   if (!module || typeof module.CONFIG !== "object" || module.CONFIG === null) {
     throw new Error("config.js loaded but did not export a CONFIG object");
   }
