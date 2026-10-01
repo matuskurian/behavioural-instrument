@@ -10,7 +10,7 @@
     "submit": "ENTER",
     "working": "...",
     "empty": "Fill in both fields.",
-    "invalid": "Login or Password is not correct. Try again.",
+    "invalid": "Incorrect Login/Password.",
     "busy": "A lot of people are signing in at once. Wait a moment and try again - your Login is fine."
   }
 }
