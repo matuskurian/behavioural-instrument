@@ -77,8 +77,9 @@ export const CONFIG = {
 
   /**
    * Randomise the order of the questions, differently for each participant.
-   * Off: turning it on changes the design, so it is a decision rather than a
-   * default.
+   * On, so that an order effect — answers drifting as 24 questions wear a
+   * ten-year-old down — is spread across the item set instead of landing on
+   * whichever questions happen to sit at the end.
    *
    * The order is drawn from the participant's own code, not from chance, so
    * the same code always produces the same sequence. That is not a weaker
@@ -95,7 +96,7 @@ export const CONFIG = {
    * questions are in play; only the sequence becomes random. Any order
    * written into itemSubset is then ignored, and the build log says so.
    */
-  shuffleItems: false,
+  shuffleItems: true,
 
   /**
    * Run only part of the item set without touching items.json — for
@@ -117,9 +118,12 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["Q13", "Q10"],          these two, in this order
    *
-   * Currently listing all 24 items in reverse, Q24 first: the full set, in a
-   * deliberate order rather than the file's. Every item is present exactly
-   * once, so this changes the sequence and nothing else.
+   * Currently listing all 24 items exactly once, so it selects the full set
+   * and nothing more. The reverse order written here is a leftover and has
+   * no effect while shuffleItems is on: the sequence is drawn per
+   * participant. Setting this to null would behave identically today — it is
+   * kept only so that turning shuffleItems off falls back to a known order
+   * rather than to whatever order items.json happens to be in.
    */
   itemSubset: [
     "Q24", "Q23", "Q22", "Q21", "Q20", "Q19", "Q18", "Q17",

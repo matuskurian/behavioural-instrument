@@ -316,9 +316,8 @@ každú položku (`shuffleOptions`, zapnuté). Bez toho by sa nedalo odlíšiť
 „vybral si tú možnosť" od „vybral si to, čo bolo vľavo".
 
 **Poradie otázok** sa mieša zvlášť pre každého účastníka (`shuffleItems`,
-vypnuté — zapnutie je rozhodnutie o dizajne, nie prepínač pohodlia). Bez toho
-sa efekt poradia — odpovede sa menia, ako 24 otázok dieťa unaví — nedá odlíšiť
-od vlastnosti otázky.
+zapnuté). Bez toho sa efekt poradia — odpovede sa menia, ako 24 otázok dieťa
+unaví — nedá odlíšiť od vlastnosti otázky.
 
 Poradie otázok sa odvodzuje z kódu účastníka, nie z náhody: ten istý kód dá
 vždy tú istú postupnosť. Resume si pamätá len index (§12.5), takže pri novom
@@ -524,7 +523,7 @@ choice.
 | `supabaseAnonKey` | — | the anon/publishable key, and only ever that one |
 | `authMode` | `"remote"` | `remote` = Supabase; `roster` = offline, no network, writes nothing |
 | `shuffleOptions` | `true` | randomise option order per participant per item; only safe because `option_order` is recorded |
-| `shuffleItems` | `false` | randomise question order per participant, drawn from their code so a reload resumes into the same sequence; only safe because `item_position` is recorded |
+| `shuffleItems` | `true` | randomise question order per participant, drawn from their code so a reload resumes into the same sequence; only safe because `item_position` is recorded |
 | `itemSubset` | `null` | array of item ids to run, in the order given — the order is ignored when `shuffleItems` is on |
 | `itemLimit` | `null` | keep only the first N items |
 | `selectionMode` | `"confirm"` | `confirm` = frame, then "Další"; `immediate` = one click is the answer. Also selects the matching intro copy |
