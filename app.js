@@ -847,6 +847,9 @@ function renderLogin(prefillId = "") {
           session.locale = result.locale;
           // Before any screen that uses them, and before the first row.
           await loadLocaleStrings(session.locale);
+          // Before the resume index is read: that index counts positions in
+          // this participant's order, so the order has to exist first.
+          orderItemsForParticipant(result.participantId);
           pinHistory();
 
           // A returning participant continues where they stopped; everyone
@@ -1173,10 +1176,14 @@ function commit() {
   // The row as the table expects it (§12.1). server_ts is the database's to
   // set, and is never sent.
   //
-  // shown_order and shown_position are what make the randomisation worth
-  // doing: without them there is no way to tell an option chosen for what it
-  // says from one chosen for being leftmost, and randomising while failing to
-  // record the order would destroy that information rather than control for it.
+  // The three position fields are what make the randomisation worth doing.
+  // Randomising while failing to record what was shown destroys the
+  // information rather than controlling for it, so every row carries both
+  // levels: where the question sat in this participant's run, and where the
+  // five options sat on the screen. Without the first there is no telling an
+  // answer given early from one given tired; without the other two, no
+  // telling an option chosen for what it says from one chosen for being
+  // leftmost.
   const committedAt = performance.now();
   const row = {
     participant_id: session.participantId,
@@ -1187,8 +1194,11 @@ function commit() {
     // re-derived per insert (§13.5). Analysis reads it from the row rather
     // than inferring it afterwards.
     locale: session.locale,
-    shown_order: item.options.map((each) => each.id),
-    shown_position: item.options.indexOf(option) + 1,
+    // 1-based, like option_position. session.index is still this item's own
+    // index here: it advances in the timeout below, after the row is built.
+    item_position: session.index + 1,
+    option_order: item.options.map((each) => each.id),
+    option_position: item.options.indexOf(option) + 1,
     // Render to answer-final: the single click in "immediate", the "Další"
     // click in "confirm".
     response_time_ms: Math.round(committedAt - current.renderedAt),
@@ -1362,13 +1372,64 @@ window.addEventListener("keydown", (event) => {
  * Boot
  * ========================================================================== */
 
-function shuffled(list) {
+function shuffled(list, random = Math.random) {
   const copy = list.slice();
   for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
+}
+
+/**
+ * A pseudo-random stream fixed by the participant's code, for the item order.
+ *
+ * Item order cannot use Math.random, because resume stores an index and
+ * nothing else (§12.5). A fresh order on every load would make index 7 point
+ * at a different question after a reload: the participant would answer some
+ * items twice and never see others, and nothing on screen would say so. The
+ * same code therefore always produces the same order, so a reload lands back
+ * in the sequence it left.
+ *
+ * Options keep Math.random deliberately. Their order is recorded per row as
+ * it was actually shown, so a reshuffle of the items still ahead costs
+ * nothing.
+ *
+ * FNV-1a and mulberry32: small, well-behaved, and not cryptography — nothing
+ * here is a secret, it only has to be evenly spread and repeatable.
+ */
+function seededRandom(seedText) {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < seedText.length; i += 1) {
+    hash ^= seedText.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  let state = hash >>> 0;
+  return function next() {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Fixes the order of the questions for this participant (§4.1).
+ *
+ * Called once, at login, because the order depends on who signed in — and
+ * before the resume index is read, so that the index points into the order
+ * the participant will actually see.
+ *
+ * With shuffleItems off this does nothing at all: the order stays exactly
+ * what items.json and itemSubset produced, as it has been until now.
+ */
+function orderItemsForParticipant(participantId) {
+  if (!CONFIG.shuffleItems) return;
+  session.items = shuffled(session.items, seededRandom(participantId));
+  console.info(
+    `[content] item order for ${participantId}: ${session.items.map((item) => item.id).join(", ")}`
+  );
 }
 
 /**

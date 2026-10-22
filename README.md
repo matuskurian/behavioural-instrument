@@ -297,8 +297,9 @@ voľba:
 | `item_id`, `choice_id` | klient, z `items.json` |
 | `client_ts` | klient, ISO 8601 s posunom |
 | `server_ts` | **databáza** — klient ho neposiela nikdy |
-| `shown_order` | poradie piatich možností tak, ako boli na obrazovke |
-| `shown_position` | koľkátá v tomto poradí bola vybraná možnosť (1–5) |
+| `item_position` | koľkátá v poradí bola táto otázka u tohto účastníka (1–24) |
+| `option_order` | poradie piatich možností tak, ako boli na obrazovke |
+| `option_position` | koľkátá v tomto poradí bola vybraná možnosť (1–5) |
 | `response_time_ms` | od vykreslenia obrazovky po definitívnu odpoveď |
 | `first_touch_ms` | od vykreslenia po prvé položenie rámčeka |
 | `frame_moves` | koľkokrát sa rámček presunul na inú možnosť |
@@ -306,15 +307,33 @@ voľba:
 Unikátne obmedzenie na `(participant_id, item_id)`: jedna odpoveď na položku.
 Prvá odpoveď vyhráva.
 
-### Poradie možností a prečo sa zapisuje
+### Poradie a prečo sa zapisuje
 
-Poradie piatich možností sa **náhodne mieša zvlášť pre každého účastníka a
-každú položku** (`shuffleOptions`). Bez toho by sa nedalo odlíšiť „vybral si
-tú možnosť" od „vybral si to, čo bolo vľavo".
+Mieša sa na dvoch úrovniach a každá má svoj stĺpec.
 
-Miešanie samo osebe ale nestačí: bez `shown_order` a `shown_position` by
-randomizácia informáciu **zničila**, nie ošetrila. Preto sa oboje zapisuje ku
-každému riadku. Ak by sa niekedy miešanie vyplo, zápis nechajte tak.
+**Poradie piatich možností** sa náhodne mieša zvlášť pre každého účastníka a
+každú položku (`shuffleOptions`, zapnuté). Bez toho by sa nedalo odlíšiť
+„vybral si tú možnosť" od „vybral si to, čo bolo vľavo".
+
+**Poradie otázok** sa mieša zvlášť pre každého účastníka (`shuffleItems`,
+vypnuté — zapnutie je rozhodnutie o dizajne, nie prepínač pohodlia). Bez toho
+sa efekt poradia — odpovede sa menia, ako 24 otázok dieťa unaví — nedá odlíšiť
+od vlastnosti otázky.
+
+Poradie otázok sa odvodzuje z kódu účastníka, nie z náhody: ten istý kód dá
+vždy tú istú postupnosť. Resume si pamätá len index (§12.5), takže pri novom
+zamiešaní po obnovení stránky by index 7 ukazoval na inú otázku — dieťa by
+niektoré odpovedalo dvakrát a iné vôbec. Medzi účastníkmi sú poradia naďalej
+nezávislé.
+
+Miešanie samo osebe ale nestačí: bez `item_position`, `option_order` a
+`option_position` by randomizácia informáciu **zničila**, nie ošetrila. Preto
+sa všetko tri zapisuje ku každému riadku. Ak by sa niekedy miešanie vyplo,
+zápis nechajte tak.
+
+`item_position` je pozícia v rámci jedného účastníka, takže má zmysel len
+vnútri účastníka: `item_position = 3` je u 35 detí 35 rôznych otázok. O tom to
+celé je — práve to umožní modelovať poradie a otázku oddelene.
 
 Obrázok patrí k svojej možnosti a putuje s ňou; farbu určuje pozícia na
 obrazovke. Naopak by to zaviedlo systematickú chybu.
@@ -504,8 +523,9 @@ choice.
 | `supabaseUrl` | — | project base URL, no `/rest/v1`, no trailing slash |
 | `supabaseAnonKey` | — | the anon/publishable key, and only ever that one |
 | `authMode` | `"remote"` | `remote` = Supabase; `roster` = offline, no network, writes nothing |
-| `shuffleOptions` | `true` | randomise option order per participant per item; only safe because `shown_order` is recorded |
-| `itemSubset` | `null` | array of item ids to run, in the order given |
+| `shuffleOptions` | `true` | randomise option order per participant per item; only safe because `option_order` is recorded |
+| `shuffleItems` | `false` | randomise question order per participant, drawn from their code so a reload resumes into the same sequence; only safe because `item_position` is recorded |
+| `itemSubset` | `null` | array of item ids to run, in the order given — the order is ignored when `shuffleItems` is on |
 | `itemLimit` | `null` | keep only the first N items |
 | `selectionMode` | `"confirm"` | `confirm` = frame, then "Další"; `immediate` = one click is the answer. Also selects the matching intro copy |
 | `summaryItemText` | `"framing"` | `framing` \| `label` on the summary screen (§14) |

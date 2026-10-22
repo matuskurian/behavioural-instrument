@@ -214,6 +214,14 @@ async function checkConfig(itemIds) {
     fail("config.js", "confirmDelayMs must be a whole number of milliseconds");
   }
 
+  // A missing switch reads as false in app.js, which would silently drop a
+  // randomisation someone believed was on. Demand the word.
+  for (const key of ["shuffleOptions", "shuffleItems"]) {
+    if (typeof CONFIG[key] !== "boolean") {
+      fail("config.js", `${key} must be true or false, written out`);
+    }
+  }
+
   // The cross-file check: an id here that is not in items.json stops the app
   // at startup, which is correct but late.
   if (CONFIG.itemSubset !== null && CONFIG.itemSubset !== undefined) {
@@ -235,6 +243,15 @@ async function checkConfig(itemIds) {
   // someone. A short run is legitimate; silently shipping one is the trouble.
   if (CONFIG.itemSubset || CONFIG.itemLimit) {
     notes.push(`short run configured: itemSubset=${JSON.stringify(CONFIG.itemSubset)} itemLimit=${JSON.stringify(CONFIG.itemLimit)}`);
+  }
+  if (CONFIG.shuffleItems) {
+    notes.push("shuffleItems is on: item order is drawn per participant from their code");
+    // Shuffling a hand-picked subset is legitimate; shuffling a hand-written
+    // *order* means someone spent effort on a sequence that will be thrown
+    // away. Worth saying out loud, not worth failing a build over.
+    if (Array.isArray(CONFIG.itemSubset) && CONFIG.itemSubset.length > 1) {
+      notes.push("shuffleItems is on, so the order written into itemSubset is ignored (it still picks which items run)");
+    }
   }
   if (CONFIG.authMode === "roster") {
     notes.push('authMode is "roster": offline mode, nothing will be written to Supabase');

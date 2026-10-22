@@ -65,15 +65,37 @@ export const CONFIG = {
    * participant. On, because a fixed order confounds "chose this option" with
    * "chose the leftmost thing".
    *
-   * It is only safe to have on because every row records shown_order and
-   * shown_position. Randomising without recording what was shown would destroy
-   * the information rather than control for it — so if you ever turn this off,
-   * leave the recording alone.
+   * It is only safe to have on because every row records option_order and
+   * option_position. Randomising without recording what was shown would
+   * destroy the information rather than control for it — so if you ever turn
+   * this off, leave the recording alone.
    *
    * The drawing travels with its option; the colour belongs to the position on
    * screen. Binding colour to content would put the bias straight back in.
    */
   shuffleOptions: true,
+
+  /**
+   * Randomise the order of the questions, differently for each participant.
+   * Off: turning it on changes the design, so it is a decision rather than a
+   * default.
+   *
+   * The order is drawn from the participant's own code, not from chance, so
+   * the same code always produces the same sequence. That is not a weaker
+   * randomisation — across participants the orders are still unrelated — it
+   * is what lets a child who closes the tab and signs back in land in the
+   * sequence they left instead of a freshly shuffled one (§12.5).
+   *
+   * Safe only because every row records item_position. The same argument as
+   * for shuffleOptions, one level up: without the position, an order effect
+   * — answers drifting as 24 questions wear a ten-year-old down — cannot be
+   * told apart from a property of the question.
+   *
+   * It runs after itemSubset and itemLimit, so those still choose which
+   * questions are in play; only the sequence becomes random. Any order
+   * written into itemSubset is then ignored, and the build log says so.
+   */
+  shuffleItems: false,
 
   /**
    * Run only part of the item set without touching items.json — for
