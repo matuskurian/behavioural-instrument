@@ -118,17 +118,21 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["Q13", "Q10"],          these two, in this order
    *
-   * Currently listing all 24 items exactly once, so it selects the full set
-   * and nothing more. The reverse order written here is a leftover and has
-   * no effect while shuffleItems is on: the sequence is drawn per
-   * participant. Setting this to null would behave identically today — it is
-   * kept only so that turning shuffleItems off falls back to a known order
-   * rather than to whatever order items.json happens to be in.
+   * Currently Q01–Q24: the full set minus Q25, which arrived with the 29.10
+   * wording but has no drawings yet. Without them it would render five
+   * placeholder rings, which is worse for a child than not meeting the
+   * question at all. Add "Q25" here the day its icons land, and set this back
+   * to null once nothing needs holding out.
+   *
+   * The order written here no longer has any effect, because shuffleItems
+   * draws the sequence per participant. It is ascending rather than
+   * meaningful, and exists so that turning shuffleItems off falls back to a
+   * known order rather than to whatever order items.json happens to be in.
    */
   itemSubset: [
-    "Q24", "Q23", "Q22", "Q21", "Q20", "Q19", "Q18", "Q17",
-    "Q16", "Q15", "Q14", "Q13", "Q12", "Q11", "Q10", "Q09",
-    "Q08", "Q07", "Q06", "Q05", "Q04", "Q03", "Q02", "Q01"
+    "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+    "Q09", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15", "Q16",
+    "Q17", "Q18", "Q19", "Q20", "Q21", "Q22", "Q23", "Q24"
   ],
   itemLimit: null,
   /**
