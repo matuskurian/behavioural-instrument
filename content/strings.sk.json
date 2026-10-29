@@ -49,44 +49,44 @@
   "_untranslated": "Partial. The items block carries real Slovak from the 29.10 delivery; the intro, the item chrome and the summary are still Czech. The banner at the top of intro.body says so; remove both when the rest lands.",
   "_items_note": "Text kazde polozky, klicovany podle id z items.json. Chybejici klic se vykresli jako [items.QXX.framing], aby byla mezera videt.",
   "items": {
-    "Q01": {
+    "Q01_v2": {
       "framing": "Máš chuť na niečo dobré – čo si dáš?",
       "options": {
-        "Q01a": "Donášku z reštaurácie, odkiaľ si často objednávate.",
-        "Q01b": "Jedlo, ktoré si nikdy nejedol/nejedla – vieš len, z čoho je, ale nie, ako chutí.",
-        "Q01c": "Box tvojich obľúbených sladkostí.",
-        "Q01d": "Jedlo, ktoré ste odmalička jedli snáď miliónkrát.",
-        "Q01e": "Ochutnávku z kuchyne, ktorú vôbec nepoznáš – päť malých porcií, každá iná."
+        "Q01_v2a": "Donášku z reštaurácie, odkiaľ si často objednávate.",
+        "Q01_v2b": "Jedlo, ktoré si nikdy nejedol/nejedla – vieš len, z čoho je, ale nie, ako chutí.",
+        "Q01_v2c": "Box tvojich obľúbených sladkostí.",
+        "Q01_v2d": "Jedlo, ktoré ste odmalička jedli snáď miliónkrát.",
+        "Q01_v2e": "Ochutnávku z kuchyne, ktorú vôbec nepoznáš – päť malých porcií, každá iná."
       }
     },
-    "Q02": {
+    "Q02_v2": {
       "framing": "Sadáš si na gauč, zapínaš televízor. Pustíš si…",
       "options": {
-        "Q02a": "Film s hercom, ktorého máš rád/rada.",
-        "Q02b": "Experimentálny film, ktorý vyhráva všetky ocenenia vo svojej kategórii.",
-        "Q02c": "Film, ktorý rád/rada rewatchuješ aj po tisíci raz.",
-        "Q02d": "Pokračovanie filmu, ktorý si videl/a a veľmi sa ti páčil.",
-        "Q02e": "Nový film o téme, o ktorej veľa nevieš a zaujíma ťa."
+        "Q02_v2a": "Film s hercom, ktorého máš rád/rada.",
+        "Q02_v2b": "Experimentálny film, ktorý vyhráva všetky ocenenia vo svojej kategórii.",
+        "Q02_v2c": "Film, ktorý rád/rada rewatchuješ aj po tisíci raz.",
+        "Q02_v2d": "Pokračovanie filmu, ktorý si videl/a a veľmi sa ti páčil.",
+        "Q02_v2e": "Nový film o téme, o ktorej veľa nevieš a zaujíma ťa."
       }
     },
-    "Q03": {
+    "Q03_v2": {
       "framing": "Máš pol hodiny na hudbu – čo si vyberieš?",
       "options": {
-        "Q03a": "20 svetovo najhranejších skladieb za posledný týždeň.",
-        "Q03b": "Best of zo žánru, ktorý bežne nepočúvaš.",
-        "Q03c": "Legendárne hity, ktoré pozná každý a všetci ich milujeme.",
-        "Q03d": "Playlist s pesničkami, ktoré si najviac počúval/a minulý rok.",
-        "Q03e": "Album, ktorý ťa zaujal vizuálom, ale nevieš, čo je na ňom."
+        "Q03_v2a": "20 svetovo najhranejších skladieb za posledný týždeň.",
+        "Q03_v2b": "Best of zo žánru, ktorý bežne nepočúvaš.",
+        "Q03_v2c": "Legendárne hity, ktoré pozná každý a všetci ich milujeme.",
+        "Q03_v2d": "Playlist s pesničkami, ktoré si najviac počúval/a minulý rok.",
+        "Q03_v2e": "Album, ktorý ťa zaujal vizuálom, ale nevieš, čo je na ňom."
       }
     },
-    "Q04": {
+    "Q04_v2": {
       "framing": "Máš chuť stretnúť sa s ľuďmi – za kým sa vyberieš?",
       "options": {
-        "Q04a": "Za partiou, s ktorou sa vídaš skoro každý týždeň.",
-        "Q04b": "Pôjdeš s kamošom za jeho partiou, ktorú ty nepoznáš.",
-        "Q04c": "Za jedným kamošom, s ktorým si vždy v pokoji pokecáte.",
-        "Q04d": "Za kamošmi, ktorých si stretol/stretla v lete na tábore alebo na dovolenke.",
-        "Q04e": "Za partiou, ktorá robí niečo, s čím nemáš vlastnú skúsenosť, a láka ťa to."
+        "Q04_v2a": "Za partiou, s ktorou sa vídaš skoro každý týždeň.",
+        "Q04_v2b": "Pôjdeš s kamošom za jeho partiou, ktorú ty nepoznáš.",
+        "Q04_v2c": "Za jedným kamošom, s ktorým si vždy v pokoji pokecáte.",
+        "Q04_v2d": "Za kamošmi, ktorých si stretol/stretla v lete na tábore alebo na dovolenke.",
+        "Q04_v2e": "Za partiou, ktorá robí niečo, s čím nemáš vlastnú skúsenosť, a láka ťa to."
       }
     },
     "Q05": {
@@ -109,14 +109,14 @@
         "Q06e": "Miesta, ktorými si nikdy neprešiel/neprešla – zistíš, čo tam vlastne je."
       }
     },
-    "Q07": {
+    "Q07_v2": {
       "framing": "Môžeš stráviť poobedie s kýmkoľvek na svete. Kto to bude?",
       "options": {
-        "Q07a": "Influencer/ka, ktorého/ktorú dlho sleduješ.",
-        "Q07b": "Vedec, ktorý nedávno urobil zásadný objav.",
-        "Q07c": "Spevák/speváčka, ktorého/ktorú máš rád/rada.",
-        "Q07d": "Profesionálny športovec v športe, ktorý ťa zaujíma.",
-        "Q07e": "Tvoj rovesník, ktorý odmalička žije s rodinou na cestách a nikde nezostane dlhšie ako mesiac."
+        "Q07_v2a": "Influencer/ka, ktorého/ktorú dlho sleduješ.",
+        "Q07_v2b": "Vedec, ktorý nedávno urobil zásadný objav.",
+        "Q07_v2c": "Spevák/speváčka, ktorého/ktorú máš rád/rada.",
+        "Q07_v2d": "Profesionálny športovec v športe, ktorý ťa zaujíma.",
+        "Q07_v2e": "Tvoj rovesník, ktorý odmalička žije s rodinou na cestách a nikde nezostane dlhšie ako mesiac."
       }
     },
     "Q08": {
@@ -129,44 +129,44 @@
         "Q08e": "Budeš skúšať jednu vec za druhou, kým neprídeš na to, kde je problém."
       }
     },
-    "Q09": {
+    "Q09_v2": {
       "framing": "S kamarátmi máte týždeň prázdnin na výlet po Slovensku. Kam pôjdete?",
       "options": {
-        "Q09a": "K vode, kam chodievate každý rok a kde viete, že bude sranda.",
-        "Q09b": "Do kraja, kde nikto z vás nikdy nebol, a program vymyslíte až na mieste.",
-        "Q09c": "Do aquaparku a zábavného parku, kam chodia skoro všetci.",
-        "Q09d": "Na chatu, ktorú poznáš odmalička.",
-        "Q09e": "Po stopách miestnej záhady alebo legendy, o ktorej ste doteraz nič nevedeli."
+        "Q09_v2a": "K vode, kam chodievate každý rok a kde viete, že bude sranda.",
+        "Q09_v2b": "Do kraja, kde nikto z vás nikdy nebol, a program vymyslíte až na mieste.",
+        "Q09_v2c": "Do aquaparku a zábavného parku, kam chodia skoro všetci.",
+        "Q09_v2d": "Na chatu, ktorú poznáš odmalička.",
+        "Q09_v2e": "Po stopách miestnej záhady alebo legendy, o ktorej ste doteraz nič nevedeli."
       }
     },
-    "Q10": {
+    "Q10_v2": {
       "framing": "Máš polhodinu v zoo. Na čo sa pôjdeš pozrieť?",
       "options": {
-        "Q10a": "Roztomilé mláďatá.",
-        "Q10b": "Novoobjavený druh rýb z morských hlbín.",
-        "Q10c": "Tigre, levy a iné divoké šelmy.",
-        "Q10d": "Zvieratá, ktoré poznáš z animáku.",
-        "Q10e": "Furek škvrnitý."
+        "Q10_v2a": "Roztomilé mláďatá.",
+        "Q10_v2b": "Novoobjavený druh rýb z morských hlbín.",
+        "Q10_v2c": "Tigre, levy a iné divoké šelmy.",
+        "Q10_v2d": "Zvieratá, ktoré poznáš z animáku.",
+        "Q10_v2e": "Furek škvrnitý."
       }
     },
-    "Q11": {
+    "Q11_v2": {
       "framing": "Vonku je búrka a ešte hodinu neprejde. Čo budeš robiť?",
       "options": {
-        "Q11a": "Ideš skontrolovať, či sú zatvorené okná.",
-        "Q11b": "Hľadáš na internete, prečo sa blesky rozvetvujú a či blesk udrie dvakrát do toho istého miesta.",
-        "Q11c": "Sleduješ na radare, ako búrka odchádza.",
-        "Q11d": "Ideš sa pozerať na búrku z okna.",
-        "Q11e": "Natočíš búrku na mobil a potom spomalene zisťuješ, čo sa na tom zábere vlastne deje."
+        "Q11_v2a": "Ideš skontrolovať, či sú zatvorené okná.",
+        "Q11_v2b": "Hľadáš na internete, prečo sa blesky rozvetvujú a či blesk udrie dvakrát do toho istého miesta.",
+        "Q11_v2c": "Sleduješ na radare, ako búrka odchádza.",
+        "Q11_v2d": "Ideš sa pozerať na búrku z okna.",
+        "Q11_v2e": "Natočíš búrku na mobil a potom spomalene zisťuješ, čo sa na tom zábere vlastne deje."
       }
     },
-    "Q12": {
+    "Q12_v2": {
       "framing": "Máš hodinu voľného času a zapínaš počítač alebo mobil. Čo si zahráš?",
       "options": {
-        "Q12a": "Hru, v ktorej práve naháňaš levely.",
-        "Q12b": "Úplne nový typ hry, aby si zistil/a, ako sa vôbec hrá.",
-        "Q12c": "Hru, ktorú teraz hrajú všetci tvoji kamoši.",
-        "Q12d": "Oddychovú hru, pri ktorej nemusíš veľmi premýšľať.",
-        "Q12e": "Hru, v ktorej ti nikto nepovie, čo je cieľom – musíš na to prísť sám/sama."
+        "Q12_v2a": "Hru, v ktorej práve naháňaš levely.",
+        "Q12_v2b": "Úplne nový typ hry, aby si zistil/a, ako sa vôbec hrá.",
+        "Q12_v2c": "Hru, ktorú teraz hrajú všetci tvoji kamoši.",
+        "Q12_v2d": "Oddychovú hru, pri ktorej nemusíš veľmi premýšľať.",
+        "Q12_v2e": "Hru, v ktorej ti nikto nepovie, čo je cieľom – musíš na to prísť sám/sama."
       }
     },
     "Q13": {
@@ -189,14 +189,14 @@
         "Q14e": "Tému, o ktorej si nikdy nepočul/a, ale jej názov znie bizarne a nezvyčajne."
       }
     },
-    "Q15": {
+    "Q15_v2": {
       "framing": "Hlúčik ľudí na ulici prekvapene zíza do výkladu. Čo urobíš?",
       "options": {
-        "Q15a": "Nevšímaš si ich a jednoducho ideš ďalej, chceš sa už dostať do svojho cieľa.",
-        "Q15b": "Zastavíš sa opodiaľ a sleduješ situáciu, aby si sám/sama vydedukoval/a, na čo tí ľudia reagujú.",
-        "Q15c": "Odfotíš to kamošom ako vtipnú story a ideš ďalej.",
-        "Q15d": "Opýtaš sa kamoša, ktorý ide s tebou, či nevie, čo sa deje, ale nezastavujete sa.",
-        "Q15e": "Počkáš, kým sa hlúčik trochu rozíde, a ideš sa zblízka pozrieť, čo tam je."
+        "Q15_v2a": "Nevšímaš si ich a jednoducho ideš ďalej, chceš sa už dostať do svojho cieľa.",
+        "Q15_v2b": "Zastavíš sa opodiaľ a sleduješ situáciu, aby si sám/sama vydedukoval/a, na čo tí ľudia reagujú.",
+        "Q15_v2c": "Odfotíš to kamošom ako vtipnú story a ideš ďalej.",
+        "Q15_v2d": "Opýtaš sa kamoša, ktorý ide s tebou, či nevie, čo sa deje, ale nezastavujete sa.",
+        "Q15_v2e": "Počkáš, kým sa hlúčik trochu rozíde, a ideš sa zblízka pozrieť, čo tam je."
       }
     },
     "Q16": {
@@ -209,24 +209,24 @@
         "Q16e": "Apka, ktorá ti bude hovoriť všetko, čo si myslia zvieratá v tvojom okolí."
       }
     },
-    "Q17": {
+    "Q17_v2": {
       "framing": "Na párty je kreatívna zóna, kde si môžeš ozdobiť tričko. Čo urobíš?",
       "options": {
-        "Q17a": "Urobíš jednoduchý motív, o ktorom vieš, že bude vyzerať dobre.",
-        "Q17b": "Skúsiš techniku, ktorú si nikdy nerobil/a, len aby si zistil/a, ako funguje.",
-        "Q17c": "Urobíte si s kamošmi rovnaké tričká, nech to máte spoločné.",
-        "Q17d": "Odkopíruješ vydarený motív z internetu, nech je to rýchlo a bez chýb.",
-        "Q17e": "Zmiešaš farby a materiály, ktoré k sebe nepatria, a uvidíš, čo zaujímavé z toho vznikne."
+        "Q17_v2a": "Urobíš jednoduchý motív, o ktorom vieš, že bude vyzerať dobre.",
+        "Q17_v2b": "Skúsiš techniku, ktorú si nikdy nerobil/a, len aby si zistil/a, ako funguje.",
+        "Q17_v2c": "Urobíte si s kamošmi rovnaké tričká, nech to máte spoločné.",
+        "Q17_v2d": "Odkopíruješ vydarený motív z internetu, nech je to rýchlo a bez chýb.",
+        "Q17_v2e": "Zmiešaš farby a materiály, ktoré k sebe nepatria, a uvidíš, čo zaujímavé z toho vznikne."
       }
     },
-    "Q18": {
+    "Q18_v2": {
       "framing": "Máš v neznámom meste dve hodiny rozchod. Kam vyrazíš?",
       "options": {
-        "Q18a": "Hneď vyrazíš do známeho obchodu obľúbenej značky (napr. obchody s oblečením, Apple store…), na ktorý si sa tešil/a.",
-        "Q18b": "Opýtaš sa miestnych, kam by išli oni, a vyrazíš tam, nech je to čokoľvek.",
-        "Q18c": "Pôjdeš k najznámejšej pamiatke, kde si všetci turisti robia fotky, aby si mal/a dobrú fotku aj ty.",
-        "Q18d": "Zapadneš do kaviarne s dobrou wifi, dáš si niečo dobré a budeš scrollovať mobil.",
-        "Q18e": "Zláka ťa výklad zvláštneho malého obchodíka a ideš si tie fascinujúce a netradičné veci pozrieť zblízka."
+        "Q18_v2a": "Hneď vyrazíš do známeho obchodu obľúbenej značky (napr. obchody s oblečením, Apple store…), na ktorý si sa tešil/a.",
+        "Q18_v2b": "Opýtaš sa miestnych, kam by išli oni, a vyrazíš tam, nech je to čokoľvek.",
+        "Q18_v2c": "Pôjdeš k najznámejšej pamiatke, kde si všetci turisti robia fotky, aby si mal/a dobrú fotku aj ty.",
+        "Q18_v2d": "Zapadneš do kaviarne s dobrou wifi, dáš si niečo dobré a budeš scrollovať mobil.",
+        "Q18_v2e": "Zláka ťa výklad zvláštneho malého obchodíka a ideš si tie fascinujúce a netradičné veci pozrieť zblízka."
       }
     },
     "Q19": {
@@ -249,34 +249,34 @@
         "Q20e": "Zájdeš do tichšej časti, kde sa skúšajú veci, ktoré ešte nie sú hotové."
       }
     },
-    "Q21": {
+    "Q21_v2": {
       "framing": "Cestuješ dlho autom a chceš si niečo pustiť cez slúchadlá. Čo to bude?",
       "options": {
-        "Q21a": "Svoje obľúbené rádio.",
-        "Q21b": "Podcast o niečom, o čom si nikdy nepremýšľal/a – vyberieš ho podľa zaujímavého názvu.",
-        "Q21c": "Nový diel podcastu od tvorcu, ktorého pravidelne sleduješ.",
-        "Q21d": "Audioknihu, ktorú si už počul/a a rád/rada sa k nej vraciaš.",
-        "Q21e": "Živé rádio z druhého konca sveta – nevieš, čo práve pôjde."
+        "Q21_v2a": "Svoje obľúbené rádio.",
+        "Q21_v2b": "Podcast o niečom, o čom si nikdy nepremýšľal/a – vyberieš ho podľa zaujímavého názvu.",
+        "Q21_v2c": "Nový diel podcastu od tvorcu, ktorého pravidelne sleduješ.",
+        "Q21_v2d": "Audioknihu, ktorú si už počul/a a rád/rada sa k nej vraciaš.",
+        "Q21_v2e": "Živé rádio z druhého konca sveta – nevieš, čo práve pôjde."
       }
     },
-    "Q22": {
+    "Q22_v2": {
       "framing": "Ste s rodinou na hrade a máš možnosť vybrať, kam sa pôjdete pozrieť. Čo vyberieš?",
       "options": {
-        "Q22a": "Hlavnú zbrojnicu s mečmi a brneniami, ktorú poznáš z fotiek a vieš, že ťa baví.",
-        "Q22b": "Časť hradu, ktorá nie je súčasťou prehliadkových trás a nevie sa, čo tam je.",
-        "Q22c": "Komnaty, ktoré sú na všetkých pohľadniciach a ktoré už poznáš z fotiek.",
-        "Q22d": "Vybehneš hore na vežu, kde si len sadneš a budeš relaxovať pri výhľade na okolie.",
-        "Q22e": "Starú dielňu plnú baniek a čudných prístrojov kvôli jej tajomnej atmosfére."
+        "Q22_v2a": "Hlavnú zbrojnicu s mečmi a brneniami, ktorú poznáš z fotiek a vieš, že ťa baví.",
+        "Q22_v2b": "Časť hradu, ktorá nie je súčasťou prehliadkových trás a nevie sa, čo tam je.",
+        "Q22_v2c": "Komnaty, ktoré sú na všetkých pohľadniciach a ktoré už poznáš z fotiek.",
+        "Q22_v2d": "Vybehneš hore na vežu, kde si len sadneš a budeš relaxovať pri výhľade na okolie.",
+        "Q22_v2e": "Starú dielňu plnú baniek a čudných prístrojov kvôli jej tajomnej atmosfére."
       }
     },
-    "Q23": {
+    "Q23_v2": {
       "framing": "Si s kamošmi na chate alebo v stane. Je jedna v noci a nemôžeš spať. Čo urobíš?",
       "options": {
-        "Q23a": "Zostaneš v spacáku na mobile a zapneš hru, aby si si splnil/a denné questy.",
-        "Q23b": "Potichu sa vykradneš von do tmavej záhrady zistiť, aké je to tam v noci.",
-        "Q23c": "Šepkáš si s kamošmi o zážitkoch zo dňa.",
-        "Q23d": "Zavrieš oči a skúšaš zaspať, nech si ráno fit.",
-        "Q23e": "Vykloníš sa zo stanu/z okna a budeš skúšať rozoznať, čo všetko sa vonku ozýva."
+        "Q23_v2a": "Zostaneš v spacáku na mobile a zapneš hru, aby si si splnil/a denné questy.",
+        "Q23_v2b": "Potichu sa vykradneš von do tmavej záhrady zistiť, aké je to tam v noci.",
+        "Q23_v2c": "Šepkáš si s kamošmi o zážitkoch zo dňa.",
+        "Q23_v2d": "Zavrieš oči a skúšaš zaspať, nech si ráno fit.",
+        "Q23_v2e": "Vykloníš sa zo stanu/z okna a budeš skúšať rozoznať, čo všetko sa vonku ozýva."
       }
     },
     "Q24": {

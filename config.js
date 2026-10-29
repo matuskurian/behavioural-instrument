@@ -118,11 +118,15 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["Q13", "Q10"],          these two, in this order
    *
-   * Currently Q01–Q24: the full set minus Q25, which arrived with the 29.10
-   * wording but has no drawings yet. Without them it would render five
-   * placeholder rings, which is worse for a child than not meeting the
-   * question at all. Add "Q25" here the day its icons land, and set this back
-   * to null once nothing needs holding out.
+   * Everything except Q25, which arrived with the 29.10 wording but has no
+   * drawings yet. Without them it would render five placeholder rings, which
+   * is worse for a child than not meeting the question at all. Add "Q25" here
+   * the day its icons land, and set this back to null once nothing needs
+   * holding out.
+   *
+   * The _v2 ids are the fifteen items whose wording changed on 29.10; the
+   * nine bare ids are the ones that did not. See "Wording versions" in the
+   * README for why identity moves when the option set changes.
    *
    * The order written here no longer has any effect, because shuffleItems
    * draws the sequence per participant. It is ascending rather than
@@ -130,9 +134,11 @@ export const CONFIG = {
    * known order rather than to whatever order items.json happens to be in.
    */
   itemSubset: [
-    "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
-    "Q09", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15", "Q16",
-    "Q17", "Q18", "Q19", "Q20", "Q21", "Q22", "Q23", "Q24"
+    "Q01_v2", "Q02_v2", "Q03_v2", "Q04_v2", "Q05",
+    "Q06",    "Q07_v2", "Q08",    "Q09_v2", "Q10_v2",
+    "Q11_v2", "Q12_v2", "Q13",    "Q14",    "Q15_v2",
+    "Q16",    "Q17_v2", "Q18_v2", "Q19",    "Q20",
+    "Q21_v2", "Q22_v2", "Q23_v2", "Q24"
   ],
   itemLimit: null,
   /**

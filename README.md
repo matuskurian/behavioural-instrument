@@ -307,6 +307,39 @@ voľba:
 Unikátne obmedzenie na `(participant_id, item_id)`: jedna odpoveď na položku.
 Prvá odpoveď vyhráva.
 
+### Verzie zadaní — prečo niektoré id končia na `_v2`
+
+V `item_id` nie je žiadny stĺpec s verziou a zámerne nebude. Verziu nesie
+samotné id: položka, ktorej sa 29. 10. 2026 zmenilo znenie, dostala nové id
+(`Q01` → `Q01_v2`). Deväť položiek, ktorým sa znenie nezmenilo, si id
+ponechalo.
+
+Dôvod je ten, že stĺpec s verziou funguje len dovtedy, kým si naň pri analýze
+niekto spomenie. Keď verziu nesie id, **zlúčiť dve rôzne znenia pod jedno id
+sa jednoducho nedá** — a deväť nezmenených položiek sa naopak zlúči samo,
+správne a bez práce.
+
+Hranicu určuje celá pätica možností, nie len rámcujúca veta. Pri výbere z
+piatich možností totiž výmena jednej mení aj to, čo znamenalo vybrať si
+niektorú zo zvyšných štyroch. Preto `Q22_v2`, hoci sa tam zmenila jediná
+možnosť.
+
+Čo z toho plynie prakticky:
+
+* riadky zo starších zberov zostávajú pod `Q01`, nové idú pod `Q01_v2`;
+* `tools/import-wording.ps1 -Revised Q01,Q02,...` je miesto, kde sa zoznam
+  zmenených položiek vypisuje ručne — nie je odvodený automaticky, aby
+  „zmenila sa čiarka" neznamenalo novú položku;
+* typografia (pomlčky, nezalomiteľné medzery, veľké písmená) sa za zmenu
+  **nepovažuje**: pri porovnaní sa normalizuje preč;
+* `icon` v `items.json` ukazuje stále na pôvodný obrázok (`Q01_v2a` →
+  `icon: "Q01a"`), kým nepríde nová sada kresieb. Identita sa pohla,
+  kresba zatiaľ nie.
+
+Druhá, nezávislá poistka: jeden účastník vidí vždy len jeden build, a kódy sa
+vydávajú po dávkach. Takže `participant_id` nesie verziu znenia aj tak —
+pokiaľ sa staré kódy nepoužijú znovu na nové znenie. **Nepoužívajte ich znovu.**
+
 ### Poradie a prečo sa zapisuje
 
 Mieša sa na dvoch úrovniach a každá má svoj stĺpec.

@@ -29,6 +29,17 @@
 param(
   [Parameter(Mandatory = $true)][string]$Source,
   [string]$Repo = (Split-Path -Parent $PSScriptRoot),
+
+  # Base ids whose wording changed in this delivery. They are given a new
+  # identity so that two different questions can never be pooled under one id
+  # at analysis: in a forced choice, replacing one option changes what picking
+  # any of the other four meant, so identity follows the whole option set, not
+  # the framing. Items absent from this list keep their id and therefore stay
+  # comparable across waves, which is the point of naming the list by hand
+  # rather than versioning everything.
+  [string[]]$Revised = @(),
+  [string]$Suffix = "_v2",
+
   [switch]$NoNbsp,
   [switch]$DryRun
 )
@@ -194,8 +205,12 @@ foreach ($r in $body) {
   if ($r.Head) {
     if ($cur -ne $null) { [void]$items.Add($cur) }
     $n = $items.Count + 1
+    $base = "Q" + $n.ToString("00")
+    $id = $base
+    if ($Revised -contains $base) { $id = $base + $Suffix }
     $cur = [pscustomobject]@{
-      Id         = "Q" + $n.ToString("00")
+      Id         = $id
+      Base       = $base
       Line       = $r.Line
       FramingCz  = AddNbsp (SentenceCase (Normalise $r.Cz))
       FramingSk  = AddNbsp (SentenceCase (Normalise $r.Sk))
@@ -206,6 +221,12 @@ foreach ($r in $body) {
     $letter = [char]([int][char]'a' + $cur.Opts.Count)
     [void]$cur.Opts.Add([pscustomobject]@{
       Id = $cur.Id + $letter
+      # The drawing is named after the UNSUFFIXED slot, because the artwork has
+      # not been redrawn yet: a revised option still shows the picture it had.
+      # items.json keeps id and icon apart exactly so identity can move without
+      # dragging the artwork with it. Point this at the new names the day the
+      # new drawings land.
+      Icon = $cur.Base + $letter
       Cz = AddNbsp (Normalise $r.Cz)
       Sk = AddNbsp (Normalise $r.Sk)
     })
@@ -236,7 +257,7 @@ for ($n = 0; $n -lt $items.Count; $n++) {
     $o = $it.Opts[$k]
     $comma = ","
     if ($k -eq $it.Opts.Count - 1) { $comma = "" }
-    [void]$sb.Append('        { "id": "' + $o.Id + '", "icon": "' + $o.Id + '" }' + $comma + "`r`n")
+    [void]$sb.Append('        { "id": "' + $o.Id + '", "icon": "' + $o.Icon + '" }' + $comma + "`r`n")
   }
   [void]$sb.Append("      ]`r`n")
   $tail = "    },"
@@ -271,5 +292,18 @@ if ($DryRun) { Write-Host "DRY RUN - nothing written" -ForegroundColor Yellow }
 
 # -- report --------------------------------------------------------------------
 Write-Host ""
-Write-Host "Framings as stored:" -ForegroundColor Green
-foreach ($it in $items) { Write-Host ("  " + $it.Id + "  " + $it.FramingCz) }
+$revisedSeen = @($items | Where-Object { $_.Id -ne $_.Base })
+Write-Host ("revised ids: " + $revisedSeen.Count + " of " + $items.Count) -ForegroundColor Green
+$unknown = @($Revised | Where-Object { $_ -notin ($items | ForEach-Object { $_.Base }) })
+foreach ($u in $unknown) { Write-Host ("  WARNING: -Revised names " + $u + ", which is not an item in this delivery") -ForegroundColor Red }
+
+Write-Host ""
+Write-Host "Items as stored:" -ForegroundColor Green
+foreach ($it in $items) {
+  $mark = "  "
+  if ($it.Id -ne $it.Base) { $mark = "* " }
+  Write-Host ($mark + $it.Id.PadRight(9) + $it.FramingCz)
+}
+Write-Host ""
+Write-Host "itemSubset for config.js:" -ForegroundColor Green
+Write-Host ("  " + (($items | ForEach-Object { '"' + $_.Id + '"' }) -join ", "))
