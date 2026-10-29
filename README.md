@@ -191,10 +191,24 @@ square monochrome line drawings that take their colour from CSS.
 A delivery arrives as a folder — content, drawings and a README describing
 both. Two commands turn it into the instrument, and neither touches code:
 
-    .\tools\import-content.ps1 -Source vejkend-frontend-24\otazky.json
-    .\tools\build-icons.ps1    -Source vejkend-frontend-24\ikony -Prefix Q -PadDigits 2
+As of the 29.10 wording the text arrives separately from the drawings, so the
+two commands take different sources. `-Revised` names the items whose wording
+changed; both scripts need the *same* list, or a drawing lands under an id
+nothing references:
 
-Run the first with `-WhatIf` to see what it would produce without writing.
+    .\tools\import-wording.ps1 -Source ..\polozky_new_vejkend1029.txt `
+        -Revised Q01,Q02,Q03,Q04,Q07,Q09,Q10,Q11,Q12,Q15,Q17,Q18,Q21,Q22,Q23
+    .\tools\build-icons.ps1 -Source vejkend-frontend-25\ikony -Prefix Q -PadDigits 2 `
+        -Revised 1,2,3,4,7,9,10,11,12,15,17,18,21,22,23
+
+`import-wording.ps1 -DryRun` prints what it would write without writing it.
+Afterwards, check that every option has a drawing and no drawing is orphaned —
+the counts should be 125 and 0.
+
+The older `import-content.ps1` still reads a single `otazky.json` delivery and
+is kept for that shape.
+
+Run it with `-WhatIf` to see what it would produce without writing.
 It checks the whole delivery before writing anything — a missing title, an
 option belonging to another question, a question with fewer than two options —
 and writes nothing if any of that is wrong, because a half-converted item set

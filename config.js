@@ -118,28 +118,16 @@ export const CONFIG = {
    *   itemLimit: 3,                        first three items
    *   itemSubset: ["Q13", "Q10"],          these two, in this order
    *
-   * Everything except Q25, which arrived with the 29.10 wording but has no
-   * drawings yet. Without them it would render five placeholder rings, which
-   * is worse for a child than not meeting the question at all. Add "Q25" here
-   * the day its icons land, and set this back to null once nothing needs
-   * holding out.
+   * null: all 25 items run. Q25 was held out while it had no drawings; the
+   * set delivered on 29.10 covers every option, so nothing needs holding out
+   * any more. §6.2 wants this null for run (b) anyway, and now it is.
    *
-   * The _v2 ids are the fifteen items whose wording changed on 29.10; the
-   * nine bare ids are the ones that did not. See "Wording versions" in the
-   * README for why identity moves when the option set changes.
-   *
-   * The order written here no longer has any effect, because shuffleItems
-   * draws the sequence per participant. It is ascending rather than
-   * meaningful, and exists so that turning shuffleItems off falls back to a
-   * known order rather than to whatever order items.json happens to be in.
+   * To run a subset again, list ids here. They are not all of the form QNN:
+   * the fifteen items whose wording changed on 29.10 carry a _v2 suffix, the
+   * nine that did not keep their bare id. See "Verzie zadaní" in the README
+   * for why identity moves when the option set changes.
    */
-  itemSubset: [
-    "Q01_v2", "Q02_v2", "Q03_v2", "Q04_v2", "Q05",
-    "Q06",    "Q07_v2", "Q08",    "Q09_v2", "Q10_v2",
-    "Q11_v2", "Q12_v2", "Q13",    "Q14",    "Q15_v2",
-    "Q16",    "Q17_v2", "Q18_v2", "Q19",    "Q20",
-    "Q21_v2", "Q22_v2", "Q23_v2", "Q24"
-  ],
+  itemSubset: null,
   itemLimit: null,
   /**
    * How an option becomes an answer.

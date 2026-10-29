@@ -65,6 +65,13 @@ $NBSP     = [char]0x00A0
 $WRONG = "nejzn" + [char]0x00E1 + "mej" + [char]0x0161 + [char]0x00ED
 $RIGHT = "nejzn" + [char]0x00E1 + "m" + [char]0x011B + "j" + [char]0x0161 + [char]0x00ED
 
+# Second correction, from the 25-item front-end delivery: Czech wants a comma
+# before the subordinate clause. The wording document omitted it; the artwork
+# delivery has it right, and this is the same class of fix as the one above.
+#   "na radaru jak" -> "na radaru, jak"
+$WRONG2 = "na radaru jak"
+$RIGHT2 = "na radaru, jak"
+
 # Words that keep their capital when a framing is lowered to sentence case.
 # Read from the delivery would be guesswork; these are named on purpose.
 $PROPER = @(
@@ -83,6 +90,7 @@ function Normalise([string]$s) {
   $t = $t.Replace("...", [string]$ELLIPSIS)
   $t = $t.Replace(" - ", " " + $EN_DASH + " ")
   $t = $t.Replace($WRONG, $RIGHT)
+  $t = $t.Replace($WRONG2, $RIGHT2)
   return $t
 }
 
@@ -221,12 +229,11 @@ foreach ($r in $body) {
     $letter = [char]([int][char]'a' + $cur.Opts.Count)
     [void]$cur.Opts.Add([pscustomobject]@{
       Id = $cur.Id + $letter
-      # The drawing is named after the UNSUFFIXED slot, because the artwork has
-      # not been redrawn yet: a revised option still shows the picture it had.
-      # items.json keeps id and icon apart exactly so identity can move without
-      # dragging the artwork with it. Point this at the new names the day the
-      # new drawings land.
-      Icon = $cur.Base + $letter
+      # The drawings delivered on 29.10 are named after the option ids, so the
+      # two are one namespace and the sprite is self-describing. items.json
+      # keeps id and icon apart all the same, so a future delivery can move
+      # identity without dragging artwork, or redraw without moving identity.
+      Icon = $cur.Id + $letter
       Cz = AddNbsp (Normalise $r.Cz)
       Sk = AddNbsp (Normalise $r.Sk)
     })

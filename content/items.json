@@ -6,41 +6,41 @@
     {
       "id": "Q01_v2",
       "options": [
-        { "id": "Q01_v2a", "icon": "Q01a" },
-        { "id": "Q01_v2b", "icon": "Q01b" },
-        { "id": "Q01_v2c", "icon": "Q01c" },
-        { "id": "Q01_v2d", "icon": "Q01d" },
-        { "id": "Q01_v2e", "icon": "Q01e" }
+        { "id": "Q01_v2a", "icon": "Q01_v2a" },
+        { "id": "Q01_v2b", "icon": "Q01_v2b" },
+        { "id": "Q01_v2c", "icon": "Q01_v2c" },
+        { "id": "Q01_v2d", "icon": "Q01_v2d" },
+        { "id": "Q01_v2e", "icon": "Q01_v2e" }
       ]
     },
     {
       "id": "Q02_v2",
       "options": [
-        { "id": "Q02_v2a", "icon": "Q02a" },
-        { "id": "Q02_v2b", "icon": "Q02b" },
-        { "id": "Q02_v2c", "icon": "Q02c" },
-        { "id": "Q02_v2d", "icon": "Q02d" },
-        { "id": "Q02_v2e", "icon": "Q02e" }
+        { "id": "Q02_v2a", "icon": "Q02_v2a" },
+        { "id": "Q02_v2b", "icon": "Q02_v2b" },
+        { "id": "Q02_v2c", "icon": "Q02_v2c" },
+        { "id": "Q02_v2d", "icon": "Q02_v2d" },
+        { "id": "Q02_v2e", "icon": "Q02_v2e" }
       ]
     },
     {
       "id": "Q03_v2",
       "options": [
-        { "id": "Q03_v2a", "icon": "Q03a" },
-        { "id": "Q03_v2b", "icon": "Q03b" },
-        { "id": "Q03_v2c", "icon": "Q03c" },
-        { "id": "Q03_v2d", "icon": "Q03d" },
-        { "id": "Q03_v2e", "icon": "Q03e" }
+        { "id": "Q03_v2a", "icon": "Q03_v2a" },
+        { "id": "Q03_v2b", "icon": "Q03_v2b" },
+        { "id": "Q03_v2c", "icon": "Q03_v2c" },
+        { "id": "Q03_v2d", "icon": "Q03_v2d" },
+        { "id": "Q03_v2e", "icon": "Q03_v2e" }
       ]
     },
     {
       "id": "Q04_v2",
       "options": [
-        { "id": "Q04_v2a", "icon": "Q04a" },
-        { "id": "Q04_v2b", "icon": "Q04b" },
-        { "id": "Q04_v2c", "icon": "Q04c" },
-        { "id": "Q04_v2d", "icon": "Q04d" },
-        { "id": "Q04_v2e", "icon": "Q04e" }
+        { "id": "Q04_v2a", "icon": "Q04_v2a" },
+        { "id": "Q04_v2b", "icon": "Q04_v2b" },
+        { "id": "Q04_v2c", "icon": "Q04_v2c" },
+        { "id": "Q04_v2d", "icon": "Q04_v2d" },
+        { "id": "Q04_v2e", "icon": "Q04_v2e" }
       ]
     },
     {
@@ -66,11 +66,11 @@
     {
       "id": "Q07_v2",
       "options": [
-        { "id": "Q07_v2a", "icon": "Q07a" },
-        { "id": "Q07_v2b", "icon": "Q07b" },
-        { "id": "Q07_v2c", "icon": "Q07c" },
-        { "id": "Q07_v2d", "icon": "Q07d" },
-        { "id": "Q07_v2e", "icon": "Q07e" }
+        { "id": "Q07_v2a", "icon": "Q07_v2a" },
+        { "id": "Q07_v2b", "icon": "Q07_v2b" },
+        { "id": "Q07_v2c", "icon": "Q07_v2c" },
+        { "id": "Q07_v2d", "icon": "Q07_v2d" },
+        { "id": "Q07_v2e", "icon": "Q07_v2e" }
       ]
     },
     {
@@ -86,41 +86,41 @@
     {
       "id": "Q09_v2",
       "options": [
-        { "id": "Q09_v2a", "icon": "Q09a" },
-        { "id": "Q09_v2b", "icon": "Q09b" },
-        { "id": "Q09_v2c", "icon": "Q09c" },
-        { "id": "Q09_v2d", "icon": "Q09d" },
-        { "id": "Q09_v2e", "icon": "Q09e" }
+        { "id": "Q09_v2a", "icon": "Q09_v2a" },
+        { "id": "Q09_v2b", "icon": "Q09_v2b" },
+        { "id": "Q09_v2c", "icon": "Q09_v2c" },
+        { "id": "Q09_v2d", "icon": "Q09_v2d" },
+        { "id": "Q09_v2e", "icon": "Q09_v2e" }
       ]
     },
     {
       "id": "Q10_v2",
       "options": [
-        { "id": "Q10_v2a", "icon": "Q10a" },
-        { "id": "Q10_v2b", "icon": "Q10b" },
-        { "id": "Q10_v2c", "icon": "Q10c" },
-        { "id": "Q10_v2d", "icon": "Q10d" },
-        { "id": "Q10_v2e", "icon": "Q10e" }
+        { "id": "Q10_v2a", "icon": "Q10_v2a" },
+        { "id": "Q10_v2b", "icon": "Q10_v2b" },
+        { "id": "Q10_v2c", "icon": "Q10_v2c" },
+        { "id": "Q10_v2d", "icon": "Q10_v2d" },
+        { "id": "Q10_v2e", "icon": "Q10_v2e" }
       ]
     },
     {
       "id": "Q11_v2",
       "options": [
-        { "id": "Q11_v2a", "icon": "Q11a" },
-        { "id": "Q11_v2b", "icon": "Q11b" },
-        { "id": "Q11_v2c", "icon": "Q11c" },
-        { "id": "Q11_v2d", "icon": "Q11d" },
-        { "id": "Q11_v2e", "icon": "Q11e" }
+        { "id": "Q11_v2a", "icon": "Q11_v2a" },
+        { "id": "Q11_v2b", "icon": "Q11_v2b" },
+        { "id": "Q11_v2c", "icon": "Q11_v2c" },
+        { "id": "Q11_v2d", "icon": "Q11_v2d" },
+        { "id": "Q11_v2e", "icon": "Q11_v2e" }
       ]
     },
     {
       "id": "Q12_v2",
       "options": [
-        { "id": "Q12_v2a", "icon": "Q12a" },
-        { "id": "Q12_v2b", "icon": "Q12b" },
-        { "id": "Q12_v2c", "icon": "Q12c" },
-        { "id": "Q12_v2d", "icon": "Q12d" },
-        { "id": "Q12_v2e", "icon": "Q12e" }
+        { "id": "Q12_v2a", "icon": "Q12_v2a" },
+        { "id": "Q12_v2b", "icon": "Q12_v2b" },
+        { "id": "Q12_v2c", "icon": "Q12_v2c" },
+        { "id": "Q12_v2d", "icon": "Q12_v2d" },
+        { "id": "Q12_v2e", "icon": "Q12_v2e" }
       ]
     },
     {
@@ -146,11 +146,11 @@
     {
       "id": "Q15_v2",
       "options": [
-        { "id": "Q15_v2a", "icon": "Q15a" },
-        { "id": "Q15_v2b", "icon": "Q15b" },
-        { "id": "Q15_v2c", "icon": "Q15c" },
-        { "id": "Q15_v2d", "icon": "Q15d" },
-        { "id": "Q15_v2e", "icon": "Q15e" }
+        { "id": "Q15_v2a", "icon": "Q15_v2a" },
+        { "id": "Q15_v2b", "icon": "Q15_v2b" },
+        { "id": "Q15_v2c", "icon": "Q15_v2c" },
+        { "id": "Q15_v2d", "icon": "Q15_v2d" },
+        { "id": "Q15_v2e", "icon": "Q15_v2e" }
       ]
     },
     {
@@ -166,21 +166,21 @@
     {
       "id": "Q17_v2",
       "options": [
-        { "id": "Q17_v2a", "icon": "Q17a" },
-        { "id": "Q17_v2b", "icon": "Q17b" },
-        { "id": "Q17_v2c", "icon": "Q17c" },
-        { "id": "Q17_v2d", "icon": "Q17d" },
-        { "id": "Q17_v2e", "icon": "Q17e" }
+        { "id": "Q17_v2a", "icon": "Q17_v2a" },
+        { "id": "Q17_v2b", "icon": "Q17_v2b" },
+        { "id": "Q17_v2c", "icon": "Q17_v2c" },
+        { "id": "Q17_v2d", "icon": "Q17_v2d" },
+        { "id": "Q17_v2e", "icon": "Q17_v2e" }
       ]
     },
     {
       "id": "Q18_v2",
       "options": [
-        { "id": "Q18_v2a", "icon": "Q18a" },
-        { "id": "Q18_v2b", "icon": "Q18b" },
-        { "id": "Q18_v2c", "icon": "Q18c" },
-        { "id": "Q18_v2d", "icon": "Q18d" },
-        { "id": "Q18_v2e", "icon": "Q18e" }
+        { "id": "Q18_v2a", "icon": "Q18_v2a" },
+        { "id": "Q18_v2b", "icon": "Q18_v2b" },
+        { "id": "Q18_v2c", "icon": "Q18_v2c" },
+        { "id": "Q18_v2d", "icon": "Q18_v2d" },
+        { "id": "Q18_v2e", "icon": "Q18_v2e" }
       ]
     },
     {
@@ -206,31 +206,31 @@
     {
       "id": "Q21_v2",
       "options": [
-        { "id": "Q21_v2a", "icon": "Q21a" },
-        { "id": "Q21_v2b", "icon": "Q21b" },
-        { "id": "Q21_v2c", "icon": "Q21c" },
-        { "id": "Q21_v2d", "icon": "Q21d" },
-        { "id": "Q21_v2e", "icon": "Q21e" }
+        { "id": "Q21_v2a", "icon": "Q21_v2a" },
+        { "id": "Q21_v2b", "icon": "Q21_v2b" },
+        { "id": "Q21_v2c", "icon": "Q21_v2c" },
+        { "id": "Q21_v2d", "icon": "Q21_v2d" },
+        { "id": "Q21_v2e", "icon": "Q21_v2e" }
       ]
     },
     {
       "id": "Q22_v2",
       "options": [
-        { "id": "Q22_v2a", "icon": "Q22a" },
-        { "id": "Q22_v2b", "icon": "Q22b" },
-        { "id": "Q22_v2c", "icon": "Q22c" },
-        { "id": "Q22_v2d", "icon": "Q22d" },
-        { "id": "Q22_v2e", "icon": "Q22e" }
+        { "id": "Q22_v2a", "icon": "Q22_v2a" },
+        { "id": "Q22_v2b", "icon": "Q22_v2b" },
+        { "id": "Q22_v2c", "icon": "Q22_v2c" },
+        { "id": "Q22_v2d", "icon": "Q22_v2d" },
+        { "id": "Q22_v2e", "icon": "Q22_v2e" }
       ]
     },
     {
       "id": "Q23_v2",
       "options": [
-        { "id": "Q23_v2a", "icon": "Q23a" },
-        { "id": "Q23_v2b", "icon": "Q23b" },
-        { "id": "Q23_v2c", "icon": "Q23c" },
-        { "id": "Q23_v2d", "icon": "Q23d" },
-        { "id": "Q23_v2e", "icon": "Q23e" }
+        { "id": "Q23_v2a", "icon": "Q23_v2a" },
+        { "id": "Q23_v2b", "icon": "Q23_v2b" },
+        { "id": "Q23_v2c", "icon": "Q23_v2c" },
+        { "id": "Q23_v2d", "icon": "Q23_v2d" },
+        { "id": "Q23_v2e", "icon": "Q23_v2e" }
       ]
     },
     {
