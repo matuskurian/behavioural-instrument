@@ -54,7 +54,11 @@ const session = {
   screen: null        // "login" | "intro" | "item" | "summary" | "error"
 };
 
+// The copy in force after login. Replaced wholesale by loadLocaleStrings().
 let strings = {};
+// The pre-authentication copy, read once at boot and never swapped, so the
+// login screen cannot be affected by the locale that arrives after it.
+let loginStrings = {};
 let roster = { participants: [] };
 const transmission = { attempted: 0, failed: 0, duplicates: 0, failures: [] };
 
@@ -92,8 +96,9 @@ function show(screenName, node) {
 /* ==========================================================================
  * Strings (§4.4)
  * --------------------------------------------------------------------------
- * t("login.submit") resolves a dotted path in strings.json.
+ * t("item.next") resolves a dotted path in the locale file in force.
  * t("item.progress", { current: 3, total: 12 }) substitutes {placeholders}.
+ * tLogin("login.submit") does the same against the pre-auth file instead.
  * A missing key renders as [login.submit] so the gap is obvious in testing
  * rather than silently blank.
  *
@@ -103,21 +108,21 @@ function show(screenName, node) {
  * copy, and switching the mode stays a one-line change to config.js.
  * ========================================================================== */
 
-function lookup(path) {
+function lookup(path, source = strings) {
   return path.split(".").reduce(
     (node, key) => (node && typeof node === "object" ? node[key] : undefined),
-    strings
+    source
   );
 }
 
-function forMode(path) {
+function forMode(path, source = strings) {
   if (!CONFIG) return path;
   const variant = `${path}__${CONFIG.selectionMode}`;
-  return lookup(variant) === undefined ? path : variant;
+  return lookup(variant, source) === undefined ? path : variant;
 }
 
-function t(path, vars) {
-  const value = lookup(forMode(path));
+function translate(path, vars, source) {
+  const value = lookup(forMode(path, source), source);
   if (typeof value !== "string") {
     console.warn(`[strings] missing key: ${path}`);
     return `[${path}]`;
@@ -126,6 +131,30 @@ function t(path, vars) {
   return value.replace(/\{(\w+)\}/g, (match, key) =>
     Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match
   );
+}
+
+/** Everything after login: reads whatever locale file is currently loaded. */
+function t(path, vars) {
+  return translate(path, vars, strings);
+}
+
+/**
+ * The login screen, which must not read `strings` (§13.4).
+ *
+ * `strings` is replaced wholesale the moment a participant signs in, and the
+ * locale files carry no login block — they are not supposed to, because this
+ * screen is rendered before anyone's language is known. Anything on the login
+ * screen that reached for `strings` after that swap would resolve to nothing
+ * and render as [login.submit] in front of whoever was looking.
+ *
+ * Today only the submit button's restore line is late enough to hit that, and
+ * the button is off-screen by then. That is luck, not design: renderLogin()
+ * happens to be called exactly once. Reading from a binding that is never
+ * swapped makes it true on purpose, so a second login render later — a
+ * sign-out, a wrong-account escape, a retry — cannot bracket the whole screen.
+ */
+function tLogin(path, vars) {
+  return translate(path, vars, loginStrings);
 }
 
 function paragraphs(path, className = "body-text") {
@@ -775,7 +804,7 @@ function pinHistory() {
 
 function renderLogin(prefillId = "") {
   const error = el("p", { class: "form-error", hidden: true, role: "alert" });
-  const submit = el("button", { class: "button", type: "submit", text: t("login.submit") });
+  const submit = el("button", { class: "button", type: "submit", text: tLogin("login.submit") });
   let submitting = false;
 
   const idInput = el("input", {
@@ -810,7 +839,7 @@ function renderLogin(prefillId = "") {
         const password = passwordInput.value;
 
         if (!id || !password) {
-          error.textContent = t("login.empty");
+          error.textContent = tLogin("login.empty");
           error.hidden = false;
           return;
         }
@@ -821,7 +850,7 @@ function renderLogin(prefillId = "") {
         if (submitting) return;
         submitting = true;
         submit.disabled = true;
-        submit.textContent = t("login.working");
+        submit.textContent = tLogin("login.working");
         error.hidden = true;
 
         try {
@@ -830,13 +859,13 @@ function renderLogin(prefillId = "") {
           if (result.status === "busy") {
             // Not their mistake, and not a broken instrument. Saying either
             // would be a lie, and the second would fetch an adult.
-            error.textContent = t("login.busy");
+            error.textContent = tLogin("login.busy");
             error.hidden = false;
             passwordInput.focus();
             return;
           }
           if (result.status !== "ok") {
-            error.textContent = t("login.invalid");
+            error.textContent = tLogin("login.invalid");
             error.hidden = false;
             passwordInput.value = "";
             passwordInput.focus();
@@ -872,7 +901,7 @@ function renderLogin(prefillId = "") {
           // who lands back here never finds a dead button.
           submitting = false;
           submit.disabled = false;
-          submit.textContent = t("login.submit");
+          submit.textContent = tLogin("login.submit");
         }
       }
     },
@@ -882,11 +911,11 @@ function renderLogin(prefillId = "") {
       // without it a wrong password would produce no feedback at all.
       error,
       el("label", { class: "field" }, [
-        el("span", { class: "field__label", text: t("login.idLabel") }),
+        el("span", { class: "field__label", text: tLogin("login.idLabel") }),
         idInput
       ]),
       el("label", { class: "field" }, [
-        el("span", { class: "field__label", text: t("login.passwordLabel") }),
+        el("span", { class: "field__label", text: tLogin("login.passwordLabel") }),
         passwordInput
       ]),
       submit
@@ -1499,13 +1528,17 @@ async function boot() {
     const needsRoster = CONFIG.authMode === "roster";
     // Only the pre-auth strings at boot: the participant's own language is not
     // known until they have signed in (§13.4, §13.6).
-    const [itemsData, stringsData, rosterData] = await Promise.all([
+    const [itemsData, loginData, rosterData] = await Promise.all([
       loadJSON(CONFIG.content.items),
       loadJSON(CONFIG.content.loginStrings),
       needsRoster ? loadJSON(CONFIG.content.roster) : Promise.resolve({ participants: [] })
     ]);
     items = itemsData;
-    strings = stringsData;
+    loginStrings = loginData;
+    // Also the working copy until a locale is known, so that an error screen
+    // raised before anyone signs in still has words. loadLocaleStrings()
+    // replaces this one; loginStrings above is never replaced.
+    strings = loginData;
     roster = rosterData;
   } catch (error) {
     showError([error.message, "The app cannot start without its content files."]);
@@ -1527,7 +1560,7 @@ async function boot() {
   }
 
   document.documentElement.lang = "cs";
-  document.title = t("app.title");
+  document.title = tLogin("app.title");
 
   // Before the first screen, so the first item already has its drawings.
   await loadIcons(CONFIG.content.icons);
