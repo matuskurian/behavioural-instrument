@@ -121,16 +121,20 @@ function forMode(path, source = strings) {
   return lookup(variant, source) === undefined ? path : variant;
 }
 
+function substitute(value, vars) {
+  if (!vars) return value;
+  return value.replace(/\{(\w+)\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match
+  );
+}
+
 function translate(path, vars, source) {
   const value = lookup(forMode(path, source), source);
   if (typeof value !== "string") {
     console.warn(`[strings] missing key: ${path}`);
     return `[${path}]`;
   }
-  if (!vars) return value;
-  return value.replace(/\{(\w+)\}/g, (match, key) =>
-    Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match
-  );
+  return substitute(value, vars);
 }
 
 /** Everything after login: reads whatever locale file is currently loaded. */
@@ -941,6 +945,13 @@ function renderIntro() {
 
   // The checklist and the closing line are optional: copy that does not use
   // them simply leaves them out of strings.json and nothing empty is drawn.
+  //
+  // Its lines take {total}, because one of them promises the child how many
+  // decisions are coming. Written as a literal it goes quietly wrong the next
+  // time an item is added or itemSubset is narrowed — as it had, promising 24
+  // when the run became 25. A number the app fills in cannot drift from the
+  // number of screens the child is actually about to see.
+  const checklistVars = { total: session.items.length };
   const checklist = lookup("intro.checklist");
   const checklistHeading = lookup("intro.checklistHeading");
   const closing = lookup("intro.closing");
@@ -957,7 +968,7 @@ function renderIntro() {
           el(
             "ul",
             { class: "intro__list" },
-            checklist.map((line) => el("li", { text: line }))
+            checklist.map((line) => el("li", { text: substitute(line, checklistVars) }))
           )
         ])
       : null,

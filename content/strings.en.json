@@ -5,7 +5,7 @@
     "_title_note": "Titulek záložky prohlížeče. Shodný s wordmarkem, aby karta a stránka říkaly totéž. Záměrně neprozrazuje, co nástroj měří, a vyhýbá se slovům jako test, úloha nebo dotazník – úvodní obrazovka dítěti slibuje, že o test nejde, a titulek by to neměl popírat.",
     "title": "extra 48 h.",
     "_wordmark_note": "Pracovní název, zatím neschválený. Wordmark i tagline vykresluje CSS verzálkami, takže se tu píšou normálně. Drží se v souladu s úvodní obrazovkou: 48 hodin, dva dny.",
-    "wordmark": "Dva dni navíc",
+    "wordmark": "Dva dny navíc",
     "tagline": "48 hodin jen pro tebe"
   },
   "item": {
@@ -41,7 +41,7 @@
     "checklist": [
       "Není to test. Neexistují správné ani špatné odpovědi a nedostaneš za ně známku.",
       "Tvoje jednotlivé odpovědi neuvidí učitelé ani rodiče.",
-      "Zabere ti to přibližně 15–20 minut a čeká tě 24 rozhodnutí."
+      "Zabere ti to přibližně 15–20 minut a čeká tě {total} rozhodnutí."
     ],
     "closing": "Tak jo. Přístroj je nastavený. Tvých 48 hodin právě začíná.",
     "start": "Začít"

@@ -1,52 +1,50 @@
 {
-  "_note": "Veškerý text viditelný pro účastníka. Pouze čeština. Nic z toho nesmí být napsáno v app.js (§4.4). Zástupné hodnoty ve složených závorkách, např. {current}, doplňuje aplikace.",
-  "_version": "2026-09-11",
+  "_note": "Vsetok text viditelny pre ucastnika, po slovensky. Nic z toho nesmie byt napisane v app.js (sekcia 4.4). Zastupne hodnoty v zlozenych zatvorkach, napr. {current}, doplna aplikacia.",
+  "_version": "2026-10-29",
   "app": {
     "_title_note": "Titulek záložky prohlížeče. Shodný s wordmarkem, aby karta a stránka říkaly totéž. Záměrně neprozrazuje, co nástroj měří, a vyhýbá se slovům jako test, úloha nebo dotazník – úvodní obrazovka dítěti slibuje, že o test nejde, a titulek by to neměl popírat.",
     "title": "extra 48 h.",
     "_wordmark_note": "Pracovní název, zatím neschválený. Wordmark i tagline vykresluje CSS verzálkami, takže se tu píšou normálně. Drží se v souladu s úvodní obrazovkou: 48 hodin, dva dny.",
-    "wordmark": "Dva dni navíc",
-    "tagline": "48 hodin jen pro tebe"
+    "wordmark": "Dva dni navyše",
+    "tagline": "48 hodín len pre teba"
   },
   "item": {
     "progress": "{current} / {total}",
-    "eyebrow": "Volba {current} z {total}",
-    "lead": "Vyber jednu možnost. Není tu žádná správná odpověď.",
+    "eyebrow": "Voľba {current} z {total}",
+    "lead": "Vyber jednu možnosť. Nie je tu žiadna správna odpoveď.",
     "_lead_note": "Výchozí text pod zadáním. Jednotlivá položka ho může přepsat vlastním polem \"lead\" v items.json.",
-    "next": "Další"
+    "next": "Ďalej"
   },
   "summary": {
-    "heading": "Tvoje volby",
+    "heading": "Tvoje voľby",
     "intro": [
-      "Tady je přehled toho, co jsi vybral nebo vybrala. Můžeš si ho v klidu projít.",
-      "Tím je úloha hotová. Děkujeme."
+      "Tu je prehľad toho, čo si vybral alebo vybrala. Môžeš si ho v pokoji prejsť.",
+      "Tým je úloha hotová. Ďakujeme."
     ],
-    "closing": "Obrazovku teď můžeš zavřít.",
-    "nothingNew": "Na všechny otázky už máš odpověď z dřívějška, takže tady teď není co nového ukázat. Platí to, co jsi vybral nebo vybrala poprvé.",
-    "noCaption": "Volba u otázky {n}"
+    "closing": "Obrazovku teraz môžeš zavrieť.",
+    "nothingNew": "Na všetky otázky už máš odpoveď z minula, takže tu teraz nie je čo nové ukázať. Platí to, čo si vybral alebo vybrala prvýkrát.",
+    "noCaption": "Voľba pri otázke {n}"
   },
   "intro": {
-    "heading": "Tvých 48 hodin",
+    "heading": "Tvojich 48 hodín",
     "body": [
-      "SLOVAK IS PARTIAL - the questions and the options are translated; this surrounding text is not. If you are reading Czech anywhere outside a question, that is the gap.",
-      "Někde v jedné laboratoři se to konečně povedlo.",
-      "Vědci roky zkoušeli vyrobit čas. Ne zpomalit ho, ne se vrátit zpátky – vyrobit. A teď to funguje: umí do týdne vložit dva dny navíc. Osmačtyřicet hodin, které nikomu nechybí a o které nikdo nepřijde. Prostě tam navíc jsou.",
-      "Zítra ráno se probudíš a ty dva dny budeš mít ty.",
-      "Vyrobený čas ale nevzniká z ničeho. Přístroj ho skládá z možností, které se ti v ten okamžik nabízejí. V každé situaci ti pět z nich ukáže a ty si vybereš tu svou. Přístroj ji zapíše a pokračuje dál.",
-      "Všechno ostatní zůstává úplně normální. Jsi pořád ty, se stejnými kamarády, rodinou i věcmi, které tě baví. Škola v těch dvou dnech není, úkoly ani kroužky a tréninky taky ne. Peníze, dopravu ani ničí svolení řešit nemusíš – o to se přístroj postará.",
-      "Vybírej to, co by sis vybral/a doopravdy. Když ti žádná z pěti možností nesedí úplně přesně, vyber tu nejbližší – přístroj jich víc najednou neudrží."
+      "Niekde v jednom laboratóriu sa to konečne podarilo.",
+      "Vedci roky skúšali vyrobiť čas. Nie spomaliť ho, nie vrátiť sa späť – vyrobiť. A teraz to funguje: vedia do týždňa vložiť dva dni navyše. Štyridsaťosem hodín, ktoré nikomu nechýbajú a o ktoré nikto nepríde. Jednoducho tam navyše sú.",
+      "Zajtra ráno sa zobudíš a tie dva dni budeš mať ty.",
+      "Vyrobený čas ale nevzniká z ničoho. Prístroj ho skladá z možností, ktoré sa ti v tej chvíli ponúkajú. V každej situácii ti päť z nich ukáže a ty si vyberieš tú svoju. Prístroj ju zapíše a pokračuje ďalej.",
+      "Všetko ostatné zostáva úplne normálne. Si stále ty, s tými istými kamarátmi, rodinou aj vecami, ktoré ťa bavia. Škola v tých dvoch dňoch nie je, úlohy ani krúžky a tréningy tiež nie. Peniaze, dopravu ani ničie povolenie riešiť nemusíš – o to sa prístroj postará.",
+      "Vyberaj to, čo by si si vybral/a naozaj. Keď ti žiadna z piatich možností nesedí úplne presne, vyber tú najbližšiu – prístroj ich viac naraz neudrží."
     ],
     "_checklist_note": "Odrážky pod hlavním textem. Prázdné pole je v pořádku – seznam se pak nevykreslí.",
-    "checklistHeading": "Než začneš:",
+    "checklistHeading": "Skôr než začneš:",
     "checklist": [
-      "Není to test. Neexistují správné ani špatné odpovědi a nedostaneš za ně známku.",
-      "Tvoje jednotlivé odpovědi neuvidí učitelé ani rodiče.",
-      "Zabere ti to přibližně 15–20 minut a čeká tě 24 rozhodnutí."
+      "Nie je to test. Neexistujú správne ani nesprávne odpovede a nedostaneš za ne známku.",
+      "Tvoje jednotlivé odpovede neuvidia učitelia ani rodičia.",
+      "Zaberie ti to približne 15–20 minút a čaká ťa {total} rozhodnutí."
     ],
-    "closing": "Tak jo. Přístroj je nastavený. Tvých 48 hodin právě začíná.",
-    "start": "Začít"
+    "closing": "Tak fajn. Prístroj je nastavený. Tvojich 48 hodín sa práve začína.",
+    "start": "Začať"
   },
-  "_untranslated": "Partial. The items block carries real Slovak from the 29.10 delivery; the intro, the item chrome and the summary are still Czech. The banner at the top of intro.body says so; remove both when the rest lands.",
   "_items_note": "Text kazde polozky, klicovany podle id z items.json. Chybejici klic se vykresli jako [items.QXX.framing], aby byla mezera videt.",
   "items": {
     "Q01_v2": {
