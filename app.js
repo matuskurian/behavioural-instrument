@@ -505,7 +505,29 @@ async function refreshSession() {
  *   { status: "invalid" }   wrong code or password
  *   { status: "busy" }      too many sign-ins at once; try again shortly
  */
+/**
+ * What the participant typed, turned into the code their account actually
+ * uses (§5).
+ *
+ * The codes are two words joined by a dash, and the cards are printed from a
+ * roster that writes them with a space: "ROPE CURAVEC" on paper is
+ * rope-curavec in the system. A child copying the card faithfully, or typing
+ * from memory, puts the space in — and a space cannot appear in an email
+ * local part, so sign-in is refused and the screen says their login is
+ * wrong. It is not; the room would lose minutes to it and the child would
+ * think they had done something stupid.
+ *
+ * Mapping whitespace and underscores onto the dash can only rescue a login
+ * that was impossible anyway: no account's code contains either character,
+ * so this can never send a participant to somebody else's account. Case and
+ * surrounding space are handled here for the same reason.
+ */
+function normaliseCode(typed) {
+  return typed.trim().toLowerCase().replace(/[\s_]+/g, "-");
+}
+
 async function checkCredential(code, password) {
+  code = normaliseCode(code);
   if (CONFIG.authMode === "remote") {
     // Sign-in treats the address case-insensitively; the row-level security
     // policy does not. It compares participant_id against the local part of
@@ -514,7 +536,7 @@ async function checkCredential(code, password) {
     // single row refused with 42501 — invisibly, because writes are
     // fire-and-forget and nobody is ever told. Verified against the live
     // project on 2026-09-17: "test" accepted, "TEST" refused.
-    const result = await signIn(code.trim().toLowerCase(), password);
+    const result = await signIn(code, password);
     if (result.status !== "ok") return { status: result.status };
     holdSession(result.token);
 
