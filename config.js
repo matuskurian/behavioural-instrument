@@ -86,6 +86,12 @@ export const CONFIG = {
    *          A wave can repeat items from an earlier one, add new ones, or
    *          both — a repeated item keeps its id, so its answers pair across
    *          waves by (participant, item_id).
+   *
+   *          Once more than one wave exists, list every wave's ids
+   *          explicitly. null means "whatever items.json holds", so a wave
+   *          written as null silently grows the day another wave's new items
+   *          are added to the file — which is exactly how a running wave
+   *          would change under the children taking it.
    *   order  "shuffle"  a per-participant order, drawn from the participant's
    *                     code so that a reload resumes into the same sequence.
    *                     Safe only because every row records item_position.
@@ -105,7 +111,34 @@ export const CONFIG = {
    *   2: { items: ["Q01_v2", "Q05", "Q26"], order: "shuffle" },
    */
   waves: {
-    1: { items: null, order: "shuffle" }
+    // RUNNING since 2026-10-29 (Slovak class 8. ô). Do not change this list.
+    // Written out rather than null so that adding wave 2's items to
+    // items.json cannot add them here. Listed in items.json order, which is
+    // what null produced, so every child's seeded order is unchanged.
+    1: {
+      items: [
+        "Q01_v2", "Q02_v2", "Q03_v2", "Q04_v2", "Q05",
+        "Q06",    "Q07_v2", "Q08",    "Q09_v2", "Q10_v2",
+        "Q11_v2", "Q12_v2", "Q13",    "Q14",    "Q15_v2",
+        "Q16",    "Q17_v2", "Q18_v2", "Q19",    "Q20",
+        "Q21_v2", "Q22_v2", "Q23_v2", "Q24",    "Q25"
+      ],
+      order: "shuffle"
+    },
+
+    // PLACEHOLDER for testing, 2026-10-30: a copy of wave 1 until wave 2's
+    // own items are ready. Not running — no wave-2 codes have been handed
+    // out — so this list is free to change until they are.
+    2: {
+      items: [
+        "Q01_v2", "Q02_v2", "Q03_v2", "Q04_v2", "Q05",
+        "Q06",    "Q07_v2", "Q08",    "Q09_v2", "Q10_v2",
+        "Q11_v2", "Q12_v2", "Q13",    "Q14",    "Q15_v2",
+        "Q16",    "Q17_v2", "Q18_v2", "Q19",    "Q20",
+        "Q21_v2", "Q22_v2", "Q23_v2", "Q24",    "Q25"
+      ],
+      order: "shuffle"
+    }
   },
 
   /**

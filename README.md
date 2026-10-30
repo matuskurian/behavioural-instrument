@@ -382,8 +382,20 @@ Dve pravidlá, ktoré kód **nevynucuje** — sú to dohody:
 
 | vlna | obsah | od | poznámka |
 |---|---|---|---|
-| 1 | všetkých 25 položiek (znenie 29. 10.), `shuffle` | — | slovenská trieda 8. ô, 32 detí, založená 29. 10. |
-| 2 | **obsah ešte nie je definovaný** | — | 30 nových slovenských detí (roster 30. 10.); vlnu 1 nerobia |
+| 1 | 25 položiek (znenie 29. 10.), vypísaných v `config.js`, `shuffle` | 29. 10. | slovenská trieda 8. ô, 32 detí. **Beží — nemeniť.** |
+| 2 | **dočasne kópia vlny 1, len na testovanie**, `shuffle` | — | 30 nových slovenských detí (roster 30. 10.), vlnu 1 nerobia. Kódy zatiaľ nerozdané, takže zoznam sa ešte smie meniť — až do ich rozdania. |
+
+Odkedy existuje viac než jedna vlna, má každá vlna v `config.js` **vypísaný
+zoznam id, nie `null`**. `null` znamená „všetko, čo je v `items.json`" — a vlna
+zapísaná ako `null` by sa potichu rozšírila v deň, keď do súboru pribudnú
+položky inej vlny. Vlna 1 bola preto 30. 10. prepísaná z `null` na svojich 25
+id v pôvodnom poradí; poradia detí sa tým nezmenili (overené).
+
+**Testovať vlnu na kódoch skutočných detí sa nesmie.** Testovacia odpoveď by im
+zostala v dátach navždy (riadky sa nemažú) a pri „prvá odpoveď vyhráva" by
+dieťaťu neskôr potichu zahodila jeho vlastnú odpoveď na tú istú položku. Na
+každú vlnu je preto testovací účet (`werewolf-sk` vo vlne 1, `werewolf-w2`
+vo vlne 2).
 
 Text úvodu je zatiaľ vo všetkých vlnách rovnaký (otvorená otázka, predvolené =
 rovnaký). Pozor pri kratšej vlne: úvod sľubuje „15–20 minút", čo sa počtom
