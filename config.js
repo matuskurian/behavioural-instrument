@@ -76,10 +76,11 @@ export const CONFIG = {
   shuffleOptions: true,
 
   /**
-   * The runs. A participant can take the instrument up to three times, weeks
-   * apart; each time is a wave. Which wave an account is in is set per
-   * account by the roster tool (app_metadata.wave, absent = 1), never here.
-   * This only says what each wave presents.
+   * The content sets. A wave is what is asked and in what order; which wave a
+   * child gets is set per account by the roster tool (app_metadata.wave,
+   * absent = 1), never here. A child can go through several waves weeks apart,
+   * or start directly in a later one: new children given different content
+   * from wave 1 are simply in wave 2. At most three (a database check).
    *
    *   items  the item ids this wave runs: null = every item in items.json.
    *          A wave can repeat items from an earlier one, add new ones, or

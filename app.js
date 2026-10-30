@@ -53,7 +53,7 @@ const session = {
   /** Resolved once at login from the account, then fixed for the whole run:
    *  it selects the strings file and rides along on every row (§13). */
   locale: null,
-  /** Which run this is for the participant: 1, 2 or 3. Read once at login
+  /** Which content set this participant gets: 1, 2 or 3. Read once at login
    *  from the account and fixed for the session, like locale. It picks the
    *  item set, seeds the order, and rides along on every row. */
   wave: 1,

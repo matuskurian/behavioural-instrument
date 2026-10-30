@@ -328,10 +328,18 @@ pred ním, má starý obsah až do konca sedenia.
 
 Schéma sa mení súbormi v `sql/`, ktoré sa púšťajú v Supabase SQL editore.
 
-### Vlny — keď nástroj vypĺňa to isté dieťa viackrát
+### Vlny — sady obsahu
 
-Dieťa môže nástroj vyplniť až trikrát, s odstupom týždňov. Každé vyplnenie je
-**vlna**. Dve osi, každá odpovedá na jednu otázku:
+**Vlna je sada obsahu**: ktoré položky sa pýtajú a v akom poradí. Účet dieťaťa
+určuje, v ktorej vlne je. Dieťa môže prejsť viacerými vlnami (to isté dieťa
+o týždne neskôr znova), alebo začať rovno v neskoršej — nové deti, ktoré
+dostanú iný obsah než deti vo vlne 1, sú vo vlne 2 bez toho, aby vlnu 1 kedy
+robili. Dáta zostávajú jednoznačné: kto má riadky len z jednej vlny, ten
+nástroj vypĺňal raz; kto má riadky z dvoch, ten ho opakoval.
+
+Najviac tri vlny (kontrola v databáze); rozšíriť je to jeden `ALTER`.
+
+Dve osi, každá odpovedá na jednu otázku:
 
 * `item_id` — **čo** sa pýtalo (nové znenie = nové id, pozri nižšie);
 * `wave` — **kedy** sa to pýtalo.
@@ -375,6 +383,7 @@ Dve pravidlá, ktoré kód **nevynucuje** — sú to dohody:
 | vlna | obsah | od | poznámka |
 |---|---|---|---|
 | 1 | všetkých 25 položiek (znenie 29. 10.), `shuffle` | — | slovenská trieda 8. ô, 32 detí, založená 29. 10. |
+| 2 | **obsah ešte nie je definovaný** | — | 30 nových slovenských detí (roster 30. 10.); vlnu 1 nerobia |
 
 Text úvodu je zatiaľ vo všetkých vlnách rovnaký (otvorená otázka, predvolené =
 rovnaký). Pozor pri kratšej vlne: úvod sľubuje „15–20 minút", čo sa počtom
