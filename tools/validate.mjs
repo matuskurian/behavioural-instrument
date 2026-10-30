@@ -185,6 +185,51 @@ function checkLocaleCoverage(locale, strings, items) {
  * participant looking at a blank page
  * ---------------------------------------------------------------------- */
 
+/**
+ * config.waves: the same rules app.js applies at boot, run before deploy so a
+ * mistake in a wave nobody has reached yet still stops the build. Wave 1 is
+ * required because an account without a wave is in it.
+ */
+function checkWaves(waves, itemIds) {
+  const where = "config.js";
+  if (!waves || typeof waves !== "object" || Array.isArray(waves)) {
+    fail(where, "waves must be an object keyed by wave number, e.g. { 1: { items: null, order: \"shuffle\" } }");
+    return;
+  }
+  if (!waves[1]) fail(where, "waves[1] is required — every account without a wave is in wave 1");
+
+  for (const key of Object.keys(waves)) {
+    const at = `waves[${key}]`;
+    if (![1, 2, 3].includes(Number(key))) {
+      fail(where, `${at}: waves are numbered 1, 2, 3 (the database refuses anything else)`);
+      continue;
+    }
+    const spec = waves[key];
+    if (!spec || typeof spec !== "object") {
+      fail(where, `${at} must be { items, order }`);
+      continue;
+    }
+    if (spec.order !== "shuffle" && spec.order !== "fixed") {
+      fail(where, `${at}.order is ${JSON.stringify(spec.order)}; expected "shuffle" or "fixed"`);
+    }
+    if (spec.items === null) {
+      notes.push(`wave ${key}: every item in items.json, ${spec.order}`);
+      continue;
+    }
+    if (!Array.isArray(spec.items) || spec.items.length === 0) {
+      fail(where, `${at}.items must be a non-empty array of item ids, or null for every item`);
+      continue;
+    }
+    const seen = new Set();
+    for (const id of spec.items) {
+      if (itemIds && !itemIds.has(id)) fail(where, `${at}.items names "${id}", which is not in items.json`);
+      if (seen.has(id)) fail(where, `${at}.items lists "${id}" twice`);
+      seen.add(id);
+    }
+    notes.push(`wave ${key}: ${spec.items.length} items, ${spec.order}`);
+  }
+}
+
 async function checkConfig(itemIds) {
   let CONFIG;
   try {
@@ -216,23 +261,21 @@ async function checkConfig(itemIds) {
 
   // A missing switch reads as false in app.js, which would silently drop a
   // randomisation someone believed was on. Demand the word.
-  for (const key of ["shuffleOptions", "shuffleItems"]) {
-    if (typeof CONFIG[key] !== "boolean") {
-      fail("config.js", `${key} must be true or false, written out`);
+  if (typeof CONFIG.shuffleOptions !== "boolean") {
+    fail("config.js", "shuffleOptions must be true or false, written out");
+  }
+
+  // The keys waves replaced. app.js no longer reads them, so one left behind
+  // — or added back from an old example — would look like it does something
+  // and do nothing at all. Refuse it rather than let it mislead.
+  for (const key of ["itemSubset", "shuffleItems"]) {
+    if (key in CONFIG) {
+      fail("config.js", `${key} is no longer read; item selection and order now live in config.waves`);
     }
   }
 
-  // The cross-file check: an id here that is not in items.json stops the app
-  // at startup, which is correct but late.
-  if (CONFIG.itemSubset !== null && CONFIG.itemSubset !== undefined) {
-    if (!Array.isArray(CONFIG.itemSubset) || CONFIG.itemSubset.length === 0) {
-      fail("config.js", "itemSubset must be a non-empty array of item ids, or null");
-    } else if (itemIds) {
-      for (const id of CONFIG.itemSubset) {
-        if (!itemIds.has(id)) fail("config.js", `itemSubset names "${id}", which is not in items.json`);
-      }
-    }
-  }
+  checkWaves(CONFIG.waves, itemIds);
+
   if (CONFIG.itemLimit !== null && CONFIG.itemLimit !== undefined) {
     if (!Number.isInteger(CONFIG.itemLimit) || CONFIG.itemLimit < 1) {
       fail("config.js", "itemLimit must be a whole number of 1 or more, or null");
@@ -241,17 +284,8 @@ async function checkConfig(itemIds) {
 
   // Not failures — things worth seeing in the build log before they surprise
   // someone. A short run is legitimate; silently shipping one is the trouble.
-  if (CONFIG.itemSubset || CONFIG.itemLimit) {
-    notes.push(`short run configured: itemSubset=${JSON.stringify(CONFIG.itemSubset)} itemLimit=${JSON.stringify(CONFIG.itemLimit)}`);
-  }
-  if (CONFIG.shuffleItems) {
-    notes.push("shuffleItems is on: item order is drawn per participant from their code");
-    // Shuffling a hand-picked subset is legitimate; shuffling a hand-written
-    // *order* means someone spent effort on a sequence that will be thrown
-    // away. Worth saying out loud, not worth failing a build over.
-    if (Array.isArray(CONFIG.itemSubset) && CONFIG.itemSubset.length > 1) {
-      notes.push("shuffleItems is on, so the order written into itemSubset is ignored (it still picks which items run)");
-    }
+  if (CONFIG.itemLimit) {
+    notes.push(`short run configured: itemLimit=${CONFIG.itemLimit} applies to every wave`);
   }
   if (CONFIG.authMode === "roster") {
     notes.push('authMode is "roster": offline mode, nothing will be written to Supabase');

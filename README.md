@@ -250,26 +250,25 @@ sighted child does not get. The caption is the option; the drawing decorates it.
 
 ## Running a short session
 
-For a think-aloud, a timing pilot or a two-minute logistics test, narrow the
-run in `config.js` instead of editing `items.json`:
+Which items run, and in what order, belongs to the wave (see *Vlny* below):
 
-    itemLimit: 3,                              // first three items
-    itemSubset: ["B03", "B01", "B07"],         // these three, in this order
-    itemSubset: ["B03", "B01", "B07"],         // …and both together:
-    itemLimit: 2,                              // B03 and B01
+    waves: {
+      1: { items: null, order: "shuffle" },                    // every item, per-child order
+      2: { items: ["Q01_v2", "Q05", "Q26"], order: "fixed" }   // these, in this order, for all
+    },
 
-`itemSubset` picks and orders, `itemLimit` then truncates what is left; `null`
-on both means the whole file in file order. Validation still runs against the
-*whole* of `items.json` first, so a malformed item you were not going to reach
-still stops the session — a short pilot cannot hide a content error the full
-run would hit. An id that is not in `items.json` is a startup error rather
-than a quietly shorter session, and any short run prints a `SHORT RUN` warning
-naming the items it will present.
-
-The progress indicator and the summary follow the selection (`1 / 3`), and
-rows still carry the real item ids, so subset runs stay identifiable in the
-sheet. Set both back to `null` for run (b): the completion threshold is
+`items: null` means the whole of `items.json`. For a think-aloud, a timing
+pilot or a two-minute logistics test, `itemLimit: 3` additionally keeps only
+the first three items of whichever wave runs, and prints a `SHORT RUN`
+warning. It must be `null` for real collection: the completion threshold is
 pre-registered against a fixed item set.
+
+Validation runs against the *whole* of `items.json` and *every* wave at
+startup, so a malformed item, an unknown id or an id listed twice stops the app
+even in a wave nobody has reached yet. A typo never silently shortens a session.
+
+The progress indicator, the summary and the intro's "čeká tě N rozhodnutí" all
+follow the selection, and rows carry the real item ids and the wave.
 
 ## Editing via GitHub, and the gate that protects it
 
@@ -288,7 +287,7 @@ The validator checks JSON syntax (with line and column numbers when Node
 reports a character offset — not every parse error carries one), the item and
 roster rules `app.js` enforces at startup, the presence of every string key
 the app asks for by name, that `config.js` imports and its flags hold legal
-values, and that every id in `itemSubset` exists in `items.json`. It also
+values, and that every wave's ids exist in `items.json`. It also
 prints notes — a dry-run endpoint or a short run is legal, but worth seeing in
 the build log before it surprises somebody.
 
@@ -317,9 +316,70 @@ voľba:
 | `response_time_ms` | od vykreslenia obrazovky po definitívnu odpoveď |
 | `first_touch_ms` | od vykreslenia po prvé položenie rámčeka |
 | `frame_moves` | koľkokrát sa rámček presunul na inú možnosť |
+| `wave` | koľkýkrát účastník nástroj vypĺňa (1–3); z účtu, nie z prehliadača |
+| `build` | commit, z ktorého bol nástroj načítaný (`dev` pri lokálnom behu) |
 
-Unikátne obmedzenie na `(participant_id, item_id)`: jedna odpoveď na položku.
-Prvá odpoveď vyhráva.
+Unikátne obmedzenie na `(participant_id, item_id, wave)`: jedna odpoveď na
+položku v každej vlne. Prvá odpoveď vyhráva.
+
+`build` je čistý pôvod: povie presne, aký obsah dieťa videlo. Samotný
+`server_ts` to okolo nasadenia nevie — dieťa, ktoré si stránku načítalo tesne
+pred ním, má starý obsah až do konca sedenia.
+
+Schéma sa mení súbormi v `sql/`, ktoré sa púšťajú v Supabase SQL editore.
+
+### Vlny — keď nástroj vypĺňa to isté dieťa viackrát
+
+Dieťa môže nástroj vyplniť až trikrát, s odstupom týždňov. Každé vyplnenie je
+**vlna**. Dve osi, každá odpovedá na jednu otázku:
+
+* `item_id` — **čo** sa pýtalo (nové znenie = nové id, pozri nižšie);
+* `wave` — **kedy** sa to pýtalo.
+
+Tá istá položka v dvoch vlnách sa spáruje cez `(participant_id, item_id)`.
+Nové a preformulované položky sa jednoducho nespárujú. Zmiešaná druhá vlna
+nepotrebuje nič zvláštne.
+
+**Vlna patrí účtu.** Je v `app_metadata.wave`, ktoré vie zmeniť iba tajný kľúč;
+chýbajúca hodnota znamená 1. Databáza pri každom zápise overí, že vlna v riadku
+sa zhoduje s vlnou v prihlasovacom tokene, takže ju z prehliadača nemožno
+podvrhnúť.
+
+**Pokyn na presun dáva roster.** Stĺpec `wave` v CSV vedľa `locale`; zmeníte ho
+pre danú triedu a spustíte:
+
+    .\tools\create-users.ps1 -RosterPath ..\rosters\....csv
+    .\tools\verify-users.ps1 -RosterPath ..\rosters\....csv
+
+Prvý chýbajúce účty založí a existujúcim nastaví locale a vlnu (heslo existujúceho
+účtu nemení nikdy). Druhý sa ako každé dieťa prihlási a overí účet, heslo,
+locale aj vlnu.
+
+**Čo vlna obsahuje, určuje `config.js`** — `waves`, pozri vyššie. Všetky vlny sú
+nasadené naraz, lebo triedy sa prekrývajú: jedna môže byť vo vlne 2, keď iná
+začína vlnu 1. Pri `order: "shuffle"` je vlna 1 nasiata z kódu ako predtým a
+ďalšie vlny z kódu a čísla vlny, aby boli poradia navzájom nezávislé.
+
+Dve pravidlá, ktoré kód **nevynucuje** — sú to dohody:
+
+1. **Zoznam položiek vlny sa nemení, keď ju začala prvá trieda.** Dve deti „vo
+   vlne 2" musia dostať to isté. Prebiehajúce vlny sú zapísané nižšie; budúce
+   sedenie, aj s Claudom, si to má prečítať skôr, než niečo opraví.
+2. **Triedu presúvajte medzi sedeniami, nikdy počas neho.** Aplikácia vlnu
+   určí pri prihlásení, token ju po obnovení preberie. Dieťaťu presunutému
+   počas sedenia by databáza zvyšok odpovedí odmietla — potichu. Je to jediný
+   spôsob, ako v tomto návrhu stratiť dáta.
+
+**Prebiehajúce vlny:**
+
+| vlna | obsah | od | poznámka |
+|---|---|---|---|
+| 1 | všetkých 25 položiek (znenie 29. 10.), `shuffle` | — | slovenská trieda 8. ô, 32 detí, založená 29. 10. |
+
+Text úvodu je zatiaľ vo všetkých vlnách rovnaký (otvorená otázka, predvolené =
+rovnaký). Pozor pri kratšej vlne: úvod sľubuje „15–20 minút", čo sa počtom
+položiek neprispôsobí, a slovenské „{total} rozhodnutí" je gramaticky správne
+len pre 5 a viac.
 
 ### Verzie zadaní — prečo niektoré id končia na `_v2`
 
@@ -362,8 +422,8 @@ Mieša sa na dvoch úrovniach a každá má svoj stĺpec.
 každú položku (`shuffleOptions`, zapnuté). Bez toho by sa nedalo odlíšiť
 „vybral si tú možnosť" od „vybral si to, čo bolo vľavo".
 
-**Poradie otázok** sa mieša zvlášť pre každého účastníka (`shuffleItems`,
-zapnuté). Bez toho sa efekt poradia — odpovede sa menia, ako 24 otázok dieťa
+**Poradie otázok** sa mieša zvlášť pre každého účastníka (`order: "shuffle"`
+vo vlne). Bez toho sa efekt poradia — odpovede sa menia, ako 25 otázok dieťa
 unaví — nedá odlíšiť od vlastnosti otázky.
 
 Poradie otázok sa odvodzuje z kódu účastníka, nie z náhody: ten istý kód dá
@@ -445,11 +505,18 @@ odlišné a písateľné na českej klávesnici bez diakritiky (`dest-list-5`,
 `ryba-zvon-9`). Kódy sú malými písmenami. Číslice 0 a 1 sa nepoužívajú, lebo sa
 na kartičke pletú s O a l.
 
-`create-users.ps1` z toho CSV založí potvrdené účty. Najprv skontroluje celý
-súbor — krátke heslo, duplicitný kód, medzera alebo @ v kóde — a ak niečo
-nájde, neodošle **nič**: polovične založený roster je horší než žiadny, lebo sa
-naň nedá pozrieť a zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo
-by založil. Opakované spustenie je bezpečné: existujúce účty preskočí.
+`create-users.ps1` urobí účty takými, ako hovorí CSV: chýbajúce založí ako
+potvrdené, existujúcim nastaví `locale` a `wave` v `app_metadata` (heslo
+existujúceho účtu nemení nikdy, takže opakované spustenie nikoho nezamkne).
+Najprv skontroluje celý súbor — krátke heslo, duplicitný kód, medzera alebo @ v
+kóde, neznáme locale, vlna mimo 1–3 — a ak niečo nájde, neodošle **nič**:
+polovične spracovaný roster je horší než žiadny, lebo sa naň nedá pozrieť a
+zistiť, ktorá polovica je hotová. S `-WhatIf` iba vypíše, čo by spravil.
+Nezmenený roster pustený znova nezmení nič.
+
+`verify-users.ps1` potom každý účet overí prihlásením, iba s verejným kľúčom:
+jedno volanie dokáže, že účet existuje, je potvrdený, heslo sedí s kartičkou a
+locale aj vlna sú také, ako má roster.
 
 **Kódy si prepíše na malé písmená sám** a napíše, koľkých sa to týkalo. Kartička
 môže byť vytlačená veľkými písmenami; Supabase e-mail aj tak zmenší a
@@ -570,9 +637,8 @@ choice.
 | `supabaseAnonKey` | — | the anon/publishable key, and only ever that one |
 | `authMode` | `"remote"` | `remote` = Supabase; `roster` = offline, no network, writes nothing |
 | `shuffleOptions` | `true` | randomise option order per participant per item; only safe because `option_order` is recorded |
-| `shuffleItems` | `true` | randomise question order per participant, drawn from their code so a reload resumes into the same sequence; only safe because `item_position` is recorded |
-| `itemSubset` | `null` | array of item ids to run, in the order given — the order is ignored when `shuffleItems` is on |
-| `itemLimit` | `null` | keep only the first N items |
+| `waves` | `{ 1: { items: null, order: "shuffle" } }` | per wave: which items (`null` = all) and in what order — `"shuffle"` per participant, seeded from their code, or `"fixed"` as listed for everyone. Wave 1 is required. Replaces `itemSubset` and `shuffleItems`, which the validator now refuses |
+| `itemLimit` | `null` | testing only: keep the first N items of whichever wave runs |
 | `selectionMode` | `"confirm"` | `confirm` = frame, then "Další"; `immediate` = one click is the answer. Also selects the matching intro copy |
 | `summaryItemText` | `"framing"` | `framing` \| `label` on the summary screen (§14) |
 | `confirmDelayMs` | `450` | how long the chosen card is shown before advancing |

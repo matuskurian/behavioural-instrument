@@ -76,58 +76,44 @@ export const CONFIG = {
   shuffleOptions: true,
 
   /**
-   * Randomise the order of the questions, differently for each participant.
-   * On, so that an order effect — answers drifting as 24 questions wear a
-   * ten-year-old down — is spread across the item set instead of landing on
-   * whichever questions happen to sit at the end.
+   * The runs. A participant can take the instrument up to three times, weeks
+   * apart; each time is a wave. Which wave an account is in is set per
+   * account by the roster tool (app_metadata.wave, absent = 1), never here.
+   * This only says what each wave presents.
    *
-   * The order is drawn from the participant's own code, not from chance, so
-   * the same code always produces the same sequence. That is not a weaker
-   * randomisation — across participants the orders are still unrelated — it
-   * is what lets a child who closes the tab and signs back in land in the
-   * sequence they left instead of a freshly shuffled one (§12.5).
+   *   items  the item ids this wave runs: null = every item in items.json.
+   *          A wave can repeat items from an earlier one, add new ones, or
+   *          both — a repeated item keeps its id, so its answers pair across
+   *          waves by (participant, item_id).
+   *   order  "shuffle"  a per-participant order, drawn from the participant's
+   *                     code so that a reload resumes into the same sequence.
+   *                     Safe only because every row records item_position.
+   *          "fixed"    exactly the order listed (file order when items is
+   *                     null), the same for every participant.
    *
-   * Safe only because every row records item_position. The same argument as
-   * for shuffleOptions, one level up: without the position, an order effect
-   * — answers drifting as 24 questions wear a ten-year-old down — cannot be
-   * told apart from a property of the question.
+   * Wave 1 is required: every account without a wave is in it.
    *
-   * It runs after itemSubset and itemLimit, so those still choose which
-   * questions are in play; only the sequence becomes random. Any order
-   * written into itemSubset is then ignored, and the build log says so.
+   * A wave's list does not change once its first class has started — two
+   * children "in wave 2" must have been asked the same things. This is a
+   * convention, not something the code enforces; see "Vlny" in the README.
+   *
+   * Ids are not all of the form QNN: the fifteen items whose wording changed
+   * on 29.10 carry a _v2 suffix. See "Verzie zadaní" in the README.
+   *
+   * Example of a later wave:
+   *   2: { items: ["Q01_v2", "Q05", "Q26"], order: "shuffle" },
    */
-  shuffleItems: true,
+  waves: {
+    1: { items: null, order: "shuffle" }
+  },
 
   /**
-   * Run only part of the item set without touching items.json — for
-   * think-alouds, a timing pilot, or a two-minute logistics test.
-   *
-   *   itemSubset  array of item ids, presented in the order given here:
-   *               ["B03", "B01", "B07"]. null = every item, in file order.
-   *   itemLimit   whole number: keep only the first N of whatever the subset
-   *               left. null = no limit.
-   *
-   * They compose: itemSubset picks and orders, itemLimit then truncates.
-   * An id that is not in items.json is a startup error, not a shorter
-   * session, and any short run is announced in the console.
-   *
-   * Both must be null for run (b): the completion threshold is pre-registered
-   * against a fixed item set (§6.2).
-   *
-   * Examples:
-   *   itemLimit: 3,                        first three items
-   *   itemSubset: ["Q13", "Q10"],          these two, in this order
-   *
-   * null: all 25 items run. Q25 was held out while it had no drawings; the
-   * set delivered on 29.10 covers every option, so nothing needs holding out
-   * any more. §6.2 wants this null for run (b) anyway, and now it is.
-   *
-   * To run a subset again, list ids here. They are not all of the form QNN:
-   * the fifteen items whose wording changed on 29.10 carry a _v2 suffix, the
-   * nine that did not keep their bare id. See "Verzie zadaní" in the README
-   * for why identity moves when the option set changes.
+   * Testing shortcut: keep only the first N items of whichever wave runs, for
+   * think-alouds, a timing pilot, or a two-minute logistics test. null = no
+   * limit. Must be null for real collection — the completion threshold is
+   * pre-registered against a fixed item set (§6.2) — and any short run is
+   * announced in the console.
    */
-  itemSubset: null,
   itemLimit: null,
   /**
    * How an option becomes an answer.

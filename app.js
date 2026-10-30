@@ -30,6 +30,12 @@ let CONFIG = null;
  *  cannot come from different deploys. Empty when served without one. */
 const ASSET_VERSION = new URL(import.meta.url).searchParams.get("v") || "";
 
+/** Which build answered: the commit sha stamped at deploy, "dev" locally.
+ *  Sent on every row, so analysis knows exactly which content each answer
+ *  was given against — including a child who loaded the page just before a
+ *  deploy and kept the old content for the whole session. */
+const BUILD = ASSET_VERSION || "dev";
+
 async function loadConfig() {
   const module = await import(`./config.js${ASSET_VERSION ? `?v=${ASSET_VERSION}` : ""}`);
   if (!module || typeof module.CONFIG !== "object" || module.CONFIG === null) {
@@ -47,6 +53,10 @@ const session = {
   /** Resolved once at login from the account, then fixed for the whole run:
    *  it selects the strings file and rides along on every row (§13). */
   locale: null,
+  /** Which run this is for the participant: 1, 2 or 3. Read once at login
+   *  from the account and fixed for the session, like locale. It picks the
+   *  item set, seeds the order, and rides along on every row. */
+  wave: 1,
   items: [],          // validated, in presentation order
   index: 0,           // index of the item currently on screen
   choices: [],        // [{ item, option, row }] — drives the summary screen
@@ -362,8 +372,18 @@ const DEFAULT_LOCALE = "cs";
  * the account can be found and fixed.
  */
 function resolveLocale(user, participantId) {
-  const raw = user && user.user_metadata ? user.user_metadata.locale : undefined;
-  if (raw === undefined || raw === null || raw === "") return DEFAULT_LOCALE;
+  // app_metadata first: only the secret key can write it, so it is the
+  // authoritative copy. user_metadata is the older home of this field and is
+  // writable by the signed-in participant; it is still read so that accounts
+  // created before the move keep their language, and the fallback says so.
+  const fromApp = user && user.app_metadata ? user.app_metadata.locale : undefined;
+  const fromUser = user && user.user_metadata ? user.user_metadata.locale : undefined;
+  const present = (value) => value !== undefined && value !== null && value !== "";
+  const raw = present(fromApp) ? fromApp : fromUser;
+  if (!present(fromApp) && present(fromUser)) {
+    console.info(`[locale] ${participantId}: locale from user_metadata (not yet moved to app_metadata)`);
+  }
+  if (!present(raw)) return DEFAULT_LOCALE;
   if (LOCALES.includes(raw)) return raw;
   console.warn(
     `[locale] participant ${participantId} has locale ${JSON.stringify(raw)}, ` +
@@ -372,9 +392,37 @@ function resolveLocale(user, participantId) {
   return DEFAULT_LOCALE;
 }
 
-/** Postgres, via PostgREST. 23505 is the unique (participant_id, item_id)
- *  constraint: the participant answered an item they had already answered,
- *  which resume makes possible. It is not data loss (§12.4). */
+/** The runs a participant can be in. Mirrors the database check on wave. */
+const WAVES = [1, 2, 3];
+
+/**
+ * The account's wave: which run this sign-in is.
+ *
+ * Set per account by the roster tool, in app_metadata, which the participant
+ * cannot write. Absent means 1, so every account that existed before waves
+ * did is in wave 1 without anyone touching it.
+ *
+ * The database checks the same claim on every insert, so this value and the
+ * one RLS enforces always agree — as long as nobody moves the account while
+ * a session is under way. The token picks up a new wave when it refreshes;
+ * this does not, by design. Move classes between sessions.
+ */
+function resolveWave(user, participantId) {
+  const raw = user && user.app_metadata ? user.app_metadata.wave : undefined;
+  if (raw === undefined || raw === null || raw === "") return 1;
+  const wave = Number(raw);
+  if (WAVES.includes(wave)) return wave;
+  console.warn(
+    `[wave] participant ${participantId} has wave ${JSON.stringify(raw)}, which is not one of ` +
+      `${WAVES.join(", ")}. Treating it as 1 — the database will refuse every row if the ` +
+      "account really says otherwise, so fix the account."
+  );
+  return 1;
+}
+
+/** Postgres, via PostgREST. 23505 is the unique (participant_id, item_id, wave)
+ *  constraint: the participant answered an item they had already answered in
+ *  this wave, which resume makes possible. It is not data loss (§12.4). */
 const DUPLICATE_ROW = "23505";
 
 /** The signed-in session. Null under authMode "roster", and until sign-in. */
@@ -499,13 +547,6 @@ async function refreshSession() {
 }
 
 /**
- * The login screen's whole view of authentication:
- *
- *   { status: "ok", participantId }
- *   { status: "invalid" }   wrong code or password
- *   { status: "busy" }      too many sign-ins at once; try again shortly
- */
-/**
  * What the participant typed, turned into the code their account actually
  * uses (§5).
  *
@@ -526,6 +567,13 @@ function normaliseCode(typed) {
   return typed.trim().toLowerCase().replace(/[\s_]+/g, "-");
 }
 
+/**
+ * The login screen's whole view of authentication:
+ *
+ *   { status: "ok", participantId, locale, wave }
+ *   { status: "invalid" }   wrong code or password
+ *   { status: "busy" }      too many sign-ins at once; try again shortly
+ */
 async function checkCredential(code, password) {
   code = normaliseCode(code);
   if (CONFIG.authMode === "remote") {
@@ -546,21 +594,29 @@ async function checkCredential(code, password) {
     const email = user && typeof user.email === "string" ? user.email : "";
     const fromAccount = email.split("@")[0];
     if (!fromAccount) throw new Error("sign-in returned no account email to derive participant_id from");
-    return { status: "ok", participantId: fromAccount, locale: resolveLocale(user, fromAccount) };
+    return {
+      status: "ok",
+      participantId: fromAccount,
+      locale: resolveLocale(user, fromAccount),
+      wave: resolveWave(user, fromAccount)
+    };
   }
 
   // authMode "roster": offline only, and unreachable above. Not authentication
   // (§2) — it binds a response set to an identifier and nothing more.
+  // Both sides normalised: the typed code already is, and a roster written as
+  // "TEST" must still match it.
   const match = roster.participants.find(
-    (participant) => participant.id === code && participant.password === password
+    (participant) => normaliseCode(participant.id) === code && participant.password === password
   );
   if (!match) return { status: "invalid" };
   // Offline mode has no account to carry metadata, so the roster entry may
-  // name a locale for copy work; otherwise the default.
+  // name a locale and a wave for copy work; otherwise the defaults.
   return {
     status: "ok",
     participantId: match.id,
-    locale: LOCALES.includes(match.locale) ? match.locale : DEFAULT_LOCALE
+    locale: LOCALES.includes(match.locale) ? match.locale : DEFAULT_LOCALE,
+    wave: WAVES.includes(Number(match.wave)) ? Number(match.wave) : 1
   };
 }
 
@@ -755,6 +811,7 @@ function writeResume(nextIndex) {
       RESUME_KEY,
       JSON.stringify({
         participant_id: session.participantId,
+        wave: session.wave,
         index: nextIndex,
         updated: Date.now()
       })
@@ -774,9 +831,10 @@ function clearResume() {
 
 /**
  * The item index to continue from, or null to start at the intro. Anything
- * that does not match on all three counts — same participant, less than two
- * hours old, pointing somewhere inside this run — clears the stored session
- * rather than half-trusting it.
+ * that does not match on every count — same participant, same wave, less
+ * than two hours old, pointing somewhere inside this run — clears the stored
+ * session rather than half-trusting it. An index means nothing outside the
+ * wave it was written in: the item list and the order both differ.
  *
  * index 0 deliberately does not resume: nothing has been answered, and
  * skipping the intro for someone who never read it would be wrong. An index
@@ -788,12 +846,15 @@ function resumeIndexFor(participantId) {
   if (!stored) return null;
 
   const sameParticipant = stored.participant_id === participantId;
+  // Records written before waves existed carry none, and were all wave 1.
+  const sameWave = (Number.isInteger(stored.wave) ? stored.wave : 1) === session.wave;
   const recent = Date.now() - stored.updated < RESUME_MAX_AGE_MS;
   const insideThisRun = stored.index > 0 && stored.index < session.items.length;
 
-  if (sameParticipant && recent && insideThisRun) return stored.index;
+  if (sameParticipant && sameWave && recent && insideThisRun) return stored.index;
 
   if (!sameParticipant) console.info("[resume] stored session belongs to another participant; discarded");
+  else if (!sameWave) console.info("[resume] stored session is from another wave; discarded");
   else if (!recent) console.info("[resume] stored session is older than two hours; discarded");
   else console.info("[resume] stored session does not point inside this run; discarded");
 
@@ -900,11 +961,16 @@ function renderLogin(prefillId = "") {
 
           session.participantId = result.participantId;
           session.locale = result.locale;
+          session.wave = result.wave;
           // Before any screen that uses them, and before the first row.
           await loadLocaleStrings(session.locale);
           // Before the resume index is read: that index counts positions in
-          // this participant's order, so the order has to exist first.
-          orderItemsForParticipant(result.participantId);
+          // this participant's list for this wave, so the list has to exist.
+          const runProblems = buildRunForParticipant(result.participantId, session.wave);
+          if (runProblems.length) {
+            showError(runProblems);
+            return;
+          }
           pinHistory();
 
           // A returning participant continues where they stopped; everyone
@@ -970,7 +1036,7 @@ function renderIntro() {
   //
   // Its lines take {total}, because one of them promises the child how many
   // decisions are coming. Written as a literal it goes quietly wrong the next
-  // time an item is added or itemSubset is narrowed — as it had, promising 24
+  // time an item is added or a wave's list changes — as it had, promising 24
   // when the run became 25. A number the app fills in cannot drift from the
   // number of screens the child is actually about to see.
   const checklistVars = { total: session.items.length };
@@ -1256,6 +1322,10 @@ function commit() {
     // re-derived per insert (§13.5). Analysis reads it from the row rather
     // than inferring it afterwards.
     locale: session.locale,
+    // Which run, read from the account at login. The database checks it
+    // against the same claim, so it cannot disagree with the account.
+    wave: session.wave,
+    build: BUILD,
     // 1-based, like option_position. session.index is still this item's own
     // index here: it advances in the timeout below, after the row is built.
     item_position: session.index + 1,
@@ -1476,70 +1546,126 @@ function seededRandom(seedText) {
   };
 }
 
-/**
- * Fixes the order of the questions for this participant (§4.1).
- *
- * Called once, at login, because the order depends on who signed in — and
- * before the resume index is read, so that the index points into the order
- * the participant will actually see.
- *
- * With shuffleItems off this does nothing at all: the order stays exactly
- * what items.json and itemSubset produced, as it has been until now.
- */
-function orderItemsForParticipant(participantId) {
-  if (!CONFIG.shuffleItems) return;
-  session.items = shuffled(session.items, seededRandom(participantId));
-  console.info(
-    `[content] item order for ${participantId}: ${session.items.map((item) => item.id).join(", ")}`
-  );
-}
+/** The validated item catalogue: every item any wave may draw from. */
+let catalogue = [];
 
 /**
- * Applies CONFIG.itemSubset and CONFIG.itemLimit to the item set, so that a
- * short run needs no edit to items.json (§4.1: item count is still driven by
- * the content file; this only narrows what is presented from it).
+ * Checks CONFIG.waves against the catalogue, at boot, for every wave at once.
  *
- * Selection runs after validation, deliberately: a malformed item fails the
- * whole file even when this run would not have reached it, so a short pilot
- * cannot hide a content error that the full run would hit.
+ * All waves are checked even though a given sign-in uses one, for the same
+ * reason a malformed item fails the whole file: a mistake in wave 3 must not
+ * wait until the first class reaches wave 3 to surface. tools/validate.mjs
+ * applies the same rules before deploy; this is the copy that runs in the
+ * browser.
  *
- * A subset id that is not in items.json is an error, never a quietly shorter
- * session — a typo must not cost you a run you only notice at analysis.
+ * Wave 1 must exist, because an account with no wave is in wave 1.
  */
-function selectItems(all) {
+function validateWaves(all) {
   const problems = [];
-  let selected = all;
+  const waves = CONFIG.waves;
+  if (!waves || typeof waves !== "object" || Array.isArray(waves)) {
+    return ["config.waves: expected an object keyed by wave number, e.g. { 1: { items: null, order: \"shuffle\" } }"];
+  }
+  if (!waves[1]) problems.push("config.waves: wave 1 is required — every account without a wave is in it");
 
-  if (CONFIG.itemSubset !== null && CONFIG.itemSubset !== undefined) {
-    if (!Array.isArray(CONFIG.itemSubset) || CONFIG.itemSubset.length === 0) {
-      return { items: [], problems: ["config.itemSubset: expected an array of item ids, or null"] };
+  const known = new Set(all.map((item) => item.id));
+  for (const key of Object.keys(waves)) {
+    const where = `config.waves[${key}]`;
+    if (!WAVES.includes(Number(key))) {
+      problems.push(`${where}: waves are numbered ${WAVES.join(", ")}`);
+      continue;
     }
-    const byId = new Map(all.map((item) => [item.id, item]));
-    selected = [];
-    for (const id of CONFIG.itemSubset) {
-      const item = byId.get(id);
-      if (item) selected.push(item);
-      else problems.push(`config.itemSubset: items.json has no item with id "${id}"`);
+    const spec = waves[key];
+    if (!spec || typeof spec !== "object") {
+      problems.push(`${where}: expected { items, order }`);
+      continue;
+    }
+    if (spec.order !== "shuffle" && spec.order !== "fixed") {
+      problems.push(`${where}.order: expected "shuffle" or "fixed"`);
+    }
+    if (spec.items !== null) {
+      if (!Array.isArray(spec.items) || spec.items.length === 0) {
+        problems.push(`${where}.items: expected a non-empty array of item ids, or null for the whole catalogue`);
+        continue;
+      }
+      const seen = new Set();
+      for (const id of spec.items) {
+        // An unknown id is an error, never a quietly shorter session: a typo
+        // must not cost you a run you only notice at analysis.
+        if (!known.has(id)) problems.push(`${where}.items: items.json has no item "${id}"`);
+        if (seen.has(id)) problems.push(`${where}.items: "${id}" is listed twice`);
+        seen.add(id);
+      }
     }
   }
 
   if (CONFIG.itemLimit !== null && CONFIG.itemLimit !== undefined) {
     if (!Number.isInteger(CONFIG.itemLimit) || CONFIG.itemLimit < 1) {
       problems.push("config.itemLimit: expected a whole number of 1 or more, or null");
-    } else {
-      if (CONFIG.itemLimit > selected.length) {
-        console.warn(
-          `[content] itemLimit is ${CONFIG.itemLimit} but only ${selected.length} items are available; running all of them.`
-        );
-      }
-      selected = selected.slice(0, CONFIG.itemLimit);
     }
   }
+  return problems;
+}
 
-  if (!problems.length && selected.length === 0) {
-    problems.push("config: itemSubset / itemLimit left no items to present");
+/**
+ * Builds this participant's run: the wave's items, in the wave's order (§4.1).
+ *
+ * Called once, at login, because both depend on who signed in — and before
+ * the resume index is read, so that the index points into the list the
+ * participant will actually see.
+ *
+ *   order "fixed"    the wave's list exactly as written (or file order when
+ *                    it is null), the same for every participant.
+ *   order "shuffle"  a per-participant order, drawn from the participant's
+ *                    code rather than from chance, so that a reload resumes
+ *                    into the same sequence (§12.5).
+ *
+ * The shuffle seed for wave 1 is the bare code, as it was before waves
+ * existed, so every wave-1 order is exactly what it has always been and any
+ * sequence already collected can still be reconstructed from the code alone.
+ * Later waves add the wave to the seed. Without that, the same random stream
+ * run over two different lists gives orders that are correlated in a way
+ * nobody would think to check for.
+ *
+ * Returns problems instead of throwing, so the login screen can show them.
+ */
+function buildRunForParticipant(participantId, wave) {
+  const spec = CONFIG.waves[wave];
+  if (!spec) {
+    return [
+      `This account is in wave ${wave}, but config.js defines no wave ${wave}.`,
+      "Either add the wave to config.waves or move the account back with the roster tool."
+    ];
   }
-  return { items: selected, problems };
+
+  const byId = new Map(catalogue.map((item) => [item.id, item]));
+  let list = spec.items === null ? catalogue.slice() : spec.items.map((id) => byId.get(id));
+
+  if (Number.isInteger(CONFIG.itemLimit) && CONFIG.itemLimit >= 1) {
+    if (CONFIG.itemLimit < list.length) {
+      // A short run must be impossible to start by accident: say so loudly,
+      // and name the items, so a session is never quietly cut short.
+      console.warn(
+        `[content] SHORT RUN: itemLimit keeps ${CONFIG.itemLimit} of wave ${wave}'s ${list.length} items. ` +
+          "Set itemLimit to null in config.js for the full set."
+      );
+    }
+    list = list.slice(0, CONFIG.itemLimit);
+  }
+
+  if (spec.order === "shuffle") {
+    const seed = wave === 1 ? participantId : `${participantId}#wave${wave}`;
+    list = shuffled(list, seededRandom(seed));
+  }
+
+  session.items = list.map((item) =>
+    CONFIG.shuffleOptions ? { ...item, options: shuffled(item.options) } : item
+  );
+  console.info(
+    `[content] wave ${wave}, ${spec.order}, ${session.items.length} items for ${participantId}: ` +
+      session.items.map((item) => item.id).join(", ")
+  );
+  return [];
 }
 
 async function boot() {
@@ -1586,9 +1712,10 @@ async function boot() {
     return;
   }
 
-  const selection = selectItems(items.items);
-  if (selection.problems.length) {
-    showError(selection.problems);
+  catalogue = items.items;
+  const waveProblems = validateWaves(catalogue);
+  if (waveProblems.length) {
+    showError(waveProblems);
     return;
   }
 
@@ -1598,22 +1725,10 @@ async function boot() {
   // Before the first screen, so the first item already has its drawings.
   await loadIcons(CONFIG.content.icons);
 
-  session.items = selection.items.map((item) =>
-    CONFIG.shuffleOptions ? { ...item, options: shuffled(item.options) } : item
-  );
-
   console.info(
-    `[content] ${items.items.length} items loaded (version ${items.version || "unversioned"})`
+    `[content] ${catalogue.length} items in the catalogue (version ${items.version || "unversioned"}); ` +
+      `waves defined: ${Object.keys(CONFIG.waves).join(", ")}; build ${BUILD}`
   );
-  // A short run must be impossible to start by accident: say so loudly, and
-  // name the items, so a session is never quietly cut short.
-  if (session.items.length !== items.items.length) {
-    console.warn(
-      `[content] SHORT RUN: presenting ${session.items.length} of ${items.items.length} items ` +
-        `(${session.items.map((item) => item.id).join(", ")}). ` +
-        "Set itemSubset and itemLimit to null in config.js for the full set."
-    );
-  }
   announceWriteTarget();
 
   // A handle for the researcher during logistics testing: transmission counts
