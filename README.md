@@ -614,6 +614,15 @@ asi minúta od prvého zlyhania. Potom sa vzdá a odpoveď je stratená ako pred
 - **Pre analýzu:** opakovaný riadok dorazí neskôr, takže jeho `server_ts` môže
   byť až o minútu za okamihom voľby. `client_ts` a časy odpovedí sa merajú na
   zariadení a nemenia sa. Prah dokončenia platí ďalej.
+- **Nepreťaží databázu, ani keď vypadne Wi-Fi celej triede.** Pokusy počas
+  výpadku siete k serveru vôbec nedorazia — zlyhajú na zariadení. Po návrate
+  siete dorazí každá odpoveď raz, takže server pri výpadku siete nikdy nedostane
+  viac požiadaviek, než bolo odpovedí. Simulácia (4. 11.): trieda 32 detí
+  bežne ~1 zápis/s, po výpadku najviac ~8/s; celá škola, 160 detí, bežne ~4/s,
+  po výpadku najviac ~28/s — zlomok toho, čo Postgres zvládne. Násobiť záťaž
+  môžu opakovania len vtedy, keď chybu vracia samotný server (5xx), a aj vtedy
+  najviac päťkrát a len na minútu na odpoveď. Prihlasovanie (jediné miesto s
+  limitom požiadaviek) opakovania nepoužívajú.
 
 Podnet: dieťa zo slovenskej vlny 1 (3. 11.) prišlo o tri odpovede uprostred
 sedenia — každá iná minúta, pred aj po nich úspešné zápisy, u ostatných detí v
