@@ -70,7 +70,7 @@ let strings = {};
 // login screen cannot be affected by the locale that arrives after it.
 let loginStrings = {};
 let roster = { participants: [] };
-const transmission = { attempted: 0, failed: 0, duplicates: 0, failures: [] };
+const transmission = { attempted: 0, failed: 0, duplicates: 0, retries: 0, rescued: 0, failures: [] };
 
 /* ==========================================================================
  * Tiny DOM helpers — no styling, class names only
@@ -637,10 +637,42 @@ function noteDuplicate(row) {
 }
 
 /**
- * Fire-and-forget, unchanged by the migration (§6.2, §12.4). Nothing here is
- * awaited by the caller, nothing is retried, nothing is queued: the
- * participant advances the instant they choose, whatever happens to the row.
- * server_ts is never sent — the database sets it.
+ * Waits before each retry of a row whose send failed for a reason that may
+ * pass: 2, 5, 15, then 40 seconds between attempts — five attempts in all,
+ * giving up about a minute after the first. Amendment to §6.2, 2026-11-04;
+ * see "Zápis odpovedí" in the README.
+ *
+ * The window is sized to blips — a dropped packet, a laptop's wifi waking
+ * after a pause, a hand-off between access points — not to outages. Whatever
+ * still fails after a minute is an outage, and holding rows through one
+ * would make this the offline queue §6.2 rejected, without even that
+ * queue's storage. After the last attempt the row is lost, as §6.2 accepts.
+ */
+const RETRY_DELAYS_MS = [2000, 5000, 15000, 40000];
+
+/** A response worth trying again: a timeout, being asked to slow down, or a
+ *  server error. Anything else in the 4xx range is the database refusing this
+ *  row, and it will refuse it the same way next time. */
+function isTransient(status) {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+/**
+ * Fire-and-forget (§6.2, §12.4). Nothing here is awaited by the caller and
+ * nothing is stored: the participant advances the instant they choose,
+ * whatever happens to the row, and is never told about the network.
+ *
+ * Amended 2026-11-04 with up to four background retries (RETRY_DELAYS_MS).
+ * §6.2 forbids retrying because the alternative it had in mind blocks the
+ * child on a retry screen; these block nothing — the child is already on the
+ * next question. It is safe against double counting because of the unique
+ * (participant_id, item_id, wave) key: if an earlier attempt did arrive and
+ * only its reply was lost, the retry is refused as a duplicate and the first
+ * copy stands.
+ *
+ * server_ts is never sent — the database sets it. On a retried row it is
+ * therefore up to a minute later than the choice; client_ts and the timings
+ * are taken on the device and are unaffected.
  */
 function transmit(row, onOutcome) {
   // The outcome is reported back in the store's own vocabulary translated into
@@ -663,45 +695,88 @@ function transmit(row, onOutcome) {
     return;
   }
 
+  sendRow(row, 1, settle);
+}
+
+/** One attempt at sending a row; schedules the next if this one fails in a
+ *  way that may pass. Only the final outcome is reported to settle(). */
+function sendRow(row, attempt, settle) {
+  const retryOrGiveUp = (reason) => {
+    const wait = RETRY_DELAYS_MS[attempt - 1];
+    if (wait === undefined) {
+      noteFailure(row, `${reason} (gave up after ${attempt} attempts)`);
+      settle("failed");
+      return;
+    }
+    transmission.retries += 1;
+    console.warn(
+      `[write] attempt ${attempt} failed  item=${row.item_id}  reason=${reason}; ` +
+        `trying again in ${wait / 1000}s`
+    );
+    window.setTimeout(() => sendRow(row, attempt + 1, settle), wait);
+  };
+
+  let request;
   try {
-    fetch(supabaseUrl("/rest/v1/responses"), {
+    request = fetch(supabaseUrl("/rest/v1/responses"), {
       method: "POST",
       cache: "no-store",
       keepalive: true,
       headers: {
         apikey: CONFIG.supabaseAnonKey,
+        // Read at send time, not when the row was made, so a retry that
+        // follows a session refresh goes out with the fresh token.
         Authorization: `Bearer ${auth.accessToken}`,
         "Content-Type": "application/json",
         Prefer: "return=minimal"
       },
       body: JSON.stringify(row)
-    })
-      .then(async (response) => {
-        if (response.ok) {
-          settle("recorded");
-          return;
-        }
-        const detail = await response.json().catch(() => ({}));
-        if (detail && detail.code === DUPLICATE_ROW) {
-          noteDuplicate(row);
-          // Not recorded: the stored answer is the earlier one, which this
-          // client cannot read back and must therefore not claim to know.
-          settle("duplicate");
-          return;
-        }
-        const code = detail && detail.code ? ` ${detail.code}` : "";
-        const message = detail && detail.message ? ` ${detail.message}` : "";
-        noteFailure(row, `HTTP ${response.status}${code}${message}`);
-        settle("failed");
-      })
-      .catch((error) => {
-        noteFailure(row, error && error.message ? error.message : String(error));
-        settle("failed");
-      });
+    });
   } catch (error) {
+    // fetch() throwing outright is a fault in the request itself, not the
+    // network, and would throw again: no retry.
     noteFailure(row, error && error.message ? error.message : String(error));
     settle("failed");
+    return;
   }
+
+  request.then(
+    async (response) => {
+      if (response.ok) {
+        if (attempt > 1) {
+          transmission.rescued += 1;
+          console.info(`[write] recorded on attempt ${attempt}  item=${row.item_id}`);
+        }
+        settle("recorded");
+        return;
+      }
+      const detail = await response.json().catch(() => ({}));
+      if (detail && detail.code === DUPLICATE_ROW) {
+        noteDuplicate(row);
+        if (attempt > 1) {
+          console.info(
+            `[write] item=${row.item_id}: a retry found the row already stored, ` +
+              "most likely from an earlier attempt whose reply was lost"
+          );
+        }
+        // Not claimed as recorded: the stored answer may be an earlier one,
+        // which this client cannot read back and must not claim to know.
+        settle("duplicate");
+        return;
+      }
+      const code = detail && detail.code ? ` ${detail.code}` : "";
+      const message = detail && detail.message ? ` ${detail.message}` : "";
+      const reason = `HTTP ${response.status}${code}${message}`;
+      if (isTransient(response.status)) {
+        retryOrGiveUp(reason);
+        return;
+      }
+      noteFailure(row, reason);
+      settle("failed");
+    },
+    // No response at all: the network, the very thing a retry is for.
+    (error) => retryOrGiveUp(error && error.message ? error.message : String(error))
+  );
 }
 
 /**

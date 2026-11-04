@@ -582,14 +582,48 @@ tom; sedenie pokračuje a ďalšie položky sa odosielajú normálne. Z toho vyp
   každej položke.
 - Strata **nie je náhodná**: viaže sa na kvalitu siete, a tá sa viaže na
   miestnosť, dennú dobu a zariadenie.
-- Medzera v dátach sa **nedá odlíšiť** od položky, ku ktorej sa účastník nikdy
-  nedostal.
+- Medzera **uprostred** sedenia — chýbajúca `item_position` medzi zapísanými —
+  je stratený zápis: dieťa tú obrazovku videlo a odpovedalo. Chýbajúce pozície
+  **na konci** sa od nedokončeného sedenia odlíšiť nedajú.
 - **Dokončenie definujte ako predregistrovaný prah počtu riadkov**, nie ako
   „došiel na súhrnnú obrazovku".
 
+#### Dodatok k §6.2 (4. 11. 2026): opakovanie na pozadí
+
+§6.2 pôvodne zakazoval opakovať zápis („no retry"). Od 4. 11. 2026 platí:
+**ak sa odpoveď nepodarí odoslať z dôvodu, ktorý môže pominúť, aplikácia ju na
+pozadí pošle znova** — po 2, 5, 15 a 40 sekundách, teda najviac päť pokusov a
+asi minúta od prvého zlyhania. Potom sa vzdá a odpoveď je stratená ako predtým.
+
+- **Dôvod zákazu zostáva splnený.** §6.2 opakovanie zakázal preto, že
+  alternatívou bola obrazovka „skúšam znova", ktorá dieťa zastaví a vyžaduje
+  dospelého. Opakovanie na pozadí nezastaví nič — dieťa je už na ďalšej
+  otázke a o sieti sa nedozvie. Mení sa znenie pravidla, nie jeho účel.
+- **Opakuje sa len to, čo môže pominúť**: žiadna odpoveď (sieť), chyba
+  servera, vypršanie, „spomaľ". Keď databáza riadok odmietne (iné 4xx),
+  odmietla by ho rovnako znova, takže sa neopakuje.
+- **Nedá sa započítať dvakrát.** Ak prvý pokus v skutočnosti dorazil a stratila
+  sa len odpoveď servera, opakovanie narazí na unikátny kľúč
+  `(participant_id, item_id, wave)` a ostane prvá kópia.
+- **Nič sa neukladá na zariadení.** Zavretá karta zruší aj čakajúce
+  opakovanie. Je to malý buffer v pamäti na pár sekúnd, nie offline fronta (§11).
+- **Prečo minúta, nie viac:** opakovania majú zachrániť krátke výpadky (stratený
+  paket, Wi-Fi notebooku, ktorá sa po pauze prebúdza). Čo zlyháva aj po minúte,
+  je výpadok siete, a držať odpovede cez výpadok by bola tá offline fronta, ktorú
+  §6.2 odmietol.
+- **Pre analýzu:** opakovaný riadok dorazí neskôr, takže jeho `server_ts` môže
+  byť až o minútu za okamihom voľby. `client_ts` a časy odpovedí sa merajú na
+  zariadení a nemenia sa. Prah dokončenia platí ďalej.
+
+Podnet: dieťa zo slovenskej vlny 1 (3. 11.) prišlo o tri odpovede uprostred
+sedenia — každá iná minúta, pred aj po nich úspešné zápisy, u ostatných detí v
+triede nič. Krátke výpadky siete jedného notebooku; opakovanie o pár sekúnd by
+ich s veľkou pravdepodobnosťou zachránilo.
+
 Chyby sa vypisujú do konzoly s id položky a dôvodom a zbierajú sa v
-`window.__instrument.transmission`. Po pilotnom sedení sa tam dá pozrieť, či
-sieť v miestnosti neje riadky.
+`window.__instrument.transmission` — vrátane počtu opakovaní (`retries`) a
+odpovedí, ktoré opakovanie zachránilo (`rescued`). Po pilotnom sedení sa tam dá
+pozrieť, či sieť v miestnosti neje riadky.
 
 Konzolové hlásenia už hovoria to, čo hovoria. Falošné `HTTP 404` boli
 patológiou presmerovania Apps Scriptu a sú preč; obchádzka s počítaním riadkov
