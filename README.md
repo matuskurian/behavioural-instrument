@@ -395,8 +395,15 @@ id v pôvodnom poradí; poradia detí sa tým nezmenili (overené).
 **Testovať vlnu na kódoch skutočných detí sa nesmie.** Testovacia odpoveď by im
 zostala v dátach navždy (riadky sa nemažú) a pri „prvá odpoveď vyhráva" by
 dieťaťu neskôr potichu zahodila jeho vlastnú odpoveď na tú istú položku. Na
-každú vlnu je preto testovací účet: vo vlne 1 `werewolf-sk`, vo vlne 2 jeden
-kód z rosteru 30. 10., ktorý sa deťom nerozdá a pri analýze sa vylúči.
+každú vlnu sú preto testovacie účty, ktoré sa pri analýze vylúčia:
+
+| vlna | testovacie účty (sk) |
+|---|---|
+| 1 | `werewolf-sk` |
+| 2 | `katka-bezi01`, `krokodil01` |
+| 3 | `katka-bezi02`, `krokodil02` |
+
+K nim patria `test` a `werewolf-en`.
 
 Text úvodu je zatiaľ vo všetkých vlnách rovnaký (otvorená otázka, predvolené =
 rovnaký). Pozor pri kratšej vlne: úvod sľubuje „15–20 minút", čo sa počtom
