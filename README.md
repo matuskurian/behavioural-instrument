@@ -400,8 +400,8 @@ každú vlnu sú preto testovacie účty, ktoré sa pri analýze vylúčia:
 | vlna | testovacie účty (sk) |
 |---|---|
 | 1 | `werewolf-sk` |
-| 2 | `katka-bezi01`, `krokodil01` |
-| 3 | `katka-bezi02`, `krokodil02` |
+| 2 | `katka-bezi01` |
+| 3 | `katka-bezi02` |
 
 K nim patria `test` a `werewolf-en`.
 
