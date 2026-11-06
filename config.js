@@ -126,16 +126,16 @@ export const CONFIG = {
       order: "shuffle"
     },
 
-    // PLACEHOLDER for testing, 2026-10-30: a copy of wave 1 until wave 2's
-    // own items are ready. Not running — no wave-2 codes have been handed
-    // out — so this list is free to change until they are.
+    // Defined 2026-11-06: eleven of wave 1's items (numbers 2, 4, 6, 9, 12,
+    // 14, 17, 19, 20, 21, 24), the same ids, so where a child takes both
+    // waves the answers pair by item. Serves Czech and Slovak children alike;
+    // language comes from the account. Not yet running — no wave-2 codes have
+    // been handed out — so this list may still change until they are, and
+    // not after.
     2: {
       items: [
-        "Q01_v2", "Q02_v2", "Q03_v2", "Q04_v2", "Q05",
-        "Q06",    "Q07_v2", "Q08",    "Q09_v2", "Q10_v2",
-        "Q11_v2", "Q12_v2", "Q13",    "Q14",    "Q15_v2",
-        "Q16",    "Q17_v2", "Q18_v2", "Q19",    "Q20",
-        "Q21_v2", "Q22_v2", "Q23_v2", "Q24",    "Q25"
+        "Q02_v2", "Q04_v2", "Q06",    "Q09_v2", "Q12_v2", "Q14",
+        "Q17_v2", "Q19",    "Q20",    "Q21_v2", "Q24"
       ],
       order: "shuffle"
     }
