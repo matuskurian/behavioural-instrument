@@ -138,6 +138,19 @@ export const CONFIG = {
         "Q17_v2", "Q19",    "Q20",    "Q21_v2", "Q24"
       ],
       order: "shuffle"
+    },
+
+    // Defined 2026-11-06: the other eleven of wave 1's items (numbers 1, 3,
+    // 7, 8, 10, 13, 15, 16, 18, 22, 25), none shared with wave 2. Together
+    // the two cover wave 1 except 5, 11 and 23 (Q05, Q11_v2, Q23_v2). Czech
+    // and Slovak alike. No account is in wave 3 yet, so this is free to
+    // change until the first wave-3 codes are handed out.
+    3: {
+      items: [
+        "Q01_v2", "Q03_v2", "Q07_v2", "Q08",    "Q10_v2", "Q13",
+        "Q15_v2", "Q16",    "Q18_v2", "Q22_v2", "Q25"
+      ],
+      order: "shuffle"
     }
   },
 

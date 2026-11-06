@@ -384,6 +384,7 @@ Dve pravidlá, ktoré kód **nevynucuje** — sú to dohody:
 |---|---|---|---|
 | 1 | 25 položiek (znenie 29. 10.), vypísaných v `config.js`, `shuffle` | 29. 10. | slovenská trieda 8. ô, 32 detí. **Beží — nemeniť.** |
 | 2 | 11 položiek z vlny 1 (č. 2, 4, 6, 9, 12, 14, 17, 19, 20, 21, 24), `shuffle`; definované 6. 11. | — | 30 nových slovenských detí (roster 30. 10.), vlnu 1 nerobia. Kódy zatiaľ nerozdané, takže zoznam sa ešte smie meniť — až do ich rozdania. |
+| 3 | 11 položiek z vlny 1 (č. 1, 3, 7, 8, 10, 13, 15, 16, 18, 22, 25), `shuffle`; definované 6. 11. | — | zatiaľ žiadne účty. S vlnou 2 sa neprekrýva; spolu pokrývajú vlnu 1 okrem č. 5, 11, 23. |
 
 Odkedy existuje viac než jedna vlna, má každá vlna v `config.js` **vypísaný
 zoznam id, nie `null`**. `null` znamená „všetko, čo je v `items.json`" — a vlna
